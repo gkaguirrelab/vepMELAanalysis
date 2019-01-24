@@ -4,7 +4,7 @@
 clear; clc;
 
 % load saved raw data
-load 'test_VEP_data2.mat'
+% load 'test_VEP_data2.mat'
 
 % VEP data is p.response(2,:)
 % TTL pulse is p.response(1,:);
