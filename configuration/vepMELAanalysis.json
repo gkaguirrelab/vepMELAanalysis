@@ -30,7 +30,7 @@
 		"hook": "",
 		"importance": "",
 		"localHookTemplate": "configuration/vepMELAanalysisLocalHookTemplate.m",
-		"name": "OLApproach_Squint",
+		"name": "vepMELAanalysis",
 		"pathPlacement": "append",
 		"subfolder": "code",
 		"toolboxRoot": "",

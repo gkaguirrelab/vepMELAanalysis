@@ -1,67 +1,74 @@
-function vepMELAnanalysisLocalHook
-% Oonfigure things for working on OneLight projects.
-%
-% For use with the ToolboxToolbox.  If you copy this into your
-% ToolboxToolbox localToolboxHooks directory (by default,
-% ~/localToolboxHooks) and delete "LocalHooksTemplate" from the filename,
-% this will get run when you execute
-%   tbUseProject('vepMELAnanalysis')
-% to set up for this project.  You then edit your local copy to match your local machine.
-%
-% The main thing that this does is define Matlab preferences that specify input and output
-% directories.
-%
-% You will need to edit the project location and i/o directory locations
-% to match what is true on your computer.
+function vepMELAanalysisLocalHook
 
-%% Say hello
-fprintf('Running vepMELAnanalysis local hook\n');
-theApproach = 'vepMELAnanalysis';
+%  vepMELAanalysisLocalHook
+%
+% Configure things for working on the  vepMELAanalysis project.
+%
+% For use with the ToolboxToolbox.
+%
+% If you 'git clone' vepMELAanalysis into your ToolboxToolbox "projectRoot"
+% folder, then run in MATLAB
+%   tbUseProject('vepMELAanalysis')
+% ToolboxToolbox will set up vepMELAanalysis and its dependencies on
+% your machine.
+%
+% As part of the setup process, ToolboxToolbox will copy this file to your
+% ToolboxToolbox localToolboxHooks directory (minus the "Template" suffix).
+% The defalt location for this would be
+%   ~/localToolboxHooks/vepMELAanalysisLocalHook.m
+%
+% Each time you run tbUseProject('vepMELAanalysis'), ToolboxToolbox will
+% execute your local copy of this file to do setup for vepMELAanalysis.
+%
+% You should edit your local copy with values that are correct for your
+% local machine, for example the output directory location.
+%
 
-%% Define protocols for this approach
-theProtocols = DefineProtocolNames;
-%% Remove old preferences
-if (ispref(theApproach))
-    rmpref(theApproach);
-end
-for pp = 1:length(theProtocols)
-    if (ispref(theProtocols{pp}))
-        rmpref(theProtocols{pp});
-    end
+
+%% Say hello.
+fprintf('vepMELAanalysis local hook.\n');
+projectName = 'vepMELAanalysis';
+
+%% Delete any old prefs
+if (ispref(projectName))
+rmpref(projectName);
 end
 
 %% Specify base paths for materials and data
 [~, userID] = system('whoami');
 userID = strtrim(userID);
 switch userID
-    case {'melanopsin' 'pupillab'}
-        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-        adminBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_admin/'];
-        
-    case {'dhb'}
-        materialsBasePath = ['/Users1'  '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-    case {'nicolas'}
-        materialsBasePath = '/Volumes/Manta TM HD/Dropbox (Aguirre-Brainard Lab)/MELA_materials';
-        dataBasePath = '/Volumes/Manta TM HD/Dropbox (Aguirre-Brainard Lab)/MELA_data';
-    otherwise
-        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-        adminBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_admin/'];
-        
+case {'melanopsin' 'pupillab'}
+materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+case {'dhb'}
+materialsBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+MELA_dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+MELA_analysisBasePath = ['/Users1/' '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+case {'mbarnett'}
+materialsBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+otherwise
+materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
 end
 
-%% Set prefs for data
-setpref(theApproach,'DataPath',fullfile(dataBasePath));
+%% Specify where output goes
 
-
-%% Prefs for individual protocols
-for pp = 1:length(theProtocols)
-    % Session record base path
-    setpref(theProtocols{pp},'SessionRecordsBasePath',fullfile(getpref(theApproach, 'DataPath'),'Experiments',theApproach,theProtocols{pp},'SessionRecords'));
-    
-    % Data files base path
-    setpref(theProtocols{pp},'DataFilesBasePath',fullfile(getpref(theApproach, 'DataPath'),'Experiments',theApproach,theProtocols{pp},'DataFiles'));
+if ismac
+% Code to run on Mac plaform
+setpref(projectName,'melaDataPath', MELA_dataBasePath);
+setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
+elseif isunix
+% Code to run on Linux plaform
+setpref(projectName,'melaDataPath', MELA_dataBasePath);
+setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
+elseif ispc
+% Code to run on Windows platform
+warning('No supported for PC')
+else
+disp('What are you using?')
 end
-
