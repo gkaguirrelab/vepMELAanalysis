@@ -6,15 +6,22 @@ clear; clc;
 load 'test_VEP_dataCycletime.mat'
 
 % Bandpass filter for VEP signal
-sRate=p.params.frequencyInHz;
+Fs=p.params.frequencyInHz;
 lo=0.5; % low cut off frequency
 hi=500; % high cut off frequency
 
 d=designfilt('bandpassiir','FilterOrder',20,'HalfPowerFrequency1',lo,...
-    'HalfPowerFrequency2',hi,'SampleRate',sRate);
-    
+    'HalfPowerFrequency2',hi,'SampleRate',Fs);
 
-VEP_data=filter(d,p.response(2,:));
+% Get rid of 60hz powerline hum
+d2=designfilt('bandstopiir','FilterOrder',2,'HalfPowerFrequency1',59,...
+    'HalfPowerFrequency2',61,'SampleRate',Fs);
+    
+VEP_data=p.response(2,:);
+
+VEP_data=filter(d,VEP_data);
+
+VEP_data=filter(d2,VEP_data);
 
 % VEP_data=p.response(2,:);
 
@@ -42,8 +49,8 @@ TTL_check=cell2mat(TTL_check);
 clear x y
 
 % parse VEP data
-dur_in_sec=3; % the length of the stimulus presentation
-dur_in_freq=dur_in_sec*sRate;
+dur_in_sec=2; % the length of the stimulus presentation
+dur_in_freq=dur_in_sec*Fs;
 repeat=7;
 
 for x=1:length(sync_loc)
@@ -52,7 +59,7 @@ end
 
 clear x
 
-XX=(1:length(parsed_VEP))/sRate;
+XX=(1:length(parsed_VEP))/Fs;
 YY=mean(parsed_VEP,1);
 
 figure(1)
@@ -76,31 +83,90 @@ hold off
 % bootstrap analysis for cycletime
 [Bootstat,Bootsam]=bootstrp(100,@mean,parsed_VEP);
 
-% find initial peak in the mean bootstrapped data
-time_in_fs=200;
+% % find initial peak in the mean bootstrapped data
+% time_in_fs=200;
+% for x=1:size(Bootstat,1)
+%     [p1,lp1]=findpeaks(Bootstat(x,1:time_in_fs),...
+%         Fs,'MinPeakProminence',0.025,...
+%         'MinPeakWidth',0.005);
+%     
+%     figure(2)
+%     plot(XX(:,1:time_in_fs),Bootstat(x,1:time_in_fs),'-k')
+%     hold on
+%     plot(lp1(:,1),p1(:,1),'or')
+%     ax=gca;
+%     ax.TickDir='out';
+%     ax.Box='off';
+%     ax.YLim=[-0.1 0.1];
+%     pause
+%     hold off
+%     
+%     peak1(x,:)=p1(:,1);
+%     loc_peak1(x,:)=lp1(:,1);
+% end
+% 
+% lp1_std=std(loc_peak1)*Fs;
+% disp(['standard deviation of initial peak in msec=' num2str(lp1_std)])
+
+t=(0:dur_in_freq-1)*1/Fs;       % Time vector
+f = Fs*(0:(dur_in_freq/2))/dur_in_freq; 
+
 for x=1:size(Bootstat,1)
-    [p1,lp1]=findpeaks(Bootstat(x,1:time_in_fs),...
-        sRate,'MinPeakProminence',0.025,...
-        'MinPeakWidth',0.005);
+    ft=fft(Bootstat(x,:));
+    P = abs(ft/dur_in_freq);
+    P_btstrp(x,:) = P(1:dur_in_freq/2+1);
+    figure(3)
     
-    figure(2)
-    plot(XX(:,1:time_in_fs),Bootstat(x,1:time_in_fs),'-k')
-    hold on
-    plot(lp1(:,1),p1(:,1),'or')
+    plot(f,P_btstrp(x,:),'-k')
+    title('Bootstrapped mean data')
+    xlabel('frequency')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
-    ax.YLim=[-0.1 0.1];
-    pause
+    ax.XLim=[0 500];
+    %pause
     hold off
-    
-    peak1(x,:)=p1(:,1);
-    loc_peak1(x,:)=lp1(:,1);
 end
 
-lp1_std=std(loc_peak1)*sRate;
-disp(['standard deviation of initial peak in msec=' num2str(lp1_std)])
+clear x P ft
+
+for x=1:size(parsed_VEP,1)
+    ft=fft(parsed_VEP(x,:));
+    P = abs(ft/dur_in_freq);
+    P_data(x,:) = P(1:dur_in_freq/2+1);
+    figure(3)
+    
+    plot(f,P_data(x,:),'-k')
+    title('Original data')
+    xlabel('frequency')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XLim=[0 120];
+    pause
+    hold off
+end
+
+clear x P ft
+
+parsed_VEPm=mean(parsed_VEP);
+ft=fft(parsed_VEPm);
+P = abs(ft/dur_in_freq);
+P_dataM = P(1:dur_in_freq/2+1);
+figure(3)
+plot(f,P_dataM,'-k')
+title('Original data mean')
+xlabel('frequency')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.XLim=[0 120];
 
 
-% function to fit sine wave to data
-fit_curve=fit(XX,Bootstat(x,1:time_in_fs,));
+Hz16=find(f==16);
+P_btstrp16=mean(P_btstrp(:,Hz16));
+disp(['power 16Hz bootstrap values=' num2str(P_btstrp16)])
+P_data16=mean(P_data(:,Hz16));
+disp(['power 16Hz raw data averaged=' num2str(P_data16)])
+disp(['power 16Hz average of raw data=' num2str(P_dataM(Hz16))])
+
