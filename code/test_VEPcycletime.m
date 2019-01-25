@@ -83,30 +83,6 @@ hold off
 % bootstrap analysis for cycletime
 [Bootstat,Bootsam]=bootstrp(100,@mean,parsed_VEP);
 
-% % find initial peak in the mean bootstrapped data
-% time_in_fs=200;
-% for x=1:size(Bootstat,1)
-%     [p1,lp1]=findpeaks(Bootstat(x,1:time_in_fs),...
-%         Fs,'MinPeakProminence',0.025,...
-%         'MinPeakWidth',0.005);
-%     
-%     figure(2)
-%     plot(XX(:,1:time_in_fs),Bootstat(x,1:time_in_fs),'-k')
-%     hold on
-%     plot(lp1(:,1),p1(:,1),'or')
-%     ax=gca;
-%     ax.TickDir='out';
-%     ax.Box='off';
-%     ax.YLim=[-0.1 0.1];
-%     pause
-%     hold off
-%     
-%     peak1(x,:)=p1(:,1);
-%     loc_peak1(x,:)=lp1(:,1);
-% end
-% 
-% lp1_std=std(loc_peak1)*Fs;
-% disp(['standard deviation of initial peak in msec=' num2str(lp1_std)])
 
 t=(0:dur_in_freq-1)*1/Fs;       % Time vector
 f = Fs*(0:(dur_in_freq/2))/dur_in_freq; 

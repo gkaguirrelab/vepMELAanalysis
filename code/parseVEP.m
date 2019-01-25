@@ -34,7 +34,7 @@ clear lo hi
 
 % Find timestamp of TTL pulses
 TTL=p.response(1,:);
-D=100;
+D=0;
 timestamp=p.timebase;
 y=0;
 
@@ -54,7 +54,7 @@ TTL_check=cell2mat(TTL_check);
 clear x y
 
 % parse VEP data
-dur_in_sec=2.5; % the length of the stimulus presentation
+dur_in_sec=3; % the length of the stimulus presentation
 dur_in_freq=dur_in_sec*Fs;
 repeat=7;
 
