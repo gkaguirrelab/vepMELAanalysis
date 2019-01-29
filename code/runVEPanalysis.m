@@ -1,5 +1,4 @@
 % Main script that runs metropsis VEP analysis
-clear;clc;
 
 % calls the experiment based on users input
 expID=input('experiment ID:','s');
@@ -9,13 +8,13 @@ sessionID=input('session ID:','s');
 %% get metropsis data
 
 [mtrp]=parse_mtrp_xml(expID,observerID,sessionID);
-%% Get VEP data
- filenameMAT=fullfile(['/Users/melanopsin/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_VEP/'...
-     'Exp_' expID '/Subject_' observerID '/Exp' expID '_' observerID sessionID '.mat']);
- 
- VEP=open(filenameMAT);
-
- clear filenameMAT expID observerID sessionID
+% %% Get VEP data
+%  filenameMAT=fullfile(['/Users/melanopsin/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_VEP/'...
+%      'Exp_' expID '/Subject_' observerID '/Exp' expID '_' observerID sessionID '.mat']);
+%  
+%  VEP=open(filenameMAT);
+% 
+%  clear filenameMAT expID observerID sessionID
 
 %% Compare metropsis experiment start time to VEP start time to ensure the files are matched up properly
 

@@ -1,41 +1,37 @@
 % parseVEP
 % Code to organize VEP signal and parse trials based on input, and organize
 % stimuli by stimulus frequency
-clear; clc;
 
-% load saved raw data
-load 'test_VEP_data2.mat'
-
-% VEP data is p.response(2,:)
-% TTL pulse is p.response(1,:);
-% timebase is p.timebase
+% VEP data is VEP.response(2,:)
+% TTL pulse is VEP.response(1,:);
+% timebase is VEP.timebase
 
 % Bandpass filter for VEP signal
-Fs=p.params.frequencyInHz;
+Fs=VEP.params.frequencyInHz;
 lo=0.5; % low cut off frequency
 hi=500; % high cut off frequency
 
 d=designfilt('bandpassiir','FilterOrder',20,'HalfPowerFrequency1',lo,...
     'HalfPowerFrequency2',hi,'SampleRate',Fs);
 
-% Get rid of 60hz powerline hum
-d2=designfilt('bandstopiir','FilterOrder',2,'HalfPowerFrequency1',59,...
-    'HalfPowerFrequency2',61,'SampleRate',Fs);
+% % Get rid of 60hz powerline hum
+% d2=designfilt('bandstopiir','FilterOrder',2,'HalfPowerFrequency1',59,...
+%     'HalfPowerFrequency2',61,'SampleRate',Fs);
     
-VEP_data=p.response(2,:);
+VEP_data=VEP.response(2,:);
 
 VEP_data=filter(d,VEP_data);
 
-VEP_data=filter(d2,VEP_data);
+% VEP_data=filter(d2,VEP_data);
 
-% VEP_data=p.response(2,:);
+% VEP_data=VEP.response(2,:);
 
 clear lo hi
 
 % Find timestamp of TTL pulses
-TTL=p.response(1,:);
+TTL=VEP.response(1,:);
 D=0;
-timestamp=p.timebase;
+timestamp=VEP.timebase;
 y=0;
 
 for x=2:length(TTL)
@@ -90,7 +86,7 @@ hold off
 % parse data by frequency
 figure(2)
 
-A=unique(trials);
+A=unique(mtrp.TFtrials);
 VEP_Fr=zeros(length(A),repeat,length(parsed_VEP));
 xx=1;
 yy=1;
@@ -99,8 +95,8 @@ f = Fs*(0:(dur_in_freq/2))/dur_in_freq;
 
 
 for x=1:length(A)
-    for y=1:length(trials)
-        if A(x)==trials(y)
+    for y=1:length(mtrp.TFtrials)
+        if A(x)==mtrp.TFtrials(y)
            VEP_Fr(xx,yy,:)=parsed_VEP(y,:);
             ft=fft(parsed_VEP(y,:));
             P = abs(ft/dur_in_freq);
