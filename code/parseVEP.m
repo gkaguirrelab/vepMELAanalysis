@@ -5,11 +5,12 @@
 % VEP data is VEP.response(2,:)
 % TTL pulse is VEP.response(1,:);
 % timebase is VEP.timebase
+clear;clc;
 
 % Variables
 lo=0.5; % low cut off frequency for bandpass filter
 hi=200; % high cut off frequency for bandpass filter
-dur_in_sec=1.75; % the length of the VEP epuch
+dur_in_sec=2; % the length of the VEP epuch
 starttime=0.25; % if you want to start recording before (negative number) or after (positive number) the sync pulse units are in sec
 
 % load compiled data for a single observer
@@ -22,7 +23,7 @@ filenameMAT=fullfile(['/Users/melanopsin/Dropbox (Aguirre-Brainard Lab)/MELA_dat
 open(filenameMAT);
 VEP_main=ans.VEP;
 
-clear expID observerID ans
+clear ans
 
 % concatonate data across sessions
 TF_trials=[];
@@ -42,18 +43,20 @@ clear vds tf_trials
 
 for AA=1:length(VEP_main)
     VEP=VEP_main(AA).VEP;
-    
-
-    % Bandpass filter for VEP signal
+    VEP_data=VEP.response(2,:);
     Fs=VEP.params.frequencyInHz;
-
+    
+    % Bandpass filter for VEP signal
     d=designfilt('bandpassiir','FilterOrder',20,'HalfPowerFrequency1',lo,...
         'HalfPowerFrequency2',hi,'SampleRate',Fs);
-    
-    VEP_data=VEP.response(2,:);
-
     VEP_data=filter(d,VEP_data);
-
+    clear d
+    
+%      % Bandstop filter for 60 Hz noise
+%     d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',59,...
+%         'HalfPowerFrequency2',61,'SampleRate',Fs);
+%     VEP_data=filter(d,VEP_data);
+%     clear d
 
     % Find timestamp of TTL pulses
     TTL=VEP.response(1,:);
@@ -139,13 +142,16 @@ for w=1:size(parsed_VEP,1)
                 P_data(w,x,yy,:) = P(1:dur_in_freq/2+1);
                 
                 % select power spectra for each frequency
-                temp=find(round(A(x))==f);
-                P_dataFr(w,x,yy,:)=P_data(w,x,yy,temp);
+                temp=find(f>=A(x) & f<A(x)+diff(f(1:2)));
+                P_dataFr(w,x,yy)=squeeze(P_data(w,x,yy,temp(1)));
 
                yy=yy+1;
             end
         end
         
+        % collect 60Hz data from all freq to subtract out noise
+        temp=find(f>=A(6) & f<A(6)+diff(f(1:2)));
+        Noise60(w,x,:)=squeeze(P_data(w,x,:,temp));
 
         subplot(1,2,1)
         plot(XX,squeeze(squeeze(mean(VEP_Fr(w,x,:,:),3))))
@@ -159,6 +165,8 @@ for w=1:size(parsed_VEP,1)
 
         subplot(1,2,2)
         plot(f,squeeze(squeeze(mean(P_data(w,x,:,:),3))),'-k')
+        hold on
+        plot(60,squeeze(squeeze(mean(Noise60(w,x,:),3))),'or')
         ylabel('power spectra')
         xlabel('frequency')
         ax=gca;
@@ -173,9 +181,6 @@ for w=1:size(parsed_VEP,1)
     end
 end
 clear w yy x P ft
-
-temp=find(round(A(6))==f);
-Noise60=squeeze(P_data(:,:,:,temp));
 
 % Average data across repeats from all sessions
 vep_Fr=[];
@@ -222,30 +227,53 @@ end
 
 
 figure(4)
-% Plot mean Visual discomfort data
+% Plot TTF
 subplot(2,1,1)
 p_dataFr=squeeze(p_dataFr);
 P_Fm=mean(p_dataFr,2);
 P_Fm2=mean(p_dataFr(6,:),2)-mean(noise60);
 P_Fstd=std(p_dataFr,[],2);
-errorbar(A,P_Fm,P_Fstd,'-ok')
+errorbar(A,cat(2,P_Fm(1:5)',P_Fm2),P_Fstd,'-ok')
 hold on
-errorbar(A(6),P_Fm2,P_Fstd(6),'-ob')
+errorbar(A(6),P_Fm(6),P_Fstd(6),'-ob')
+title(expID)
 ylabel('power spectra for stimulus frequency')
-xlabel('frequency')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
+ax.XLim=[0.95 65];
+ax.YLim=[0 0.02];
 
 % Plot mean Visual discomfort data
 subplot(2,1,2)
-VDSm=mean(vds_Fr,2);
-VDSstd=std(vds_Fr,[],2);
+VDSm=nanmean(vds_Fr,2);
+VDSstd=nanstd(vds_Fr,[],2);
 errorbar(A,VDSm,VDSstd,'-ok')
 ylabel('visual discomfort scale')
-xlabel('frequency')
+xlabel('temporal frequency of stimulus')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
+ax.XLim=[0.95 65];
+ax.YLim=[0 10];
+
+% Plot TTF
+figure(5)
+hold on
+p_dataFr=squeeze(p_dataFr);
+P_Fm=mean(p_dataFr,2);
+P_Fm2=mean(p_dataFr(6,:),2)-mean(noise60);
+P_Fstd=std(p_dataFr,[],2);
+errorbar(A,cat(2,P_Fm(1:5)',P_Fm2),P_Fstd,'-ob')
+% hold on
+% errorbar(A(6),P_Fm(6),P_Fstd(6),'-ob')
+title(expID)
+ylabel('power spectra for stimulus frequency')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.XScale='log';
+ax.XLim=[0.95 65];
+ax.YLim=[0 0.02];
