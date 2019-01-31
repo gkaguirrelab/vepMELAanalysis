@@ -1,11 +1,9 @@
-function []=calcVEPttf(VEP_Fr,VDS_Fr,TF_trials)
+function []=calcVEPttf(vep_Fr,vds_Fr,TF_trials)
 
 A=unique(TF_trials);
-yy=1;
+f=Fs*(0:(dur_in_freq/2))/dur_in_freq; 
 
-f = Fs*(0:(dur_in_freq/2))/dur_in_freq; 
-
-% creates 4D matrix where VEP_Fr is session, TF, repeat, time
+% Calculate fourier transform
 for w=1:size(VDS_Fr,1)
     for x=1:size(VDS_Fr,2)
         for y=1:size(VDS_Fr,3)
