@@ -1,4 +1,4 @@
-function [parsedVEPdata]=parseVEP(varargin)
+function [parsedVEPdata]=parseVEP(VEP_main, varargin)
 % parseVEP
 % Code to organize VEP signal and parse trials based on input, and organize
 % stimuli by stimulus frequency
@@ -14,17 +14,6 @@ p.addParameter('hi_freq',200,@isnumeric); % high frequency for bandpass filter t
 p.addParameter('dur_in_sec',2,@isnumeric); % length (in seconds) of VEP epoch to take from each trial
 p.addParameter('starttime',0,@isnumeric);
 p.parse(varargin{:});
-
-% load compiled data for a single observer
-expID=input('experiment ID:','s');
-observerID=input('observer ID:','s');
-
-filenameMAT=fullfile(getpref('vepMELAanalysis','melaAnalysisPath'),'experiments',...
-    'vepMELAanalysis',['Exp_' expID],['Exp' expID '_' observerID 'compiled.mat']);
-
-open(filenameMAT);
-VEP_main=ans.VEP;
-
 
 TF_trials=[];
 VDS=[];
@@ -177,3 +166,4 @@ parsedVEPdata.vep_Fr=vep_Fr;
 parsedVEPdata.VDS_Fr=VDS_Fr;
 parsedVEPdata.vds_Fr=vds_Fr;
 parsedVEPdata.dur_in_freq=dur_in_freq;
+parsedVEPdata.Fs=Fs;

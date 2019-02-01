@@ -1,68 +1,84 @@
-function []=calcVEPttf(vep_Fr,vds_Fr,TF_trials)
+function [ttf_VEP]=calcVEPttf(vep_Fr,Fs,varargin)
+% A function that calculates Temporal transfer functions
+% for Metropsis/VEP stimuli for individual observers.
+%
+% Syntax:
+%  []=runVEPanalysis=()
+%
+% Description:
+%	This function accesses other functions to run all the analysis code for Metropsis/VEP stimuli.
+%
+%
+% Output: saves structure VEP
+%   VEP                   - A structure that contains VEP data, TTL pulse,
+%                           and timebase for both analog signals
+%   audioRec              - A structure that contains mic data, and 
+%                           sampling rate (Fs)
+%   expParam              - contains observer ID, experiment ID, session 
+%                           ID, data that was recorded from the VEP computer
+%   mtrp                  - structure that contains all the metropsis data. 
+%                           This includes observer ID, group (MWVA or HA free), 
+%                           session, and temporal frequency for the stimuli 
+%                           presented (TFtrials)
+%   VDS                   - Visual discomfort scale values for the 36 trials
 
-A=unique(TF_trials);
+%% Parse input
+p = inputParser;
+p.addParameter('TF',[1.625,3.25,7.5,15,30,60],@isnumeric); % unique temporal frequencies for visual stimuli
+p.addParameter('normalize',false,@islogical); % if true, power spectra will be normalized by
+p.parse(varargin{:});
+
 f=Fs*(0:(dur_in_freq/2))/dur_in_freq; 
 
-% Calculate fourier transform
-for w=1:size(VDS_Fr,1)
-    for x=1:size(VDS_Fr,2)
-        for y=1:size(VDS_Fr,3)
-           % Fourier transform
-            ft=fft(squeeze(VEP_Fr(w,x,y,:)));
-            P = abs(ft/dur_in_freq);
-            P_data(w,x,y,:) = P(1:dur_in_freq/2+1);
+% Calculate fourier transform w is temporal frequency of the stimuli, x is
+% the repeats (concatonated across sessions
+for w=1:size(vep_Fr,1)
+    for x=1:size(vep_Fr,2)
+       % Fourier transform
+        ft=fft(squeeze(vep_Fr(w,x,:)));
+        P = abs(ft/dur_in_freq);
+        P_data(w,x,:) = P(1:dur_in_freq/2+1);
 
-            % select power spectra for each frequency
-            temp=find(f>=A(x) & f<A(x)+diff(f(1:2)));
-            P_dataFr(w,x,y)=squeeze(P_data(w,x,yy,temp(1)));
-        end
-
-        subplot(1,2,1)
-        plot(XX,squeeze(squeeze(mean(VEP_Fr(w,x,:,:),3))))
-        title(['frequency=' num2str(A(x))]);
-        xlabel('Time(s)')
-        ax=gca;
-        ax.TickDir='out';
-        ax.Box='off';
-        ax.YLim=[-0.1 0.1];
-        ax.XLim=[0 dur_in_sec];
-
-        subplot(1,2,2)
-        plot(f,squeeze(squeeze(mean(P_data(w,x,:,:),3))),'-k')
-        hold on
-        plot(60,squeeze(squeeze(mean(Noise60(w,x,:),3))),'or')
-        ylabel('power spectra')
-        xlabel('frequency')
-        ax=gca;
-        ax.TickDir='out';
-        ax.Box='off';
-        ax.XLim=[0 130];
-        ax.YLim=[0 0.02];
-        pause
-        hold off
-
-        yy=1;
+        % select power spectra for each frequency
+        temp=find(f>=TF(x) & f<TF(x)+diff(f(1:2)));
+        P_dataFr(w,x)=squeeze(P_data(w,x,temp(1)));
     end
-end
-clear w yy x P ft
 
-% collect 60Hz data from all freq to subtract out noise *** change this to
-% normalize all data by averaging across frequencies
-temp=find(f>=A(6) & f<A(6)+diff(f(1:2)));
-Noise60(w,x,:)=squeeze(P_data(w,x,:,temp));
+    subplot(1,2,1)
+    plot(XX,squeeze(squeeze(mean(vep_Fr(w,x,:),3))))
+    title(['frequency=' num2str(TF(x))]);
+    xlabel('Time(s)')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.YLim=[-0.1 0.1];
+    ax.XLim=[0 dur_in_sec];
 
-% Average data across repeats from all sessions
-vep_Fr=[];
-vds_Fr=[];
-p_dataFr=[];
-noise60=[];
-for yy=1:size(VEP_Fr,1)
-    vep_Fr=cat(2,vep_Fr,squeeze(VEP_Fr(yy,:,:,:)));
-    vds_Fr=cat(2,vds_Fr,squeeze(VDS_Fr(yy,:,:)));
-    p_dataFr=cat(2,p_dataFr,squeeze(P_dataFr(yy,:,:)));
-    noise60=cat(2,noise60,Noise60(yy,:));
+    subplot(1,2,2)
+    plot(f,squeeze(squeeze(mean(P_data(w,x,:,:),3))),'-k')
+    hold on
+    plot(TF(x),P_dataFr(w,x),'ob')
+    ylabel('power spectra')
+    xlabel('frequency')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XLim=[0 130];
+    ax.YLim=[0 0.02];
+    pause
+    hold off
+
 end
-VEP_FrM=squeeze(mean(vep_Fr,2));
+
+
+if ('normalize')==1
+    norm_ft=fft(mean(mean(vep_Fr,1),2));
+    P=abs(norm_ft/dur_in_freq);
+    norm_ttf=P(1:dur_in_freq/2+1);
+    vep_Fr=vep_Fr-norm_ttf;
+end
+
+VEP_FrM=squeeze(mean(vep_Fr,2));    
 
 
 for xx=1:size(VEP_Fr,2)
@@ -73,7 +89,7 @@ for xx=1:size(VEP_Fr,2)
     figure(3)
     subplot(1,2,1)
     plot(XX,VEP_FrM(xx,:),'-k')
-    title(['frequency=' num2str(A(xx))]);
+    title(['frequency=' num2str(TF(xx))]);
     xlabel('Time(s)')
     ax=gca;
     ax.TickDir='out';
@@ -95,57 +111,14 @@ for xx=1:size(VEP_Fr,2)
 end
 
 % collect 60Hz data from all freq to subtract out noise
-temp=find(f>=A(6) & f<A(6)+diff(f(1:2)));
+temp=find(f>=TF(6) & f<TF(6)+diff(f(1:2)));
 Noise60(w,x,:)=squeeze(P_data(w,x,:,temp));
         
 figure(4)
-% Plot TTF
-subplot(2,1,1)
-p_dataFr=squeeze(p_dataFr);
-P_Fm=mean(p_dataFr,2);
-P_Fm2=mean(p_dataFr(6,:),2)-mean(noise60);
-P_Fstd=std(p_dataFr,[],2);
-errorbar(A,cat(2,P_Fm(1:5)',P_Fm2),P_Fstd,'-ok')
-hold on
-errorbar(A(6),P_Fm(6),P_Fstd(6),'-ob')
-title(expID)
-ylabel('power spectra for stimulus frequency')
-ax=gca;
-ax.TickDir='out';
-ax.Box='off';
-ax.XScale='log';
-ax.XLim=[0.95 65];
-ax.YLim=[0 0.02];
+% Plot averaged TTF
 
-% Plot mean Visual discomfort data
-subplot(2,1,2)
-VDSm=nanmean(vds_Fr,2);
-VDSstd=nanstd(vds_Fr,[],2);
-errorbar(A,VDSm,VDSstd,'-ok')
-ylabel('visual discomfort scale')
-xlabel('temporal frequency of stimulus')
-ax=gca;
-ax.TickDir='out';
-ax.Box='off';
-ax.XScale='log';
-ax.XLim=[0.95 65];
-ax.YLim=[0 10];
 
-% Plot TTF
-figure(5)
-hold on
-p_dataFr=squeeze(p_dataFr);
-P_Fm=mean(p_dataFr,2);
-P_Fm2=mean(p_dataFr(6,:),2)-mean(noise60);
-P_Fstd=std(p_dataFr,[],2);
-errorbar(A,cat(2,P_Fm(1:5)',P_Fm2),P_Fstd,'-ob')
-% hold on
-% errorbar(A(6),P_Fm(6),P_Fstd(6),'-ob')
-title(expID)
-ylabel('power spectra for stimulus frequency')
-ax=gca;
-ax.TickDir='out';
-ax.Box='off';
-ax.XScale='log';
-ax.XLim=[0.95 65];
-ax.YLim=[0 0.02];
+ttf_VEP.ttf=ttf;
+ttf_VEP.ttfFr=ttfFr;
+ttf_VEP.f=f;
+end

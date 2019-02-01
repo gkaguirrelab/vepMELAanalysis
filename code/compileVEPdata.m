@@ -23,8 +23,6 @@ function [VEP]=compileVEPdata()
 %                           presented (TFtrials)
 %   VDS                   - Visual discomfort scale values for the 36 trials
 
-clear;clc;
-
 % variables
 nTrials=36; % number of trials in file
 trial_dur=6; % trial duration in seconds
