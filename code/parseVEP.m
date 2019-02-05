@@ -13,6 +13,8 @@ p.addParameter('lo_freq',0.5,@isnumeric); % low frequency for bandpass filter to
 p.addParameter('hi_freq',200,@isnumeric); % high frequency for bandpass filter to remove noise from VEP data
 p.addParameter('dur_in_sec',2,@isnumeric); % length (in seconds) of VEP epoch to take from each trial
 p.addParameter('starttime',0,@isnumeric);
+p.addParameter('plot_sessions',false,@islogical);
+p.addParameter('plot_all',false,@islogical);
 p.parse(varargin{:});
 
 TF_trials=[];
@@ -75,16 +77,18 @@ for AA=1:length(VEP_main)
     XX=(1:length(parsed_vep))/Fs;
     YY=mean(parsed_vep,1);
     
-    figure(1)
-    subplot(3,1,AA)
-    plot(XX,YY,'-k')
-    title(['Session:' num2str(VEP_main(AA).expParam.sessionID) ', average across frequencies']);
-    xlabel('Time(s)')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.YLim=[-0.1 0.1];
-    ax.XLim=[0 p.Results.dur_in_sec];
+    if p.Results.plot_sessions==1
+        figure(1)
+        subplot(3,1,AA)
+        plot(XX,YY,'-k')
+        title(['Session:' num2str(VEP_main(AA).expParam.sessionID) ', average across frequencies']);
+        xlabel('Time(s)')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.YLim=[-0.1 0.1];
+        ax.XLim=[0 p.Results.dur_in_sec];
+    end
     
     parsed_VEP(AA,:,:)=parsed_vep;
     
@@ -107,18 +111,19 @@ for w=1:size(parsed_VEP,1)
             end
         end
         
-
-        % Plot mean frequency data for each session
-        figure(w+1)
-        subplot(3,2,x)
-        plot(XX,squeeze(squeeze(mean(VEP_Fr(w,x,:,:),3))))
-        title(['Session:' num2str(VEP_main(w).expParam.sessionID) ', frequency=' num2str(A(x))]);
-        xlabel('Time(s)')
-        ax=gca;
-        ax.TickDir='out';
-        ax.Box='off';
-        ax.YLim=[-0.1 0.1];
-        ax.XLim=[0 p.Results.dur_in_sec];
+        if p.Results.plot_sessions==1
+            % Plot mean frequency data for each session
+            figure(w+1)
+            subplot(3,2,x)
+            plot(XX,squeeze(squeeze(mean(VEP_Fr(w,x,:,:),3))))
+            title(['Session:' num2str(VEP_main(w).expParam.sessionID) ', frequency=' num2str(A(x))]);
+            xlabel('Time(s)')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.YLim=[-0.1 0.1];
+            ax.XLim=[0 p.Results.dur_in_sec];
+        end
 
         yy=1;
     end
@@ -132,33 +137,35 @@ for ZZ=1:size(VEP_Fr,1)
     vds_Fr=cat(2,vds_Fr,squeeze(VDS_Fr(ZZ,:,:)));
 end
 
-% Plot mean frequency data across sessions
-figure(7)
-for x=1:length(A)
-    subplot(3,2,x)
-    plot(XX,squeeze(mean(vep_Fr(x,:,:),2)))
-    title(['frequency=' num2str(A(x))]);
-    xlabel('Time(s)')
+if p.Results.plot_all==1
+    % Plot mean frequency data across sessions
+    figure(7)
+    for x=1:length(A)
+        subplot(3,2,x)
+        plot(XX,squeeze(mean(vep_Fr(x,:,:),2)))
+        title(['frequency=' num2str(A(x))]);
+        xlabel('Time(s)')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.YLim=[-0.1 0.1];
+        ax.XLim=[0 p.Results.dur_in_sec];
+    end
+
+    % Plot mean Visual discomfort data
+    figure(8)
+    VDSm=nanmean(vds_Fr,2);
+    VDSstd=nanstd(vds_Fr,[],2);
+    errorbar(A,VDSm,VDSstd,'-ok')
+    ylabel('visual discomfort scale')
+    xlabel('temporal frequency of stimulus')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
-    ax.YLim=[-0.1 0.1];
-    ax.XLim=[0 p.Results.dur_in_sec];
+    ax.XScale='log';
+    ax.XLim=[0.95 65];
+    ax.YLim=[0 10];
 end
-
-% Plot mean Visual discomfort data
-figure(8)
-VDSm=nanmean(vds_Fr,2);
-VDSstd=nanstd(vds_Fr,[],2);
-errorbar(A,VDSm,VDSstd,'-ok')
-ylabel('visual discomfort scale')
-xlabel('temporal frequency of stimulus')
-ax=gca;
-ax.TickDir='out';
-ax.Box='off';
-ax.XScale='log';
-ax.XLim=[0.95 65];
-ax.YLim=[0 10];
 
 parsedVEPdata.parsed_VEP=parsed_VEP;
 parsedVEPdata.VEP_Fr=VEP_Fr;

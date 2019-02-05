@@ -59,15 +59,15 @@ for x=1:3
     %% Calculate TTF
     vep_Fr=parsedVEPdata.vep_Fr;
     TF=unique(parsedVEPdata.vep_Fr);
-    [ttf]=calcVEPttf(vep_Fr,parsedVEPdata.Fs,'TF',TF);
+    [ttf]=calcVEPttf(vep_Fr);
 
     
-    %% Plots
+    %% Plotting
     % Plot mean Visual discomfort data
     subplot(2,1,2)
     VDSm=nanmean(parsedVEPdata.vds_Fr,2);
     VDSstd=nanstd(parsedVEPdata.vds_Fr,[],2);
-    errorbar(A,VDSm,VDSstd,'-ok')
+    errorbar(A,VDSm,VDSstd,['-o' color])
     ylabel('visual discomfort scale')
     xlabel('temporal frequency of stimulus')
     ax=gca;
@@ -83,7 +83,7 @@ for x=1:3
     p_dataFr=squeeze(ttf.ttf);
     P_Fm=mean(ttfFr,2);
     P_Fstd=std(ttfFr,[],2);
-    errorbar(A,P_Fm,P_Fstd,'-ob')
+    errorbar(A,P_Fm,P_Fstd,['-o' color])
     title(expID)
     ylabel('power spectra for stimulus frequency')
     ax=gca;
@@ -96,6 +96,19 @@ for x=1:3
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
     figure(6)
+    XX=(1:length(parsed_vep))/Fs;
+    for x=1:length(A)
+        subplot(3,2,x)
+        plot(XX,squeeze(mean(vep_Fr(x,:,:),2)),['-' color])
+        title(['frequency=' num2str(A(x))]);
+        xlabel('Time(s)')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.YLim=[-0.1 0.1];
+        ax.XLim=[0 p.Results.dur_in_sec];
+        hold on
+    end
     
     % info to save per channel
     VEP_main.mtrp.group;
@@ -105,5 +118,5 @@ end
 
 
 
-save(filenameComp)
+% save(filenameComp)
 %end
