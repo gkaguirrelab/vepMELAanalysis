@@ -57,7 +57,7 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'plot_sessions',true);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     
@@ -83,31 +83,28 @@ for x=1:3
     ax.XLim=[0.95 65];
     ax.YLim=[0 10];
 
-    % Plot TFF (averaged power across trials)
-    figure(5)
-    subplot(2,1,1)
-    hold on
-    p_dataFr=squeeze(ttf(x).ttf);
-    P_Fm=mean(ttf(x).ttfFr,2);
-    P_Fstd=std(ttf(x).ttfFr,[],2);
-    errorbar(A,P_Fm,P_Fstd,['-o' color])
-    title(observerID)
-    ylabel('power spectra for stimulus frequency')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XScale='log';
-    ax.XLim=[0.95 65];
-    ax.YLim=[0 0.02];
+%     % Plot TFF (averaged power across trials)
+%     figure(5)
+%     subplot(2,1,1)
+%     hold on
+%     p_dataFr=squeeze(ttf(x).ttf);
+%     P_Fm=mean(ttf(x).ttfFr,2);
+%     P_Fstd=std(ttf(x).ttfFr,[],2);
+%     errorbar(A,P_Fm,P_Fstd,['-o' color])
+%     title(observerID)
+%     ylabel('power spectra for stimulus frequency')
+%     ax=gca;
+%     ax.TickDir='out';
+%     ax.Box='off';
+%     ax.XScale='log';
+%     ax.XLim=[0.95 65];
+%     ax.YLim=[0 0.02];
     
      % Plot TFF (power across averaged trials)
     figure(5)
     subplot(2,1,1)
     hold on
-    p_dataFr=squeeze(ttf(x).ttf);
-    P_Fm=mean(ttf(x).ttfFr,2);
-    P_Fstd=std(ttf(x).ttfFr,[],2);
-    errorbar(A,P_Fm,P_Fstd,['-o' color])
+    plot(A,ttf(x).ttf_FrM,['-o' color])
     title(observerID)
     ylabel('power spectra for stimulus frequency')
     ax=gca;

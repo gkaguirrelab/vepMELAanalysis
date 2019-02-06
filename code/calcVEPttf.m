@@ -99,6 +99,7 @@ VEP_FrM=squeeze(mean(vep_Fr,2));
 
 for xx=1:size(vep_Fr,1)
     ft=fft(VEP_FrM(xx,:));
+    [Bootstat,Bootsam]=bootstrp(1000,@mean,parsed_VEP);
     P=abs(ft/p.Results.dur_in_freq);
     ttf_M(xx,:)=P(1:p.Results.dur_in_freq/2+1);
     temp=find(f>=p.Results.TemporalFrequency(xx));
