@@ -141,7 +141,7 @@ function [VDS]=parseAudioData(VEP,nTrials,trial_dur)
 
     % Check audio files
     X=((1:1:length(audioRec.data))./audioRec.Fs);
-    parse_audio=X(1:trial_dur*audioRec.Fs:end);
+    parse_audio=X(audioRec.Fs*3.5:trial_dur*audioRec.Fs:end);
     figure(1)
     plot(X,audioRec.data)
     hold on

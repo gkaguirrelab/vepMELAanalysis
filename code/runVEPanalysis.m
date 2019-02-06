@@ -18,7 +18,7 @@
 %                           ID, data that was recorded from the VEP computer
 %   mtrp                  - structure that contains all the metropsis data. 
 %                           This includes observer ID, group (MWVA or HA free), 
-%                           session, and temporal frequency for the stimuli 
+%                     c      session, and temporal frequency for the stimuli 
 %                           presented (TFtrials)
 %   VDS                   - Visual discomfort scale values for the 36 trials
 
@@ -33,6 +33,9 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
+dur_in_sec=2;
+starttime=0.25;
+
 for x=1:3
     %% Load compiled data for a single observer from a single channel
     switch x
@@ -54,20 +57,23 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata]=parseVEP(VEP_main);
-
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'plot_sessions',true);
+    Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
+    XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
+    
     %% Calculate TTF
-    vep_Fr=parsedVEPdata.vep_Fr;
-    TF=unique(parsedVEPdata.vep_Fr);
-    [ttf]=calcVEPttf(vep_Fr);
+    [ttf(x)]=calcVEPttf(parsedVEPdata(x).vep_Fr,'normalize',true,'dur_in_freq',dur_in_sec*Fs);
 
     
     %% Plotting
+    A=[1.625 3.25 7.5 15 30 60];
     % Plot mean Visual discomfort data
+    figure(5)
     subplot(2,1,2)
-    VDSm=nanmean(parsedVEPdata.vds_Fr,2);
-    VDSstd=nanstd(parsedVEPdata.vds_Fr,[],2);
+    VDSm=nanmean(parsedVEPdata(x).vds_Fr,2);
+    VDSstd=nanstd(parsedVEPdata(x).vds_Fr,[],2);
     errorbar(A,VDSm,VDSstd,['-o' color])
+    hold on
     ylabel('visual discomfort scale')
     xlabel('temporal frequency of stimulus')
     ax=gca;
@@ -77,14 +83,32 @@ for x=1:3
     ax.XLim=[0.95 65];
     ax.YLim=[0 10];
 
-    % Plot TTF
+    % Plot TFF (averaged power across trials)
     figure(5)
+    subplot(2,1,1)
     hold on
-    p_dataFr=squeeze(ttf.ttf);
-    P_Fm=mean(ttfFr,2);
-    P_Fstd=std(ttfFr,[],2);
+    p_dataFr=squeeze(ttf(x).ttf);
+    P_Fm=mean(ttf(x).ttfFr,2);
+    P_Fstd=std(ttf(x).ttfFr,[],2);
     errorbar(A,P_Fm,P_Fstd,['-o' color])
-    title(expID)
+    title(observerID)
+    ylabel('power spectra for stimulus frequency')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XScale='log';
+    ax.XLim=[0.95 65];
+    ax.YLim=[0 0.02];
+    
+     % Plot TFF (power across averaged trials)
+    figure(5)
+    subplot(2,1,1)
+    hold on
+    p_dataFr=squeeze(ttf(x).ttf);
+    P_Fm=mean(ttf(x).ttfFr,2);
+    P_Fstd=std(ttf(x).ttfFr,[],2);
+    errorbar(A,P_Fm,P_Fstd,['-o' color])
+    title(observerID)
     ylabel('power spectra for stimulus frequency')
     ax=gca;
     ax.TickDir='out';
@@ -95,24 +119,23 @@ for x=1:3
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
-    figure(6)
-    XX=(1:length(parsed_vep))/Fs;
-    for x=1:length(A)
-        subplot(3,2,x)
-        plot(XX,squeeze(mean(vep_Fr(x,:,:),2)),['-' color])
-        title(['frequency=' num2str(A(x))]);
+    figure(11)
+    for z=1:length(A)
+        subplot(3,2,z)
+        plot(XX,squeeze(mean(ttf(:,x).vep_Fr(z,:,:),2)),['-' color])
+        title(['frequency=' num2str(A(z))]);
         xlabel('Time(s)')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.YLim=[-0.1 0.1];
-        ax.XLim=[0 p.Results.dur_in_sec];
+        ax.XLim=[0 parsedVEPdata(x).dur_in_freq/Fs];
         hold on
     end
     
-    % info to save per channel
-    VEP_main.mtrp.group;
-    VEP_main.mtrp.observer;
+%     % info to save per channel
+%     VEP_main.mtrp.group;
+%     VEP_main.mtrp.observer;
 
 end
 

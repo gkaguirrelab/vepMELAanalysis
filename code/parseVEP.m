@@ -32,7 +32,7 @@ for x=1:length(VEP_main)
 end
 
 for AA=1:length(VEP_main)
-    VEP=VEP_main(AA).VEP;
+    VEP=VEP_main(AA).vepDataStruct;
     VEP_data=VEP.response(2,:);
     Fs=VEP.params.frequencyInHz;
     
@@ -42,6 +42,12 @@ for AA=1:length(VEP_main)
     VEP_data=filter(d,VEP_data);
     clear d
 
+%     % Bandstop filter for 60Hz noise in VEP signal
+%     d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',59,...
+%         'HalfPowerFrequency2',61,'SampleRate',Fs);
+%     VEP_data=filter(d,VEP_data);
+%     clear d
+    
     % Find timestamp of TTL pulses
     TTL=VEP.response(1,:);
     timestamp=VEP.timebase;
