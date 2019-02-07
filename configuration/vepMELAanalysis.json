@@ -47,22 +47,22 @@
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",
-		"type": "git",
+		"type": "include",
 		"update": "",
-		"url": "https:\/\/github.com\/gkaguirrelab\/temporalFittingEngine.git"
+		"url": ""
 	},
 	{
 		"flavor": "",
 		"hook": "",
 		"importance": "",
-		"localHookTemplate": "config/melSquintAnalysisLocalHookTemplate.m",
-		"name": "melSquintAnalysis",
+		"localHookTemplate": "",
+		"name": "silenSubstitutionToolbox",
 		"pathPlacement": "append",
-		"subfolder": "code",
+		"subfolder": "",
 		"toolboxRoot": "",
-		"type": "git",
+		"type": "include",
 		"update": "",
-		"url": "https://github.com/gkaguirrelab/melSquintAnalysis.git"
+		"url": ""
 	},
 	{
 		"flavor": "",
