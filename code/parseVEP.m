@@ -15,6 +15,7 @@ p.addParameter('dur_in_sec',2,@isnumeric); % length (in seconds) of VEP epoch to
 p.addParameter('starttime',0,@isnumeric);
 p.addParameter('plot_sessions',false,@islogical);
 p.addParameter('plot_all',false,@islogical);
+p.addParameter('bandstop60',false,@islogical);
 p.parse(varargin{:});
 
 TF_trials=[];
@@ -42,11 +43,13 @@ for AA=1:length(VEP_main)
     VEP_data=filter(d,VEP_data);
     clear d
 
-%     % Bandstop filter for 60Hz noise in VEP signal
-%     d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',59,...
-%         'HalfPowerFrequency2',61,'SampleRate',Fs);
-%     VEP_data=filter(d,VEP_data);
-%     clear d
+    if p.Results.bandstop60==1
+        % Bandstop filter for 60Hz noise in VEP signal
+        d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',59,...
+            'HalfPowerFrequency2',61,'SampleRate',Fs);
+        VEP_data=filter(d,VEP_data);
+        clear d
+    end
     
     % Find timestamp of TTL pulses
     TTL=VEP.response(1,:);
@@ -156,21 +159,22 @@ if p.Results.plot_all==1
         ax.Box='off';
         ax.YLim=[-0.1 0.1];
         ax.XLim=[0 p.Results.dur_in_sec];
+       
     end
+        % Plot mean Visual discomfort data
+        figure(8)
+        VDSm=nanmean(vds_Fr,2);
+        VDSstd=nanstd(vds_Fr,[],2);
+        errorbar(A,VDSm,VDSstd,'-ok')
+        ylabel('visual discomfort scale')
+        xlabel('temporal frequency of stimulus')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.XScale='log';
+        ax.XLim=[0.95 65];
+        ax.YLim=[0 10];
 
-    % Plot mean Visual discomfort data
-    figure(8)
-    VDSm=nanmean(vds_Fr,2);
-    VDSstd=nanstd(vds_Fr,[],2);
-    errorbar(A,VDSm,VDSstd,'-ok')
-    ylabel('visual discomfort scale')
-    xlabel('temporal frequency of stimulus')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XScale='log';
-    ax.XLim=[0.95 65];
-    ax.YLim=[0 10];
 end
 
 parsedVEPdata.parsed_VEP=parsed_VEP;

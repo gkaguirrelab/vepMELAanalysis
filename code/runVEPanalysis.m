@@ -33,8 +33,8 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=2;
-starttime=0.25;
+dur_in_sec=1;
+starttime=0;
 
 for x=1:3
     %% Load compiled data for a single observer from a single channel
@@ -57,7 +57,7 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'plot_all',true);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     

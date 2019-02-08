@@ -18,6 +18,7 @@ p.addParameter('TemporalFrequency',[1.625 3.25 7.5 15 30 60],@isnumeric);
 p.addParameter('Fs',2000,@isnumeric);
 p.addParameter('dur_in_freq',4000,@isnumeric);
 p.addParameter('normalize',false,@islogical);
+p.addParameter('plot_all',false,@islogical);
 
 p.parse(varargin{:});
 
@@ -99,36 +100,40 @@ VEP_FrM=squeeze(mean(vep_Fr,2));
 
 for xx=1:size(vep_Fr,1)
     ft=fft(VEP_FrM(xx,:));
-    [Bootstat,Bootsam]=bootstrp(1000,@mean,parsed_VEP);
+%     [Bootstat,Bootsam]=bootstrp(1000,@mean,parsed_VEP);
+%     CI=sort(Bootstat);
+%     CI95=Bootstat(950);
+%     CI
     P=abs(ft/p.Results.dur_in_freq);
     ttf_M(xx,:)=P(1:p.Results.dur_in_freq/2+1);
     temp=find(f>=p.Results.TemporalFrequency(xx));
     ttf_FrM(xx,:)=ttf_M(xx,temp(1));
+    if p.Results.plot_all==1
+        figure(3)
+        subplot(1,2,1)
+        plot(XX,VEP_FrM(xx,:),'-k')
+        title(['frequency=' num2str(p.Results.TemporalFrequency(xx))]);
+        xlabel('Time(s)')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.YLim=[-0.1 0.1];
+        ax.XLim=[0 p.Results.dur_in_freq/p.Results.Fs];
 
-    figure(3)
-    subplot(1,2,1)
-    plot(XX,VEP_FrM(xx,:),'-k')
-    title(['frequency=' num2str(p.Results.TemporalFrequency(xx))]);
-    xlabel('Time(s)')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.YLim=[-0.1 0.1];
-    ax.XLim=[0 p.Results.dur_in_freq/p.Results.Fs];
-
-    subplot(1,2,2)
-    plot(f,ttf_M(xx,:),'-k')
-    hold on
-    plot(p.Results.TemporalFrequency(xx),ttf_FrM(xx,:),'ob')
-    ylabel('power spectra')
-    xlabel('frequency')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XLim=[0 130];
-    ax.YLim=[0 0.02];
-    pause
-    hold off
+        subplot(1,2,2)
+        plot(f,ttf_M(xx,:),'-k')
+        hold on
+        plot(p.Results.TemporalFrequency(xx),ttf_FrM(xx,:),'ob')
+        ylabel('power spectra')
+        xlabel('frequency')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.XLim=[0 130];
+        ax.YLim=[0 0.02];
+        pause
+        hold off
+    end
 end
 
 
