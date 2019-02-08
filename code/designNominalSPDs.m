@@ -90,15 +90,13 @@ photoreceptorClasses = {'LConeTabulatedAbsorbance', 'MConeTabulatedAbsorbance', 
 
 resultSet.photoreceptorClasses = {'L','M','S','Mel','Rod','Lp','Mo','Sp'};
 
-% Make sensitivities.  The wrapper routine is
-% GetHumanPhotoreceptorSS, which is in the ContrastSplatter
-% directory.  Each row of the matrix T_receptors provides the
-% spectral sensitivity of the photoreceptor class in the
-% corresponding entry of the cell array photoreceptorClasses.
+% Make sensitivities.  The wrapper routine is GetHumanPhotoreceptorSS,
+% which is in the ContrastSplatter directory.  Each row of the matrix
+% T_receptors provides the spectral sensitivity of the photoreceptor class
+% in the corresponding entry of the cell array photoreceptorClasses.
 %
-% The last two arguments are the oxygenation fraction and the
-% vessel thickness. We set them to be empty here, prompting the
-% user to enter these values later.
+% The last two arguments are the oxygenation fraction and the vessel
+% thickness. We set them to be empty here.
 oxygenationFraction = [];
 vesselThickness = [];
 fractionBleached = [];
