@@ -1,8 +1,8 @@
-function status = designNominalSPDs(varargin)
+function resultSet = designNominalSPDs(varargin)
 % Nominal primaries and SPDs for isolating post-receptoral mechanisms
 %
 % Syntax:
-%	designNominalSPDs
+%	resultSet = designNominalSPDs
 %
 % Description:
 %   Given a calibration file from a monitor, this code will provide the RGB
@@ -13,7 +13,7 @@ function status = designNominalSPDs(varargin)
 %	None
 %
 % Outputs:
-%	primaries             - Struct. The primaries and SPDs.
+%	resultSet             - Cell array of structs. The primaries and SPDs.
 %
 % Optional key/value pairs:
 %  'calFilePath'          - Char. Full path to the .mat cal file.
@@ -38,8 +38,7 @@ close all;
 %% Parse input
 p = inputParser;
 p.addParameter('calFilePath',getpref('vepMELAanalysis','calFilePath'),@ischar);
-p.addParameter('plotDir','~/Desktop/nominalSPDs',@ischar);
-p.addParameter('validationFractionTolerance',0.001,@isscalar)
+p.addParameter('saveDir','~/Desktop/nominalSPDs',@ischar);
 p.addParameter('primaryHeadRoom',0,@isscalar)
 p.addParameter('observerAgeInYears',25,@isscalar)
 p.addParameter('fieldSizeDegrees',30,@isscalar)
@@ -50,6 +49,7 @@ p.parse(varargin{:});
 
 whichModel = 'human';
 whichPrimaries = 'monitor';
+curDir = pwd;
 
 
 % Obtain the cal file and SPDs of the primaries
@@ -88,6 +88,8 @@ backgroundPrimary = [0.5 0.5 0.5]';
 photoreceptorClasses = {'LConeTabulatedAbsorbance', 'MConeTabulatedAbsorbance', 'SConeTabulatedAbsorbance', 'Melanopsin', 'Rods', ...
     'LConeTabulatedAbsorbancePenumbral', 'MConeTabulatedAbsorbancePenumbral', 'SConeTabulatedAbsorbancePenumbral'};
 
+resultSet.photoreceptorClasses = {'L','M','S','Mel','Rod','Lp','Mo','Sp'};
+
 % Make sensitivities.  The wrapper routine is
 % GetHumanPhotoreceptorSS, which is in the ContrastSplatter
 % directory.  Each row of the matrix T_receptors provides the
@@ -102,137 +104,98 @@ vesselThickness = [];
 fractionBleached = [];
 T_receptors = GetHumanPhotoreceptorSS(S, photoreceptorClasses, p.Results.fieldSizeDegrees, p.Results.observerAgeInYears, p.Results.pupilDiameterMm, [], fractionBleached, oxygenationFraction, vesselThickness);
 
-%% Let user choose a photoreceptor class to target
-
-% Here we want to obtain desired contrasts on two
-% photoreceptor classes.  We don't have code in place to
-% maximize in a specified direction, but we can explicitly
-% specify the desired contrasts on the targeted directions.
-% One can then maximize by hand, finding out how far one
-% can go before it is out of gamut.  A little loop and
-% check could automate this process.
-whichDirection = 'LMinusM';
-whichReceptorsToTarget = [1 2];
-whichReceptorsToIgnore = [4 5 6 7 8];
-whichReceptorsToMinimize = [];
-LMinusMTargetContrast = 0.065;
-desiredContrast = [LMinusMTargetContrast -LMinusMTargetContrast];
-
-whichDirection = 'LMS';
-whichReceptorsToTarget = [1 2 3];
-whichReceptorsToIgnore = [4 5 6 7 8];
-whichReceptorsToMinimize = [];
-desiredContrast = [1 1 1];
-
-whichDirection = 'S';
-whichReceptorsToTarget = [3];
-whichReceptorsToIgnore = [4 5 6 7 8];
-whichReceptorsToMinimize = [];
-desiredContrast = [1];
-
-% User chooses whether to maximize contrast in targeted receptor classes or
-% or get it as close to a specified value as possible.
-%
-% If we target, here we specify the same contrast for all targeted classes.
-% This is not necessary, they can differ.  It just makes the demo code a
-% bit simpler to yoke them since we only have to prompt for one number.
-
-% Nice message for user
-fprintf('\nGenerating stimuli which isolate receptor classes');
-for i = 1:length(whichReceptorsToTarget)
-    fprintf('\n  - %s', photoreceptorClasses{whichReceptorsToTarget(i)});
-end
-fprintf('\nGenerating stimuli which ignore receptor classes');
-if (~length(whichReceptorsToIgnore) == 0)
-    for i = 1:length(whichReceptorsToIgnore)
-        fprintf('\n  - %s', photoreceptorClasses{whichReceptorsToIgnore(i)});
-    end
-else
-    fprintf('\n  - None');
-end
-fprintf('\nThe remaining classes will be silenced\n');
-
-
-% Don't pin any primaries.  
-whichPrimariesToPin = [];
-
-% No smoothness constraint envforced here.  It really wouldn't make
-% to much sense for a three-primary monitor, as the smoothness of a
-% monitor spectrum is pretty much determined by the spectral shape
-% of its primarites.
-maxPowerDiff = 10000;
-
-
-
-%% Call the optimization routine.
-%
-% Careful examaination of the arguments will reveal that the initialGuess
-% for the primaries is set to the background value for the primaries, so
-% that the constraints are all met at the start of the search.  The
-% optimization routine is much happier when it is done this way -- bad
-% things happen if you start with a guess that violates constraints.
-modulationPrimary = ReceptorIsolate(T_receptors,whichReceptorsToTarget, whichReceptorsToIgnore, whichReceptorsToMinimize, ...
-    B_primary, backgroundPrimary, backgroundPrimary, whichPrimariesToPin,...
-    p.Results.primaryHeadRoom, maxPowerDiff, desiredContrast, ambientSpd);
-
-%% Compute the contrasts that we got.
+% Obtain the isomerization rate for the receptors by the background
 backgroundReceptors = T_receptors*(B_primary*backgroundPrimary + ambientSpd);
 
-% Positive modulation of receptors
-modulationReceptors = T_receptors*B_primary*(modulationPrimary - backgroundPrimary);
-contrastReceptors = modulationReceptors ./ backgroundReceptors;
-fprintf('Positive modulation contrasts\n');
-for j = 1:size(T_receptors,1)
-    fprintf('\t%s: contrast = %0.4f\n',photoreceptorClasses{j},contrastReceptors(j));
+% Store the background properties
+resultSet.background.primary = backgroundPrimary;
+resultSet.background.spd = B_primary*backgroundPrimary;
+resultSet.background.wavelengthsNm = SToWls(S);
+
+% set the receptor sets to isolate
+whichDirectionSet = {'L','M','S','LMinusM','LMS'};
+whichReceptorsToTargetSet = {[1],[2],[3],[1 2],[1 2 3]};
+whichReceptorsToIgnoreSet = {[4 5 6 7 8],[4 5 6 7 8],[4 5 6 7 8],[4 5 6 7 8],[4 5 6 7 8]};
+whichReceptorsToMinimizeSet = {[],[],[],[],[]};
+desiredContrastSet = {[1],[1],[1],[0.065 -0.065], [1 1 1]};
+
+
+for ss = 1:length(whichDirectionSet)
+    
+    whichDirection = whichDirectionSet{ss};
+    whichReceptorsToTarget = whichReceptorsToTargetSet{ss};
+    whichReceptorsToIgnore = whichReceptorsToIgnoreSet{ss};
+    whichReceptorsToMinimize = whichReceptorsToMinimizeSet{ss};
+    desiredContrast = desiredContrastSet{ss};
+    
+    
+    % Don't pin any primaries.
+    whichPrimariesToPin = [];
+    
+    % No smoothness constraint enforced for the monitor primaries
+    maxPowerDiff = 10000;
+    
+    % Obtain the primary settins for the isolating modulation
+    modulationPrimary = ReceptorIsolate(T_receptors,whichReceptorsToTarget, whichReceptorsToIgnore, whichReceptorsToMinimize, ...
+        B_primary, backgroundPrimary, backgroundPrimary, whichPrimariesToPin,...
+        p.Results.primaryHeadRoom, maxPowerDiff, desiredContrast, ambientSpd);
+    
+    % Store the modulation primaries
+    resultSet.(whichDirection).modulationPrimary = modulationPrimary;
+    
+    % Calculate and store the positive and negative receptor contrast
+    modulationReceptors = T_receptors*B_primary*(modulationPrimary - backgroundPrimary);
+    contrastReceptors = modulationReceptors ./ backgroundReceptors;
+    resultSet.(whichDirection).positiveReceptorContrast = contrastReceptors;
+    
+    modulationReceptors = T_receptors*B_primary*(-(modulationPrimary - backgroundPrimary));
+    contrastReceptors = modulationReceptors ./ backgroundReceptors;
+    resultSet.(whichDirection).negativeReceptorContrast = contrastReceptors;
+    
+    % Calculate and store the spectra
+    resultSet.(whichDirection).positiveModulationSPD = B_primary*modulationPrimary;
+    resultSet.(whichDirection).negativeModulationSPD = B_primary*(backgroundPrimary-(modulationPrimary - backgroundPrimary));
+    resultSet.(whichDirection).wavelengthsNm = SToWls(S);
+    
+    % Create and save results
+    if ~isempty(p.Results.saveDir)
+        if ~isdir(p.Results.saveDir)
+            mkdir(p.Results.saveDir);
+        end
+        cd(p.Results.saveDir);
+        
+        fighandle = figure('Name',whichDirection);
+       
+        
+        % Modulation spectra
+        subplot(1,2,1)
+        hold on
+        plot(resultSet.(whichDirection).wavelengthsNm,resultSet.(whichDirection).positiveModulationSPD,'k','LineWidth',2);
+        plot(resultSet.(whichDirection).wavelengthsNm,resultSet.(whichDirection).negativeModulationSPD,'r','LineWidth',2);
+        plot(resultSet.background.wavelengthsNm,resultSet.background.spd,'Color',[0.5 0.5 0.5],'LineWidth',2);
+        title('Modulation spectra');
+        xlim([380 780]);
+        ylim([0 0.01]);
+        xlabel('Wavelength');
+        ylabel('Power');
+        
+        % Primaries
+        subplot(1,2,2)
+        c = categorical({'R','G','B'});
+        hold on
+        plot(c,modulationPrimary,'-kx');
+        plot(c,backgroundPrimary+(-(modulationPrimary-backgroundPrimary)),'-rx');
+        plot(c,backgroundPrimary,'-x','Color',[0.5 0.5 0.5]);
+        title('Primary settings');
+        ylim([0 1]);
+        xlabel('Primary');
+        ylabel('Setting');
+        legend({'Positive', 'Negative', 'Background'},'Location','NorthEastOutside');
+
+        % Save the figure
+        saveas(fighandle,sprintf('%s_%s_%s_PrimariesAndSPD.pdf',whichModel,whichPrimaries,whichDirection),'pdf');
+    end
 end
-
-% Negative modulation of receptors
-modulationReceptors = T_receptors*B_primary*(-(modulationPrimary - backgroundPrimary));
-contrastReceptors = modulationReceptors ./ backgroundReceptors;
-fprintf('Negative modulation contrasts\n');
-for j = 1:size(T_receptors,1)
-    fprintf('\t%s: contrast = %0.4f\n',photoreceptorClasses{j},contrastReceptors(j));
-end
-
-%% Plots and/or validation check
-if ~isdir(p.Results.plotDir)
-    mkdir(p.Results.plotDir);
-end
-curDir = pwd;
-cd(p.Results.plotDir);
-
-% Photoreceptor sensitivities
-theFig1 = figure; clf; hold on
-plot(SToWls(S),T_receptors,'LineWidth',2);
-xlabel('Wavelength (nm)')
-ylabel('Sensitivity');
-title('Normalized photoreceptor sensitivities');
-saveas(theFig1,sprintf('%s_%s_%s_Sensitivities.pdf',whichModel,whichPrimaries,whichDirection),'pdf');
-
-% Modulation spectra
-theFig2 = figure; hold on
-plot(SToWls(S),B_primary*modulationPrimary,'r','LineWidth',2);
-plot(SToWls(S),B_primary*backgroundPrimary,'k','LineWidth',2);
-title('Modulation spectra');
-xlim([380 780]);
-xlabel('Wavelength');
-ylabel('Power');
-pbaspect([1 1 1]);
-saveas(theFig2,sprintf('%s_%s_%s_Modulation.pdf',whichModel,whichPrimaries,whichDirection),'pdf');
-
-% Primaries
-theFig3 = figure; hold on
-plot(modulationPrimary,'r','LineWidth',2);
-plot(backgroundPrimary+(-(modulationPrimary-backgroundPrimary)),'g','LineWidth',2);
-plot(backgroundPrimary,'k','LineWidth',2);
-title('Primary settings');
-xlim([0 length(backgroundPrimary)]);
-ylim([0 1]);
-xlabel('Primary Number (nominal)');
-ylabel('Setting');
-legend({'Positive', 'Negative', 'Background'},'Location','NorthEastOutside');
-saveas(theFig3,sprintf('%s_%s_%s_Primaries.pdf',whichModel,whichPrimaries,whichDirection),'pdf');
-
 
 
 %% Return to the directory from whence we started
