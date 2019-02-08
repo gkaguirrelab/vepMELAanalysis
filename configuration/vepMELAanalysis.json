@@ -25,6 +25,19 @@
 		"update": "",
 		"url": "https:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/45760\/versions\/3\/download\/zip"
 	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "BrainardLabToolbox",
+		"pathPlacement": "append",
+		"subfolder": ["Plotting", "OneLiners","OOCalibrationToolbox"],
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/brainardlab/BrainardLabToolbox.git"
+	},
  	{
 		"flavor": "",
 		"hook": "",

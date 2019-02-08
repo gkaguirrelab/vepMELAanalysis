@@ -55,7 +55,7 @@ curDir = pwd;
 % Obtain the cal file and SPDs of the primaries
 [calPath, calFileName, ~] = fileparts(p.Results.calFilePath);
 cal = LoadCalFile(calFileName,[],calPath);
-S = [380 2 201];
+S = cal.rawData.S;
 B_primary = cal.processedData.P_device;
 ambientSpd = cal.processedData.P_ambient;
 
@@ -117,16 +117,16 @@ whichReceptorsToIgnoreSet = {[4 5 6 7 8],[4 5 6 7 8],[4 5 6 7 8],[4 5 6 7 8],[4 
 whichReceptorsToMinimizeSet = {[],[],[],[],[]};
 desiredContrastSet = {[1],[1],[1],[0.065 -0.065], [1 1 1]};
 
-
+% Loop over the set of directions for which we will generate modulations
 for ss = 1:length(whichDirectionSet)
     
+    % Extract values from the cell arrays
     whichDirection = whichDirectionSet{ss};
     whichReceptorsToTarget = whichReceptorsToTargetSet{ss};
     whichReceptorsToIgnore = whichReceptorsToIgnoreSet{ss};
     whichReceptorsToMinimize = whichReceptorsToMinimizeSet{ss};
     desiredContrast = desiredContrastSet{ss};
-    
-    
+        
     % Don't pin any primaries.
     whichPrimariesToPin = [];
     
