@@ -25,6 +25,19 @@
 		"update": "",
 		"url": "https:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/45760\/versions\/3\/download\/zip"
 	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "BrainardLabToolbox",
+		"pathPlacement": "append",
+		"subfolder": ["Plotting", "OneLiners","OOCalibrationToolbox"],
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/brainardlab/BrainardLabToolbox.git"
+	},
  	{
 		"flavor": "",
 		"hook": "",
@@ -47,22 +60,22 @@
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",
-		"type": "git",
+		"type": "include",
 		"update": "",
-		"url": "https:\/\/github.com\/gkaguirrelab\/temporalFittingEngine.git"
+		"url": ""
 	},
 	{
 		"flavor": "",
 		"hook": "",
 		"importance": "",
-		"localHookTemplate": "config/melSquintAnalysisLocalHookTemplate.m",
-		"name": "melSquintAnalysis",
+		"localHookTemplate": "",
+		"name": "SilentSubstitutionToolbox",
 		"pathPlacement": "append",
-		"subfolder": "code",
+		"subfolder": "",
 		"toolboxRoot": "",
-		"type": "git",
+		"type": "include",
 		"update": "",
-		"url": "https://github.com/gkaguirrelab/melSquintAnalysis.git"
+		"url": ""
 	},
 	{
 		"flavor": "",

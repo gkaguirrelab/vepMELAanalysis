@@ -31,44 +31,39 @@ projectName = 'vepMELAanalysis';
 
 %% Delete any old prefs
 if (ispref(projectName))
-rmpref(projectName);
+    rmpref(projectName);
 end
 
 %% Specify base paths for materials and data
 [~, userID] = system('whoami');
 userID = strtrim(userID);
 switch userID
-case {'melanopsin' 'pupillab'}
-materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
-case {'dhb'}
-materialsBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-MELA_dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-MELA_analysisBasePath = ['/Users1/' '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
-case {'mbarnett'}
-materialsBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
-otherwise
-materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+    case {'melanopsin' 'pupillab'}
+        MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+    case {'dhb'}
+        MELA_dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        MELA_analysisBasePath = ['/Users1/' '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+    otherwise
+        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/TOME_materials/hardwareSpecifications/metropsis/PR670 calibration/'];
+        MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
 end
 
 %% Specify where output goes
 
 if ismac
-% Code to run on Mac plaform
-setpref(projectName,'melaDataPath', MELA_dataBasePath);
-setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
+    % Code to run on Mac plaform
+    setpref(projectName,'melaDataPath', MELA_dataBasePath);
+    setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
+    setpref(projectName,'calFilePath', fullfile(materialsBasePath,'MetropsisScreen.mat'));    
 elseif isunix
-% Code to run on Linux plaform
-setpref(projectName,'melaDataPath', MELA_dataBasePath);
-setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
+    % Code to run on Linux plaform
+    setpref(projectName,'melaDataPath', MELA_dataBasePath);
+    setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
 elseif ispc
-% Code to run on Windows platform
-warning('No supported for PC')
+    % Code to run on Windows platform
+    warning('No supported for PC')
 else
-disp('What are you using?')
+    disp('What are you using?')
 end
