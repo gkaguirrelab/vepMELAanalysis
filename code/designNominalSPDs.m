@@ -88,7 +88,7 @@ backgroundPrimary = [0.5 0.5 0.5]';
 photoreceptorClasses = {'LConeTabulatedAbsorbance', 'MConeTabulatedAbsorbance', 'SConeTabulatedAbsorbance', 'Melanopsin', 'Rods', ...
     'LConeTabulatedAbsorbancePenumbral', 'MConeTabulatedAbsorbancePenumbral', 'SConeTabulatedAbsorbancePenumbral'};
 
-resultSet.photoreceptorClasses = {'L','M','S','Mel','Rod','Lp','Mo','Sp'};
+resultSet.photoreceptorClasses = {'L','M','S','Mel','Rod','Lp','Mp','Sp'};
 
 % Make sensitivities.  The wrapper routine is GetHumanPhotoreceptorSS,
 % which is in the ContrastSplatter directory.  Each row of the matrix
@@ -161,10 +161,10 @@ for ss = 1:length(whichDirectionSet)
             mkdir(p.Results.saveDir);
         end
         cd(p.Results.saveDir);
-        
-        fighandle = figure('Name',whichDirection);
        
-        
+        % Create a figure with an appropriate title
+        fighandle = figure('Name',whichDirection);
+               
         % Modulation spectra
         subplot(1,2,1)
         hold on
