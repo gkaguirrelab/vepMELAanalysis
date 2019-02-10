@@ -166,7 +166,7 @@ for ss = 1:length(whichDirectionSet)
         fighandle = figure('Name',whichDirection);
                
         % Modulation spectra
-        subplot(1,2,1)
+        subplot(2,3,[1 4])
         hold on
         plot(resultSet.(whichDirection).wavelengthsNm,resultSet.(whichDirection).positiveModulationSPD,'k','LineWidth',2);
         plot(resultSet.(whichDirection).wavelengthsNm,resultSet.(whichDirection).negativeModulationSPD,'r','LineWidth',2);
@@ -176,9 +176,10 @@ for ss = 1:length(whichDirectionSet)
         ylim([0 0.01]);
         xlabel('Wavelength');
         ylabel('Power');
+        legend({'Positive', 'Negative', 'Background'},'Location','NorthEast');
         
         % Primaries
-        subplot(1,2,2)
+        subplot(2,3,[2 5])
         c = categorical({'R','G','B'});
         hold on
         plot(c,modulationPrimary,'-kx');
@@ -188,8 +189,19 @@ for ss = 1:length(whichDirectionSet)
         ylim([0 1]);
         xlabel('Primary');
         ylabel('Setting');
-        legend({'Positive', 'Negative', 'Background'},'Location','NorthEastOutside');
-
+        
+        % Patch
+        subplot(2,3,3)
+        rectangle('Position',[2 4 2 2],'Curvature',[1 1],'FaceColor',modulationPrimary)
+        axis square
+        axis off
+        title('+');
+        subplot(2,3,6)
+        rectangle('Position',[2 4 2 2],'Curvature',[1 1],'FaceColor',backgroundPrimary+(-(modulationPrimary-backgroundPrimary)))
+        axis square
+        axis off
+        title('-');
+        
         % Save the figure
         saveas(fighandle,sprintf('%s_%s_%s_PrimariesAndSPD.pdf',whichModel,whichPrimaries,whichDirection),'pdf');
     end
