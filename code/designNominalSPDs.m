@@ -32,8 +32,6 @@ function resultSet = designNominalSPDs(varargin)
 %  'pupilDiameterMm'      - Scalar
 %
 
-%% Clear and close
-close all;
 
 %% Parse input
 p = inputParser;
