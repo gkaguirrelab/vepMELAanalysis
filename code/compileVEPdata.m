@@ -141,19 +141,20 @@ function [VDS]=parseAudioData(VEP,nTrials,trial_dur)
 
     % Check audio files
     X=((1:1:length(audioRec.data))./audioRec.Fs);
-    parse_audio=X(audioRec.Fs*3.5:trial_dur*audioRec.Fs:end);
+    parse_audio=X(1:trial_dur*audioRec.Fs:end);
     figure(1)
     plot(X,audioRec.data)
     hold on
     plot(parse_audio,0.05*ones(1,length(parse_audio)),'or')
     hold off
-    pause
+    shift_time=input('shift the time=');
+    parse_audio=X(audioRec.Fs*shift_time:trial_dur*audioRec.Fs:end);
 
     for tt = 1:nTrials
         firstTrialIndex = parse_audio(tt)*audioRec.Fs;
         secondTrialIndex = parse_audio(tt+1)*audioRec.Fs;
         trialAudio = audioRec.data(firstTrialIndex:secondTrialIndex);
-        [ firstTimePoint, secondTimePoint ] = grabRelevantAudioIndices(trialAudio, audioRec.Fs);
+        [ firstTimePoint, secondTimePoint ] = grabRelevantAudioIndicesVEP(trialAudio, audioRec.Fs);
 
         % index that starts the numerical rating
         firstIndex = firstTimePoint*audioRec.Fs;

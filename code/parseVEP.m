@@ -16,6 +16,7 @@ p.addParameter('starttime',0,@isnumeric);
 p.addParameter('plot_sessions',false,@islogical);
 p.addParameter('plot_all',false,@islogical);
 p.addParameter('bandstop60',false,@islogical);
+p.addParameter('bandstop120',false,@islogical);
 p.parse(varargin{:});
 
 TF_trials=[];
@@ -47,6 +48,14 @@ for AA=1:length(VEP_main)
         % Bandstop filter for 60Hz noise in VEP signal
         d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',59,...
             'HalfPowerFrequency2',61,'SampleRate',Fs);
+        VEP_data=filter(d,VEP_data);
+        clear d
+    end
+    
+    if p.Results.bandstop120==1
+        % Bandstop filter for 120Hz noise in VEP signal
+        d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',119,...
+            'HalfPowerFrequency2',121,'SampleRate',Fs);
         VEP_data=filter(d,VEP_data);
         clear d
     end

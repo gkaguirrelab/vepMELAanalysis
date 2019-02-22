@@ -57,16 +57,16 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'plot_all',true);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'bandstop120',true,'plot_all',true);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(parsedVEPdata(x).vep_Fr,'normalize',true,'dur_in_freq',dur_in_sec*Fs);
+    [ttf(x)]=calcVEPttf(parsedVEPdata(x).vep_Fr,'normalize',true,'dur_in_freq',dur_in_sec*Fs,'plot_all',true);
 
     
     %% Plotting
-    A=[1.625 3.25 7.5 15 30 60];
+    A=[1.625 3.25 7.5 15 30];
     % Plot mean Visual discomfort data
     figure(5)
     subplot(2,1,2)
