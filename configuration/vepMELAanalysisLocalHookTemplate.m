@@ -48,6 +48,7 @@ switch userID
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/TOME_materials/hardwareSpecifications/metropsis/PR670 calibration/'];
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
         MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+        MTRP_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MTRP_data/'];
 end
 
 %% Specify where output goes

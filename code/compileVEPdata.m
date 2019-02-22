@@ -24,8 +24,8 @@ function [VEP]=compileVEPdata()
 %   VDS                   - Visual discomfort scale values for the 36 trials
 
 % variables
-nTrials=36; % number of trials in file
-trial_dur=6; % trial duration in seconds
+nTrials=25; % number of trials in file
+trial_dur=5; % trial duration in seconds
 % calls the experiment based on users input
 expID=input('experiment ID:','s');
 observerID=input('observer ID:','s');
@@ -53,14 +53,14 @@ if Z==('N') && exist(filenameComp)==2
 else
     for x=1:length(sessionID)
         % Get VEP data file
-         filenameMAT=fullfile(['/Users/melanopsin/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_VEP/'...
+         filenameMAT=fullfile([MELA_dataBasePath 'Experiments/OLApproach_VEP/'...
              'Exp_' expID '/Subject_' observerID '/Exp' expID '_' observerID num2str(sessionID(x)) '.mat']);
 
           vep=open(filenameMAT);
 
       % Get metropsis data, load metropsis JSON file
           % Load and read JSON file
-    filenameJSON=fullfile(['/Users/melanopsin/Dropbox (Aguirre-Brainard Lab)/MTRP_data/Exp_' expID '/Subject_' observerID '/' observerID '_' num2str(sessionID(x)) '.lpkmx']); 
+    filenameJSON=fullfile([MTRPdataBasePath 'Exp_' expID '/Subject_' observerID '/' observerID '_' num2str(sessionID(x)) '.lpkmx']); 
     
         [vep.mtrp]=parse_mtrp_json(filenameJSON,nTrials);
 
