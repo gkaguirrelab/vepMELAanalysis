@@ -57,7 +57,8 @@ if ismac
     % Code to run on Mac plaform
     setpref(projectName,'melaDataPath', MELA_dataBasePath);
     setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
-    setpref(projectName,'calFilePath', fullfile(materialsBasePath,'MetropsisScreen.mat'));    
+    setpref(projectName,'calFilePath', fullfile(materialsBasePath,'MetropsisScreen.mat'));
+    setpref(projectName,'mtrpDataPath', MTRP_dataBasePath); 
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'melaDataPath', MELA_dataBasePath);

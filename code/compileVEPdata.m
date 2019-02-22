@@ -53,15 +53,15 @@ if Z==('N') && exist(filenameComp)==2
 else
     for x=1:length(sessionID)
         % Get VEP data file
-         filenameMAT=fullfile([MELA_dataBasePath 'Experiments/OLApproach_VEP/'...
-             'Exp_' expID '/Subject_' observerID '/Exp' expID '_' observerID num2str(sessionID(x)) '.mat']);
+         filenameMAT=fullfile(getpref('vepMELAanalysis', 'melaDataPath'), 'Experiments','OLApproach_VEP',...
+             ['Exp_' expID], ['Subject_' observerID], ['Exp' expID '_' observerID num2str(sessionID(x)) '.mat']);
 
           vep=open(filenameMAT);
 
       % Get metropsis data, load metropsis JSON file
           % Load and read JSON file
-    filenameJSON=fullfile([MTRPdataBasePath 'Exp_' expID '/Subject_' observerID '/' observerID '_' num2str(sessionID(x)) '.lpkmx']); 
-    
+    filenameJSON=fullfile(getpref('vepMELAanalysis', 'mtrpDataPath'),['Exp_' expID],...
+        ['Subject_' observerID], [observerID '_' num2str(sessionID(x)) '.lpkmx']);  
         [vep.mtrp]=parse_mtrp_json(filenameJSON,nTrials);
 
         % Get audio data
