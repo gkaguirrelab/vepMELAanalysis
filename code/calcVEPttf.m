@@ -14,7 +14,7 @@ function [ttf_VEP]=calcVEPttf(vep_Fr,varargin)
 
 %% Parse input
 p = inputParser;
-p.addParameter('TemporalFrequency',[1.625 3.25 7.5 15 30 60],@isnumeric);
+p.addParameter('TemporalFrequency',[1.625 3.25 7.5 15 30],@isnumeric);
 p.addParameter('Fs',2000,@isnumeric);
 p.addParameter('dur_in_freq',4000,@isnumeric);
 p.addParameter('normalize',false,@islogical);
@@ -35,35 +35,11 @@ for w=1:size(vep_Fr,1)
 
         % select power spectra for each frequency
         temp=find(f>=p.Results.TemporalFrequency(w));
-        P_dataFr(w,x)=squeeze(P_data(w,x,temp(1,1)));
+        P_dataFr(w,x)=sum(squeeze(P_data(w,x,temp(1,1)-1:temp(1,1))))';
         clear temp
     end
     
     XX=(1:length(vep_Fr))/p.Results.Fs;
-    
-%     subplot(1,2,1)
-%     plot(XX,squeeze(squeeze(mean(vep_Fr(w,x,:),3))))
-%     title(['frequency=' num2str(p.Results.TemporalFrequency(w))]);
-%     xlabel('Time(s)')
-%     ax=gca;
-%     ax.TickDir='out';
-%     ax.Box='off';
-%     ax.YLim=[-0.1 0.1];
-%     ax.XLim=[0 p.Results.dur_in_freq/p.Results.Fs];
-% 
-%     subplot(1,2,2)
-%     plot(f,squeeze(squeeze(mean(P_data(w,x,:,:),3))),'-k')
-%     hold on
-%     plot(p.Results.TemporalFrequency(w),P_dataFr(w,x),'ob')
-%     ylabel('power spectra')
-%     xlabel('frequency')
-%     ax=gca;
-%     ax.TickDir='out';
-%     ax.Box='off';
-%     ax.XLim=[0 130];
-%     ax.YLim=[0 0.02];
-%     pause
-%     hold off
 
 end
 
@@ -100,14 +76,21 @@ VEP_FrM=squeeze(mean(vep_Fr,2));
 
 for xx=1:size(vep_Fr,1)
     ft=fft(VEP_FrM(xx,:));
-%     [Bootstat,Bootsam]=bootstrp(1000,@mean,parsed_VEP);
-%     CI=sort(Bootstat);
-%     CI95=Bootstat(950);
-%     CI
     P=abs(ft/p.Results.dur_in_freq);
+    Bootstat=bootstrp(1000,@mean,squeeze(vep_Fr(xx,:,:)),1);
+    for yy=1:size(Bootstat,1)
+        boot_ft=fft(Bootstat(yy,:));
+        P_boot=abs(boot_ft/p.Results.dur_in_freq);
+        ttf_boot=P_boot(1:p.Results.dur_in_freq/2+1);
+        temp=find(f>=p.Results.TemporalFrequency(xx));
+        ttf_Fr_boot(:,yy)=sum(ttf_boot(:,temp(1)-1:temp(1)));
+    end
+    
+    ttf_Fr_boot=sort(ttf_Fr_boot);
+    ttf_CI(xx,:)=ttf_Fr_boot(:,[50 950]);
     ttf_M(xx,:)=P(1:p.Results.dur_in_freq/2+1);
     temp=find(f>=p.Results.TemporalFrequency(xx));
-    ttf_FrM(xx,:)=ttf_M(xx,temp(1));
+    ttf_FrM(xx,:)=sum(ttf_M(xx,temp(1)-1:temp(1)));
     if p.Results.plot_all==1
         figure(3)
         subplot(1,2,1)
@@ -136,7 +119,6 @@ for xx=1:size(vep_Fr,1)
     end
 end
 
-
 ttf_VEP.ttf=P_data;
 ttf_VEP.ttfFr=P_dataFr;
 ttf_VEP.f=f;
@@ -144,4 +126,5 @@ ttf_VEP.vep_Fr=vep_Fr;
 ttf_VEP.VEP_FrM=VEP_FrM;
 ttf_VEP.ttf_M=ttf_M;
 ttf_VEP.ttf_FrM=ttf_FrM;
+ttf_VEP.ttf_CI=ttf_CI;
 end

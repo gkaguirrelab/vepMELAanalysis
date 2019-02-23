@@ -69,7 +69,7 @@
 		"hook": "",
 		"importance": "",
 		"localHookTemplate": "",
-		"name": "melSquintAnalysis",
+		"name": "SilentSubstitutionToolbox",
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",

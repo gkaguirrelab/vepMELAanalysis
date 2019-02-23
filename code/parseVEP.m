@@ -170,19 +170,6 @@ if p.Results.plot_all==1
         ax.XLim=[0 p.Results.dur_in_sec];
        
     end
-        % Plot mean Visual discomfort data
-        figure(8)
-        VDSm=nanmean(vds_Fr,2);
-        VDSstd=nanstd(vds_Fr,[],2);
-        errorbar(A,VDSm,VDSstd,'-ok')
-        ylabel('visual discomfort scale')
-        xlabel('temporal frequency of stimulus')
-        ax=gca;
-        ax.TickDir='out';
-        ax.Box='off';
-        ax.XScale='log';
-        ax.XLim=[0.95 65];
-        ax.YLim=[0 10];
 
 end
 
