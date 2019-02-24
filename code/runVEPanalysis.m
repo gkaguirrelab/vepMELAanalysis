@@ -33,7 +33,7 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=2;
+dur_in_sec=0.5;
 starttime=0;
 
 for x=1:3
