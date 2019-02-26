@@ -75,7 +75,7 @@ for AA=1:length(VEP_main)
     end
 
     % if the VEP recording started after the first sync pulse
-    if length(sync_pulse)==35
+    if length(sync_pulse)<35
         disp(['err sync pulse session:' num2str(AA)])
         sync_pulse=cat(2,timestamp(1,1),sync_pulse);
         sync_loc=cat(2,1,sync_loc);

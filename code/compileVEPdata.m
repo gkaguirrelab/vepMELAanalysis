@@ -24,7 +24,7 @@ function [VEP]=compileVEPdata()
 %   VDS                   - Visual discomfort scale values for the 36 trials
 
 % variables
-nTrials=25; % number of trials in file
+nTrials=35; % number of trials in file
 trial_dur=5; % trial duration in seconds
 % calls the experiment based on users input
 expID=input('experiment ID:','s');

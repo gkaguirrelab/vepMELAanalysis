@@ -20,7 +20,7 @@
 %                           This includes observer ID, group (MWVA or HA free), 
 %                     c      session, and temporal frequency for the stimuli 
 %                           presented (TFtrials)
-%   VDS                   - Visual discomfort scale values for the 36 trials
+%   VDS                   - Visual discomfort scale values for the 35 trials
 
 %% Identify subject and create a path and file name to save data
 observerID=input('observer ID:','s');
@@ -33,8 +33,8 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=0.5;
-starttime=0;
+dur_in_sec=1.8;
+starttime=0.2;
 
 for x=1:3
     %% Load compiled data for a single observer from a single channel
@@ -97,7 +97,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 65];
-    ax.YLim=[0 0.02];
+    ax.YLim=[0 0.015];
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
