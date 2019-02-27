@@ -18,7 +18,7 @@
 %                           ID, data that was recorded from the VEP computer
 %   mtrp                  - structure that contains all the metropsis data. 
 %                           This includes observer ID, group (MWVA or HA free), 
-%                     c      session, and temporal frequency for the stimuli 
+%                           session, and temporal frequency for the stimuli 
 %                           presented (TFtrials)
 %   VDS                   - Visual discomfort scale values for the 35 trials
 
@@ -33,8 +33,8 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=1.8;
-starttime=0.2;
+dur_in_sec=1.5;
+starttime=0.5;
 
 for x=1:3
     %% Load compiled data for a single observer from a single channel
@@ -57,16 +57,16 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'bandstop120',true,'plot_all',true);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'plot_all',true,'plot_sessions',true);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
+    A=unique(VEP_main(x).mtrp.TFtrials);
     
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(parsedVEPdata(x).vep_Fr,'normalize',true,'dur_in_freq',dur_in_sec*Fs,'plot_all',true);
+    [ttf(x)]=calcVEPttf(parsedVEPdata(x).vep_Fr,parsedVEPdata(x).vep_bkgd,'dur_in_freq',dur_in_sec*Fs,'plot_all',true,'TemporalFrequency',A);
 
     
     %% Plotting
-    A=[1.625 3.25 7.5 15 30];
     % Plot mean Visual discomfort data
     figure(5)
     subplot(2,1,2)
@@ -86,18 +86,50 @@ for x=1:3
     
      % Plot TFF (power across averaged trials)
     
+     % normalized by the sum of TTF
+     TTF_all=sum(mean(mean(ttf(x).ttf,2),1));
+    
     figure(5)
     subplot(2,1,1)
     hold on
     errorbar(A,ttf(x).ttf_FrM,ttf(x).ttf_FrM-ttf(x).ttf_CI(:,1),ttf(x).ttf_CI(:,2)-ttf(x).ttf_FrM,['-o' color])
+%     errorbar(A,ttf(x).ttf_FrM./TTF_all,(ttf(x).ttf_FrM-ttf(x).ttf_CI(:,1))./TTF_all,(ttf(x).ttf_CI(:,2)-ttf(x).ttf_FrM)./TTF_all,['-o' color])
     title(observerID)
     ylabel('power spectra for stimulus frequency')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
     ax.XScale='log';
-    ax.XLim=[0.95 65];
-    ax.YLim=[0 0.015];
+    ax.XLim=[0.95 35];
+    ax.YLim=[0 0.02];
+  
+    % plot background across channels
+    if x==3
+        f=Fs*(0:((Fs*dur_in_sec)/2))/(Fs*dur_in_sec);
+        background=cat(1,parsedVEPdata(1).vep_bkgd,parsedVEPdata(2).vep_bkgd,parsedVEPdata(3).vep_bkgd);
+        backgroundM=mean(background,1);
+        ft=fft(backgroundM);
+        P=abs(ft/(Fs*dur_in_sec));
+        ttf_BKGD=P(1:(Fs*dur_in_sec)/2+1);
+        Bootstat=bootstrp(1000,@mean,background,1);
+        for yy=1:size(Bootstat,1)
+            boot_ft=fft(Bootstat(yy,:));
+            P_boot=abs(boot_ft/(Fs*dur_in_sec));
+            ttf_bkgd_boot(yy,:)=P_boot(1:(Fs*dur_in_sec)/2+1);
+        end
+        
+        ttf_bkgd_boot=sort(ttf_bkgd_boot,1);
+        ttf_bkgdCI=ttf_bkgd_boot([50 950],:);
+        
+        for bb=1:length(A)
+            temp=find(ttf(x).f>=A(bb));
+            ttf_bkgd_Fr(bb,:)=ttf_BKGD(:,temp(1));
+            ttf_bkgdCI_Fr(bb,:)=ttf_bkgdCI(:,temp(1));
+        end
+     
+        errorbar(A,ttf_bkgd_Fr,ttf_bkgdCI_Fr(:,1),ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
+    end
+        
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
@@ -115,18 +147,7 @@ for x=1:3
         hold on
     end
     
-    % Plot sum of power spectra averaged across repeat, and frequency for
-    % each channel
-    TTF_all=sum(mean(mean(ttf(x).ttf,2),1));
     
-    figure(12)
-    plot(x,TTF_all,['o' color])
-    title('Sum TTF across frequencies');
-    xlabel('Channel')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    hold on
     
 %     % info to save per channel
 %     VEP_main.mtrp.group;

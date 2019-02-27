@@ -16,7 +16,6 @@ p.addParameter('starttime',0,@isnumeric);
 p.addParameter('plot_sessions',false,@islogical);
 p.addParameter('plot_all',false,@islogical);
 p.addParameter('bandstop60',false,@islogical);
-p.addParameter('bandstop120',false,@islogical);
 p.parse(varargin{:});
 
 TF_trials=[];
@@ -52,33 +51,33 @@ for AA=1:length(VEP_main)
         clear d
     end
     
-    if p.Results.bandstop120==1
-        % Bandstop filter for 120Hz noise in VEP signal
-        d=designfilt('bandstopiir','FilterOrder',20,'HalfPowerFrequency1',119,...
-            'HalfPowerFrequency2',121,'SampleRate',Fs);
-        VEP_data=filter(d,VEP_data);
-        clear d
-    end
-    
     % Find timestamp of TTL pulses
     TTL=VEP.response(1,:);
     timestamp=VEP.timebase;
     y=0;
     startFs=p.Results.starttime*Fs;
+    bkgdFs=3*Fs;
 
     for x=2:length(TTL)
         if TTL(1,x)>4 && TTL(1,(x-1))<4
             y=y+1;
             sync_pulse(y)=timestamp(1,x+startFs);
             sync_loc(y)=x+startFs;
+            
+            sync_pulseBKGD(y)=timestamp(1,x+bkgdFs);
+            sync_locBKGD(y)=x+bkgdFs;
         end
     end
 
     % if the VEP recording started after the first sync pulse
-    if length(sync_pulse)<35
-        disp(['err sync pulse session:' num2str(AA)])
-        sync_pulse=cat(2,timestamp(1,1),sync_pulse);
-        sync_loc=cat(2,1,sync_loc);
+    switch length(sync_pulse)
+        case 34
+            disp(['err sync pulse session:' num2str(AA)])
+            sync_pulse=cat(2,timestamp(1,1),sync_pulse);
+            sync_loc=cat(2,1,sync_loc);
+        case 36
+            disp(['err sync pulse session:' num2str(AA)])
+            sync_pulse=sync_pulse(1:35);
     end
 
     clear x y
@@ -86,8 +85,10 @@ for AA=1:length(VEP_main)
     % parse VEP data by trial
     dur_in_freq=p.Results.dur_in_sec*Fs;
 
-    for x=1:length(sync_loc)
+    for x=1:length(sync_pulse)
         parsed_vep(x,:)=VEP_data(1,sync_loc(x):sync_loc(x)+dur_in_freq);
+        
+        parsed_vep_bkgd(x,:)=VEP_data(1,sync_locBKGD(x):sync_locBKGD(x)+dur_in_freq);
     end
 
     clear x
@@ -108,7 +109,8 @@ for AA=1:length(VEP_main)
         ax.XLim=[0 p.Results.dur_in_sec];
     end
     
-    parsed_VEP(AA,:,:)=parsed_vep;
+    parsed_VEP(AA,:,:)=parsed_vep;   
+    parsed_VEP_bkgd(AA,:,:)=parsed_vep_bkgd;
     
     clear x sync_pulse sync_loc
 end
@@ -155,6 +157,11 @@ for ZZ=1:size(VEP_Fr,1)
     vds_Fr=cat(2,vds_Fr,squeeze(VDS_Fr(ZZ,:,:)));
 end
 
+vep_bkgd=[];
+for ZZZ=1:size(parsed_VEP_bkgd,1)
+    vep_bkgd=cat(1,vep_bkgd,squeeze(parsed_VEP_bkgd(ZZZ,:,:)));
+end
+
 if p.Results.plot_all==1
     % Plot mean frequency data across sessions
     figure(7)
@@ -174,6 +181,7 @@ if p.Results.plot_all==1
 end
 
 parsedVEPdata.parsed_VEP=parsed_VEP;
+parsedVEPdata.vep_bkgd=vep_bkgd;
 parsedVEPdata.VEP_Fr=VEP_Fr;
 parsedVEPdata.vep_Fr=vep_Fr;
 parsedVEPdata.VDS_Fr=VDS_Fr;

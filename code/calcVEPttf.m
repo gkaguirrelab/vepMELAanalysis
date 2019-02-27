@@ -1,4 +1,4 @@
-function [ttf_VEP]=calcVEPttf(vep_Fr,varargin)
+function [ttf_VEP]=calcVEPttf(vep_Fr,vep_bkgd,varargin)
 % A function that calculates Temporal transfer functions
 % for Metropsis/VEP stimuli for individual observers.
 %
@@ -25,7 +25,7 @@ p.parse(varargin{:});
 f=p.Results.Fs*(0:(p.Results.dur_in_freq/2))/p.Results.dur_in_freq; 
 
 % Calculate fourier transform w is temporal frequency of the stimuli, x is
-% the repeats (concatonated across sessions
+% the repeats (concatonated across sessions)
 for w=1:size(vep_Fr,1)
     for x=1:size(vep_Fr,2)
        % Fourier transform
@@ -35,7 +35,7 @@ for w=1:size(vep_Fr,1)
 
         % select power spectra for each frequency
         temp=find(f>=p.Results.TemporalFrequency(w));
-        P_dataFr(w,x)=sum(squeeze(P_data(w,x,temp(1,1)-1:temp(1,1))))';
+        P_dataFr(w,x)=max(squeeze(P_data(w,x,temp(1,1)-1:temp(1,1))))';
         clear temp
     end
     
@@ -83,14 +83,14 @@ for xx=1:size(vep_Fr,1)
         P_boot=abs(boot_ft/p.Results.dur_in_freq);
         ttf_boot=P_boot(1:p.Results.dur_in_freq/2+1);
         temp=find(f>=p.Results.TemporalFrequency(xx));
-        ttf_Fr_boot(:,yy)=sum(ttf_boot(:,temp(1)-1:temp(1)));
+        ttf_Fr_boot(:,yy)=max(ttf_boot(:,temp(1)-1:temp(1)));
     end
     
     ttf_Fr_boot=sort(ttf_Fr_boot);
     ttf_CI(xx,:)=ttf_Fr_boot(:,[50 950]);
     ttf_M(xx,:)=P(1:p.Results.dur_in_freq/2+1);
     temp=find(f>=p.Results.TemporalFrequency(xx));
-    ttf_FrM(xx,:)=sum(ttf_M(xx,temp(1)-1:temp(1)));
+    ttf_FrM(xx,:)=max(ttf_M(xx,temp(1)-1:temp(1)));
     if p.Results.plot_all==1
         figure(3)
         subplot(1,2,1)
@@ -118,6 +118,9 @@ for xx=1:size(vep_Fr,1)
         hold off
     end
 end
+
+
+
 
 ttf_VEP.ttf=P_data;
 ttf_VEP.ttfFr=P_dataFr;
