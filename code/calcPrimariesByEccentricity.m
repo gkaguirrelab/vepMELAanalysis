@@ -16,7 +16,7 @@ for dd = 1:length(directions)
     % Obtain the modulation primaries for positive S as a function of
     % eccentricity
     for ee = x
-        resultSet = designNominalSPDs('fieldSizeDegrees',ee,'saveDir','');
+        resultSet = designNominalSPDs('observerAgeInYears',30,'fieldSizeDegrees',ee,'saveDir','');
         contrast(ee) = resultSet.(directions{dd}).positiveReceptorContrast(receptorContrastIdx(dd));
         RGB(ee,:)=resultSet.(directions{dd}).modulationPrimary;
     end
