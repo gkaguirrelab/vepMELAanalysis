@@ -22,7 +22,8 @@ p.addParameter('plot_all',false,@islogical);
 
 p.parse(varargin{:});
 
-f=p.Results.Fs*(0:(p.Results.dur_in_freq/2))/p.Results.dur_in_freq; 
+f=p.Results.Fs*(0:(p.Results.dur_in_freq/2))/p.Results.dur_in_freq;
+XX=(1:length(vep_Fr))/p.Results.Fs;
 
 % Calculate fourier transform w is temporal frequency of the stimuli, x is
 % the repeats (concatonated across sessions)
@@ -32,16 +33,42 @@ for w=1:size(vep_Fr,1)
         ft=fft(squeeze(vep_Fr(w,x,:)));
         P = abs(ft/p.Results.dur_in_freq);
         P_data(w,x,:) = P(1:p.Results.dur_in_freq/2+1);
+        
+        % Plot each trial and exclude trials with noisy VEP signal
+        figure(15)
+        subplot(1,2,1)
+        plot(XX,squeeze(vep_Fr(w,x,:)))
+        title(['Frequency: ' num2str(p.Results.TemporalFrequency(w)) ' , Trial: ' num2str(x)])
+        ax=gca;
+        ax.YLim=[-0.5 0.5];
+        ax.XLim=[0 p.Results.dur_in_freq/p.Results.Fs];
+        ax.TickDir='out';
+        ax.Box='off';
+        hold off
+        
+        subplot(1,2,2)
+        plot(f,squeeze(P_data(w,x,:)),'k')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        
+        if max(diff(squeeze(vep_Fr(w,x,:))))>0.08 | max(diff(squeeze(vep_Fr(w,x,:))))<0.02
+            title('bad')
+        end
 
+        hold off
+        
+        pause
+        
         % select power spectra for each frequency
         temp=find(f>=p.Results.TemporalFrequency(w));
         P_dataFr(w,x)=max(squeeze(P_data(w,x,temp(1,1)-1:temp(1,1))))';
         clear temp
     end
-    
-    XX=(1:length(vep_Fr))/p.Results.Fs;
+  
 
 end
+
 
 if p.Results.normalize==1
     clear P_dataFr
@@ -59,16 +86,6 @@ if p.Results.normalize==1
     end
     
     norm_ttf=squeeze(norm_ttf)';
-    
-    figure(10)
-    plot(f,norm_ttf)
-    ylabel('power spectra')
-    xlabel('frequency')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XLim=[0 130];
-    ax.YLim=[0 0.02];
 end
 
 VEP_FrM=squeeze(mean(vep_Fr,2));    
