@@ -10,8 +10,8 @@ function [parsedVEPdata]=parseVEP(VEP_main, varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('lo_freq',0.5,@isnumeric); % low frequency for bandpass filter to remove noise from VEP data
-p.addParameter('hi_freq',200,@isnumeric); % high frequency for bandpass filter to remove noise from VEP data
-p.addParameter('dur_in_sec',2,@isnumeric); % length (in seconds) of VEP epoch to take from each trial
+p.addParameter('hi_freq',150,@isnumeric); % high frequency for bandpass filter to remove noise from VEP data
+p.addParameter('dur_in_sec',1.5,@isnumeric); % length (in seconds) of VEP epoch to take from each trial
 p.addParameter('starttime',0,@isnumeric);
 p.addParameter('plot_sessions',false,@islogical);
 p.addParameter('plot_all',false,@islogical);

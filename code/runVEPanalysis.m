@@ -9,18 +9,7 @@
 %	This function accesses other functions to run all the analysis code for Metropsis/VEP stimuli.
 %
 %
-% Output: saves structure VEP
-%   VEP                   - A structure that contains VEP data, TTL pulse,
-%                           and timebase for both analog signals
-%   audioRec              - A structure that contains mic data, and 
-%                           sampling rate (Fs)
-%   expParam              - contains observer ID, experiment ID, session 
-%                           ID, data that was recorded from the VEP computer
-%   mtrp                  - structure that contains all the metropsis data. 
-%                           This includes observer ID, group (MWVA or HA free), 
-%                           session, and temporal frequency for the stimuli 
-%                           presented (TFtrials)
-%   VDS                   - Visual discomfort scale values for the 35 trials
+% Output: ***
 
 %% Identify subject and create a path and file name to save data
 observerID=input('observer ID:','s');
@@ -40,13 +29,13 @@ for x=1:3
     %% Load compiled data for a single observer from a single channel
     switch x
             case 1
-                expID=input('experiment ID for luminance:','s');
+                expID='LMS05';
                 color='k';
             case 2
-                expID=input('experiment ID for red/green:','s');
+                expID='LM004';
                 color='r';
             case 3
-                expID=input('experiment ID for blue/yellow:','s');
+                expID='S0004';
                 color='b';
     end
     
@@ -57,20 +46,23 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'plot_all',true,'plot_sessions',true);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     A=unique(VEP_main(x).mtrp.TFtrials);
     
+    %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
+    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize1',true);
+    
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(parsedVEPdata(x).vep_Fr,parsedVEPdata(x).vep_bkgd,'dur_in_freq',dur_in_sec*Fs,'plot_all',true,'TemporalFrequency',A);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',true,'TemporalFrequency',A);
 
     
     %% Plotting
     % Plot mean Visual discomfort data
     figure(5)
     subplot(2,1,2)
-    VDSm=nanmean(parsedVEPdata(x).vds_Fr,2);
+    VDSm=nanmedian(parsedVEPdata(x).vds_Fr,2);
     VDSstd=nanstd(parsedVEPdata(x).vds_Fr,[],2);
     errorbar(A,VDSm,VDSstd,['-o' color])
     hold on
@@ -85,15 +77,17 @@ for x=1:3
 
     
      % Plot TFF (power across averaged trials)
-    
-     % normalized by the sum of TTF
-     TTF_all=sum(mean(mean(ttf(x).ttf,2),1));
+
     
     figure(5)
     subplot(2,1,1)
     hold on
-    errorbar(A,ttf(x).ttf_FrM,ttf(x).ttf_FrM-ttf(x).ttf_CI(:,1),ttf(x).ttf_CI(:,2)-ttf(x).ttf_FrM,['-o' color])
-%     errorbar(A,ttf(x).ttf_FrM./TTF_all,(ttf(x).ttf_FrM-ttf(x).ttf_CI(:,1))./TTF_all,(ttf(x).ttf_CI(:,2)-ttf(x).ttf_FrM)./TTF_all,['-o' color])
+    if x==3
+         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_CI([1:3 5],1),ttf(x).ttf_CI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:),['-o' color])
+    else
+         errorbar(A,ttf(x).ttf_FrM,ttf(x).ttf_FrM-ttf(x).ttf_CI(:,1),ttf(x).ttf_CI(:,2)-ttf(x).ttf_FrM,['-o' color])
+    end
+   
     title(observerID)
     ylabel('power spectra for stimulus frequency')
     ax=gca;
@@ -106,12 +100,14 @@ for x=1:3
     % plot background across channels
     if x==3
         f=Fs*(0:((Fs*dur_in_sec)/2))/(Fs*dur_in_sec);
-        background=cat(1,parsedVEPdata(1).vep_bkgd,parsedVEPdata(2).vep_bkgd,parsedVEPdata(3).vep_bkgd);
-        backgroundM=mean(background,1);
+        background=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
+        rand_trial=sort(randi(size(background,1),1,21));
+        background=background(rand_trial,:);
+        backgroundM=nanmean(background,1);
         ft=fft(backgroundM);
         P=abs(ft/(Fs*dur_in_sec));
         ttf_BKGD=P(1:(Fs*dur_in_sec)/2+1);
-        Bootstat=bootstrp(1000,@mean,background,1);
+        Bootstat=bootstrp(1000,@nanmean,background,1);
         for yy=1:size(Bootstat,1)
             boot_ft=fft(Bootstat(yy,:));
             P_boot=abs(boot_ft/(Fs*dur_in_sec));
@@ -136,14 +132,14 @@ for x=1:3
     figure(11)
     for z=1:length(A)
         subplot(3,2,z)
-        plot(XX,squeeze(mean(ttf(:,x).vep_Fr(z,:,:),2)),['-' color])
+        plot(XX,squeeze(nanmean(processedVEPdata(x).vep_Fr(z,:,:),2)),['-' color])
         title(['frequency=' num2str(A(z))]);
         xlabel('Time(s)')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.YLim=[-0.1 0.1];
-        ax.XLim=[0 parsedVEPdata(x).dur_in_freq/Fs];
+        ax.XLim=[0 parsedVEPdata(x).dur_in_freq/parsedVEPdata(x).Fs];
         hold on
     end
     
