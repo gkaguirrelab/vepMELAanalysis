@@ -52,7 +52,7 @@ for x=1:3
     A=unique(VEP_main(x).mtrp.TFtrials);
     
     %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
-    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize1',true);
+    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize2',true);
     
     %% Calculate TTF
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',true,'TemporalFrequency',A);
@@ -77,8 +77,6 @@ for x=1:3
 
     
      % Plot TFF (power across averaged trials)
-
-    
     figure(5)
     subplot(2,1,1)
     hold on

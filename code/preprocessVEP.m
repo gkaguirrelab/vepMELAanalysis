@@ -172,7 +172,7 @@ if p.Results.normalize2==1
     
     clear norm_vep;
     
-    norm_vep=nanmean(vep_bkgd,2);
+    norm_vep=nanmean(vep_bkgd,1);
     for x=1:size(vep_Fr,1)
         vep_bkgdN(x,:)=vep_bkgd(x,:)-norm_vep;
         if p.Results.plot_all==1
