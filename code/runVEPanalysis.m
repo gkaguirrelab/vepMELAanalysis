@@ -31,12 +31,15 @@ for x=1:3
             case 1
                 expID='LMS05';
                 color='k';
+                Color=[0.8 0.8 0.8];
             case 2
                 expID='LM004';
                 color='r';
+                Color=[1 0.8 0.8];
             case 3
                 expID='S0004';
                 color='b';
+                Color=[0.8 0.8 1];
     end
     
     filenameMAT=fullfile(getpref('vepMELAanalysis','melaAnalysisPath'),'experiments',...
@@ -46,22 +49,21 @@ for x=1:3
     VEP_main=ans.VEP;
 
     %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'bandstop120',true);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     A=unique(VEP_main(x).mtrp.TFtrials);
     
     %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
-    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize2',true);
+    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize1',true);
     
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',true,'TemporalFrequency',A);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A);
 
     
     %% Plotting
     % Plot mean Visual discomfort data
     figure(5)
-    subplot(2,1,2)
     VDSm=nanmedian(parsedVEPdata(x).vds_Fr,2);
     VDSstd=nanstd(parsedVEPdata(x).vds_Fr,[],2);
     errorbar(A,VDSm,VDSstd,['-o' color])
@@ -74,16 +76,44 @@ for x=1:3
     ax.XScale='log';
     ax.XLim=[0.95 65];
     ax.YLim=[0 10];
-
     
-     % Plot TFF (power across averaged trials)
-    figure(5)
-    subplot(2,1,1)
+    % Plot TTF
+    if x==1
+        figTTF=figure('Name',observerID);
+    end
+    figure(figTTF)
+    hold on
+    for YY=1:length(A)
+        YYY=x+((YY-1)*3);
+        subplot(5,3,YYY)
+        TEMP=fill(cat(2,ttf(x).f(2:end),fliplr(ttf(x).f(2:end))),cat(2,squeeze(ttf(x).ttf_CI(YY,2:end,1)),fliplr(squeeze(ttf(x).ttf_CI(YY,2:end,2)))),Color,'EdgeColor','none');
+        hold on
+        plot(ttf(x).f,ttf(x).ttf_M(YY,:),['-' color])
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.XScale='log';
+        ax.XLim=[min(ttf(x).f) 100];
+        ax.XTick=A;
+        ax.YLim=[0 0.015];
+        title(num2str(A(YY)))
+        if YYY==7
+            ylabel('Power')
+        end
+        
+        if YYY==14
+            xlabel('Frequency')
+        end
+    end
+    
+    
+    % Plot TFF by stimulus frequency
+    figure(20)
     hold on
     if x==3
-         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_CI([1:3 5],1),ttf(x).ttf_CI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:),['-o' color])
+         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1),ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:),['-o' color])
     else
-         errorbar(A,ttf(x).ttf_FrM,ttf(x).ttf_FrM-ttf(x).ttf_CI(:,1),ttf(x).ttf_CI(:,2)-ttf(x).ttf_FrM,['-o' color])
+         errorbar(A,ttf(x).ttf_FrM,ttf(x).ttf_FrM-ttf(x).ttf_FrCI(:,1),ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM,['-o' color])
     end
    
     title(observerID)
@@ -120,10 +150,54 @@ for x=1:3
             ttf_bkgd_Fr(bb,:)=ttf_BKGD(:,temp(1));
             ttf_bkgdCI_Fr(bb,:)=ttf_bkgdCI(:,temp(1));
         end
+        
+        temp2=find(ttf(x).f>=0.5 & ttf(x).f<=4);
+        ttf_bkgd_Fr(1,:)=ttf_BKGD(:,temp(1));
+        ttf_bkgdCI_Fr(1,:)=ttf_bkgdCI(:,temp(1));
      
         errorbar(A,ttf_bkgd_Fr,ttf_bkgdCI_Fr(:,1),ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
     end
-        
+    
+    % Plot TFF for delta frequency
+    figure(22)
+    subplot(1,2,1)
+    hold on
+    if x==3
+         errorbar(A([1:3 5]),ttf(x).ttf_deltaM([1:3 5],:),ttf(x).ttf_deltaM([1:3 5],:)-ttf(x).ttf_deltaCI([1:3 5],1),ttf(x).ttf_deltaCI([1:3 5],2)-ttf(x).ttf_deltaM([1:3 5],:),['-o' color])
+    else
+         errorbar(A,ttf(x).ttf_deltaM,ttf(x).ttf_deltaM-ttf(x).ttf_deltaCI(:,1),ttf(x).ttf_deltaCI(:,2)-ttf(x).ttf_deltaM,['-o' color])
+    end
+    
+   
+    title('Delta frequency (0.5-4Hz)')
+    xlabel('temporal frequency of stimulus')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XScale='log';
+    ax.XLim=[0.95 35];
+    ax.YLim=[0 0.02];
+    
+    
+    % Plot TFF for alpha frequency
+    figure(22)
+    subplot(1,2,2)
+    hold on
+    if x==3
+         errorbar(A([1:3 5]),ttf(x).ttf_alphaM([1:3 5],:),ttf(x).ttf_alphaM([1:3 5],:)-ttf(x).ttf_alphaCI([1:3 5],1),ttf(x).ttf_alphaCI([1:3 5],2)-ttf(x).ttf_alphaM([1:3 5],:),['-o' color])
+    else
+         errorbar(A,ttf(x).ttf_alphaM,ttf(x).ttf_alphaM-ttf(x).ttf_alphaCI(:,1),ttf(x).ttf_alphaCI(:,2)-ttf(x).ttf_alphaM,['-o' color])
+    end
+   
+    title(observerID)
+    title('Alpha frequency (8-12Hz)')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XScale='log';
+    ax.XLim=[0.95 35];
+    ax.YLim=[0 0.02];
+    
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
