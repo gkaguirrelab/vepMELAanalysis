@@ -17,21 +17,26 @@ XX=(1:length(vep_Fr))/p.Results.Fs;
 % temporal frequency trials
 for w=1:size(vep_Fr,1)
     for x=1:size(vep_Fr,2)
-%         figure(15)
-%         plot(XX,squeeze(vep_Fr(w,x,:)))
-%         title(['Frequency: ' num2str(p.Results.TemporalFrequency(w)) ' , Trial: ' num2str(x)])
-%         ax=gca;
-%         ax.YLim=[-0.5 0.5];
-%         ax.XLim=[0 dur_in_freq/p.Results.Fs];
-%         ax.TickDir='out';
-%         ax.Box='off';
-%         hold off
+        if p.Results.plot_all==1
+            figure(15)
+            plot(XX,squeeze(vep_Fr(w,x,:)))
+            title(['Frequency: ' num2str(p.Results.TemporalFrequency(w)) ' , Trial: ' num2str(x)])
+            ax=gca;
+            ax.YLim=[-0.5 0.5];
+            ax.XLim=[0 dur_in_freq/p.Results.Fs];
+            ax.TickDir='out';
+            ax.Box='off';
+            hold off
+            pause
+        end
         
         if max(abs(squeeze(vep_Fr(w,x,:))))>=0.5 || max(abs(squeeze(vep_Fr(w,x,:))))<0.02
-%             xlabel('bad')
+            if p.Results.plot_all==1
+               xlabel('bad')
+               pause
+            end
             vep_Fr(w,x,:)=vep_Fr(w,x,:).*NaN;
         end
-%         pause
         
     end
 end
@@ -49,10 +54,8 @@ for w=1:size(vep_bkgd,1)
 %     hold off
 
     if max(abs(vep_bkgd(w,:)))>=0.5 || max(abs(vep_bkgd(w,:)))<0.02
-%         xlabel('bad')
         vep_bkgd(w,:)=vep_bkgd(w,:).*NaN;
     end
-%     pause
 end
 
 
@@ -195,7 +198,7 @@ if p.Results.normalize2==1
     clear vep_bkgdN vep_FrN
 end
 
-%% save data
+
 processedVEPdata.vep_Fr=vep_Fr;
 processedVEPdata.vep_bkgd=vep_bkgd;
 end

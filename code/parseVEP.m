@@ -26,6 +26,9 @@ VEP=[];
 % concatonate VDS and TF trial data across sessions
 for x=1:length(VEP_main)
     
+    if VEP_main(x).vds<35
+        VEP_main(x).vds=cat(2,VEP_main(x).vds,NaN*ones(1,35-length(VEP_main(x).vds)));
+    end
     vds=VEP_main(x).vds;
     VDS=cat(1,VDS,vds);
     
@@ -68,7 +71,7 @@ for AA=1:length(VEP_main)
     bkgdFs=3*Fs;
 
     for x=2:length(TTL)
-        if TTL(1,x)>4 && TTL(1,(x-1))<4
+        if TTL(1,x)>4 && TTL(1,x)<6 && TTL(1,(x-1))<4
             y=y+1;
             sync_pulse(y)=timestamp(1,x+startFs);
             sync_loc(y)=x+startFs;

@@ -48,14 +48,15 @@ for x=1:3
     open(filenameMAT);
     VEP_main=ans.VEP;
 
-    %% Parse VEP data 
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'bandstop120',true);
+    %% Parse VEP data
+    
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'bandstop120',true,'plot_sessions',false);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     A=unique(VEP_main(x).mtrp.TFtrials);
     
     %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
-    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize1',true);
+    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize1',false);
     
     %% Calculate TTF
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A);
@@ -64,6 +65,7 @@ for x=1:3
     %% Plotting
     % Plot mean Visual discomfort data
     figure(5)
+    subplot(2,1,2)
     VDSm=nanmedian(parsedVEPdata(x).vds_Fr,2);
     VDSstd=nanstd(parsedVEPdata(x).vds_Fr,[],2);
     errorbar(A,VDSm,VDSstd,['-o' color])
@@ -93,9 +95,10 @@ for x=1:3
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
+        ax.YScale='log';
         ax.XLim=[min(ttf(x).f) 100];
         ax.XTick=A;
-        ax.YLim=[0 0.015];
+        ax.YLim=[0.00001 0.015];
         title(num2str(A(YY)))
         if YYY==7
             ylabel('Power')
@@ -108,7 +111,8 @@ for x=1:3
     
     
     % Plot TFF by stimulus frequency
-    figure(20)
+    figure(5)
+    subplot(2,1,1)
     hold on
     if x==3
          errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1),ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:),['-o' color])
@@ -129,9 +133,17 @@ for x=1:3
     if x==3
         f=Fs*(0:((Fs*dur_in_sec)/2))/(Fs*dur_in_sec);
         background=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
-        rand_trial=sort(randi(size(background,1),1,21));
-        background=background(rand_trial,:);
-        backgroundM=nanmean(background,1);
+        background2=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
+        counter=0;
+        for yyy=1:size(background,1)-1
+            if isnan(background(yyy))==1
+                background2=cat(1,background2(1:yyy-1-counter,:),background(yyy+1:end,:));
+                counter=counter+1;
+            end
+        end
+        rand_trial=sort(randi(size(background2,1),1,21));
+        background2=background2(rand_trial,:);
+        backgroundM=nanmean(background2,1);
         ft=fft(backgroundM);
         P=abs(ft/(Fs*dur_in_sec));
         ttf_BKGD=P(1:(Fs*dur_in_sec)/2+1);

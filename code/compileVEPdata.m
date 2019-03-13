@@ -149,6 +149,12 @@ function [VDS]=parseAudioData(VEP,nTrials,trial_dur)
     hold off
     shift_time=input('shift the time=');
     parse_audio=X(audioRec.Fs*shift_time:trial_dur*audioRec.Fs:end);
+    
+    if length(parse_audio)<nTrials
+        vds=NaN*ones(1,length(nTrials));
+        nTrials=length(parse_audio)-1;
+        disp('error audio file')
+    end
 
     for tt = 1:nTrials
         firstTrialIndex = parse_audio(tt)*audioRec.Fs;
