@@ -1,15 +1,3 @@
-% function []=runVEPanalysis()
-% A function that accesses other functions to run all the analysis code
-% for Metropsis/VEP stimuli for individual observers.
-%
-% Syntax:
-%  []=runVEPanalysis=()
-%
-% Description:
-%	This function accesses other functions to run all the analysis code for Metropsis/VEP stimuli.
-%
-%
-% Output: ***
 
 %% Identify subject and create a path and file name to save data
 observerID=input('observer ID:','s');
@@ -54,12 +42,36 @@ for x=1:3
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     A=unique(VEP_main(x).mtrp.TFtrials);
+end
+
+%% Process VEP data (gets rid of poor quality trials, and normalizes signal)
+    [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec,'normalize3',true);
     
-    %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
-    [processedVEPdata(x)]=preprocessVEP(parsedVEPdata(x).vep_Fr, parsedVEPdata(x).vep_bkgd,'dur_in_sec',dur_in_sec,'normalize1',false);
+    % analyze background data across channels
+    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,processedVEPdata(1).norm_vep);
     
+    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,processedVEPdata(1).norm_vep);
+%%
+for x=1:3
+    switch x
+            case 1
+                expID='LMS05';
+                color='k';
+                Color=[0.8 0.8 0.8];
+            case 2
+                expID='LM004';
+                color='r';
+                Color=[1 0.8 0.8];
+            case 3
+                expID='S0004';
+                color='b';
+                Color=[0.8 0.8 1];
+    end
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A,'norm_vep',processedVEPdata(x).norm_vep);
+
+    %% FOOOF
+    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,processedVEPdata(x).norm_vep);
 
     
     %% Plotting
@@ -88,17 +100,16 @@ for x=1:3
     for YY=1:length(A)
         YYY=x+((YY-1)*3);
         subplot(5,3,YYY)
-        TEMP=fill(cat(2,ttf(x).f(2:end),fliplr(ttf(x).f(2:end))),cat(2,squeeze(ttf(x).ttf_CI(YY,2:end,1)),fliplr(squeeze(ttf(x).ttf_CI(YY,2:end,2)))),Color,'EdgeColor','none');
+        TEMP=fill(cat(2,ttf(x).f,fliplr(ttf(x).f)),cat(2,squeeze(ttf(x).ttf_CI(YY,:,1)),fliplr(squeeze(ttf(x).ttf_CI(YY,:,2)))),Color,'EdgeColor','none');
         hold on
         plot(ttf(x).f,ttf(x).ttf_M(YY,:),['-' color])
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
-        ax.XScale='log';
         ax.YScale='log';
         ax.XLim=[min(ttf(x).f) 100];
         ax.XTick=A;
-        ax.YLim=[0.00001 0.015];
+        ax.YLim=[0.00000001 0.4];
         title(num2str(A(YY)))
         if YYY==7
             ylabel('Power')
@@ -115,9 +126,13 @@ for x=1:3
     subplot(2,1,1)
     hold on
     if x==3
-         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1),ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:),['-o' color])
+        neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
+        pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
+         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
     else
-         errorbar(A,ttf(x).ttf_FrM,ttf(x).ttf_FrM-ttf(x).ttf_FrCI(:,1),ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM,['-o' color])
+        neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
+        pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
+        errorbar(A,ttf(x).ttf_FrM,neg,pos,['-o' color])
     end
    
     title(observerID)
@@ -127,96 +142,130 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.02];
+    ax.YLim=[0 0.15];
   
     % plot background across channels
-    if x==3
-        f=Fs*(0:((Fs*dur_in_sec)/2))/(Fs*dur_in_sec);
-        background=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
-        background2=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
-        counter=0;
-        for yyy=1:size(background,1)-1
-            if isnan(background(yyy))==1
-                background2=cat(1,background2(1:yyy-1-counter,:),background(yyy+1:end,:));
-                counter=counter+1;
-            end
-        end
-        rand_trial=sort(randi(size(background2,1),1,21));
-        background2=background2(rand_trial,:);
-        backgroundM=nanmean(background2,1);
-        ft=fft(backgroundM);
-        P=abs(ft/(Fs*dur_in_sec));
-        ttf_BKGD=P(1:(Fs*dur_in_sec)/2+1);
-        Bootstat=bootstrp(1000,@nanmean,background,1);
-        for yy=1:size(Bootstat,1)
-            boot_ft=fft(Bootstat(yy,:));
-            P_boot=abs(boot_ft/(Fs*dur_in_sec));
-            ttf_bkgd_boot(yy,:)=P_boot(1:(Fs*dur_in_sec)/2+1);
-        end
-        
-        ttf_bkgd_boot=sort(ttf_bkgd_boot,1);
-        ttf_bkgdCI=ttf_bkgd_boot([50 950],:);
-        
-        for bb=1:length(A)
-            temp=find(ttf(x).f>=A(bb));
-            ttf_bkgd_Fr(bb,:)=ttf_BKGD(:,temp(1));
-            ttf_bkgdCI_Fr(bb,:)=ttf_bkgdCI(:,temp(1));
-        end
-        
-        temp2=find(ttf(x).f>=0.5 & ttf(x).f<=4);
-        ttf_bkgd_Fr(1,:)=ttf_BKGD(:,temp(1));
-        ttf_bkgdCI_Fr(1,:)=ttf_bkgdCI(:,temp(1));
-     
+    if x==3     
         errorbar(A,ttf_bkgd_Fr,ttf_bkgdCI_Fr(:,1),ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
     end
-    
-    % Plot TFF for delta frequency
-    figure(22)
-    subplot(1,2,1)
+   
+     % Plot psd FOOOF
+    figure(7)
+     subplot(1,2,1)
     hold on
     if x==3
-         errorbar(A([1:3 5]),ttf(x).ttf_deltaM([1:3 5],:),ttf(x).ttf_deltaM([1:3 5],:)-ttf(x).ttf_deltaCI([1:3 5],1),ttf(x).ttf_deltaCI([1:3 5],2)-ttf(x).ttf_deltaM([1:3 5],:),['-o' color])
+        neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
+        pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
+         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
     else
-         errorbar(A,ttf(x).ttf_deltaM,ttf(x).ttf_deltaM-ttf(x).ttf_deltaCI(:,1),ttf(x).ttf_deltaCI(:,2)-ttf(x).ttf_deltaM,['-o' color])
+        neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
+        pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
+        errorbar(A,ttf(x).ttf_FrM,neg,pos,['-o' color])
     end
     
-   
-    title('Delta frequency (0.5-4Hz)')
-    xlabel('temporal frequency of stimulus')
+    title(observerID)
+    ylabel('power spectra for stimulus frequency')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.02];
+    ax.YLim=[0 0.15];
     
+    % get FOOOF peak psd
+%     G=@(x0,xdata)x0(2)*exp((-((xdata-x0(1)).^2))/(2*(x0(3)^2)));
     
-    % Plot TFF for alpha frequency
-    figure(22)
+    for a=1:length(A)
+        xdata=fooof_results(x,a).freqs;
+        ydata=10.^(fooof_results(x,a).fooofed_spectrum)-10.^(fooof_results(x,a).bg_fit);
+        
+        temp=fooof_results(x,a).peak_params(:,1);
+        temp2=abs(temp-A(a));
+        temp3=find(temp2==min(temp2));
+        if isempty(temp3)
+            peak_freq=A(a);
+            temp4=abs(xdata-peak_freq);
+            peak_freq_loc=find(temp4==min(temp4));  
+        else
+        peak_freq=temp(temp3);
+        temp4=abs(xdata-peak_freq);
+        peak_freq_loc=find(temp4==min(temp4));
+        end
+    
+%         figure(12)
+%         plot(xdata,ydata,'k')
+%         hold on
+%         plot(xdata(peak_freq_loc),ydata(peak_freq_loc),'or')
+%         ax=gca;
+%         ax.Box='off';
+%         ax.TickDir='out';
+%         ax.XLim=[0 100];
+%         pause
+%         hold off
+        if peak_freq_loc==1
+           fooof_peak_Fr(x,a)=sum(ydata(peak_freq_loc:peak_freq_loc+2)); 
+        else
+           fooof_peak_Fr(x,a)=sum(ydata(peak_freq_loc-1:peak_freq_loc+1)); 
+        end
+        
+    end
+    
+    if x==3
+
+            xdata=fooof_bkgd.freqs;
+            ydata=10.^(fooof_bkgd.fooofed_spectrum)-10.^(fooof_bkgd.bg_fit);
+
+            for a=1:length(A)
+                temp=fooof_bkgd.peak_params(:,1);
+                temp2=abs(temp-A(a));
+                temp3=find(temp2==min(temp2));
+                if isempty(temp3)
+                    peak_freq=A(a);
+                    temp4=abs(xdata-peak_freq);
+                    peak_freq_loc=find(temp4==min(temp4));  
+                else
+                peak_freq=temp(temp3);
+                temp4=abs(xdata-peak_freq);
+                peak_freq_loc=find(temp4==min(temp4));
+                end
+
+                if peak_freq_loc==1
+                   fooof_bkgdFr(:,a)=sum(ydata(peak_freq_loc:peak_freq_loc+2)); 
+                else
+                   fooof_bkgdFr(:,a)=sum(ydata(peak_freq_loc-1:peak_freq_loc+1)); 
+                end
+            end
+    end
+    
+    figure(7)
     subplot(1,2,2)
     hold on
     if x==3
-         errorbar(A([1:3 5]),ttf(x).ttf_alphaM([1:3 5],:),ttf(x).ttf_alphaM([1:3 5],:)-ttf(x).ttf_alphaCI([1:3 5],1),ttf(x).ttf_alphaCI([1:3 5],2)-ttf(x).ttf_alphaM([1:3 5],:),['-o' color])
+        plot(A([1:3 5]),fooof_peak_Fr(x,[1:3 5]),['-o' color])
+
+        plot(A,fooof_bkgdFr,'-o','Color',[0.5 0.5 0.5])
+         
     else
-         errorbar(A,ttf(x).ttf_alphaM,ttf(x).ttf_alphaM-ttf(x).ttf_alphaCI(:,1),ttf(x).ttf_alphaCI(:,2)-ttf(x).ttf_alphaM,['-o' color])
+        plot(A,fooof_peak_Fr(x,:),['-o' color])
     end
    
-    title(observerID)
-    title('Alpha frequency (8-12Hz)')
+    title([observerID ' fooofed'])
+    ylabel('power spectra for stimulus frequency')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.02];
-    
+    ax.YLim=[0 0.15];
+  
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
     figure(11)
     for z=1:length(A)
         subplot(3,2,z)
-        plot(XX,squeeze(nanmean(processedVEPdata(x).vep_Fr(z,:,:),2)),['-' color])
+        vep_temp=squeeze(nanmean(processedVEPdata(x).vep_Fr(z,:,:),2));
+        plot(XX,vep_temp,['-' color])
         title(['frequency=' num2str(A(z))]);
         xlabel('Time(s)')
         ax=gca;
@@ -226,16 +275,29 @@ for x=1:3
         ax.XLim=[0 parsedVEPdata(x).dur_in_freq/parsedVEPdata(x).Fs];
         hold on
     end
-    
-    
-    
-%     % info to save per channel
-%     VEP_main.mtrp.group;
-%     VEP_main.mtrp.observer;
 
+    vds(x,:,:)=parsedVEPdata(x).vds_Fr;
+    vep_Fr(x,:,:,:)=processedVEPdata(x).vep_Fr;
+    vep_BKGD(x,:,:)=vep_bkgd;
 end
 
+compiledData.observerID=observerID;
+compiledData.group=VEP_main(1).mtrp.group;
+compiledData.Fs=Fs;
+compiledData.vds=vds;
+compiledData.vep_Fr=vep_Fr;
+compiledData.vep_bkgd=vep_BKGD;
+compiledData.fooof_peak_Fr=fooof_peak_Fr;
+compiledData.fooof_results=fooof_results;
+compiledData.fooof_bkgd=fooof_bkgd;
+compiledData.ttf_M=ttf(x).ttf_M;
+compiledData.ttf_CI=ttf(x).ttf_CI;
+compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
+compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
+compiledData.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
+compiledData.ttf_FrM=ttf.ttf_FrM;
+compiledData.ttf_FrCI=ttf.ttf_FrCI;
 
 
-% save(filenameComp)
-%end
+save(filenameComp,'compiledData')
+

@@ -44,7 +44,7 @@ for x=1:length(stim_freq)
         ax.TickDir='out';
 %         ax.XScale='log';
         ax.XLim=[0.1 152];
-        ax.YLim=[0 0.3];
+        ax.YLim=[0 1];
         pause
     end
 end

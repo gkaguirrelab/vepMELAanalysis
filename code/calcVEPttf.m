@@ -18,53 +18,38 @@ p.addParameter('TemporalFrequency',[1.625 3.25 7.5 15 30],@isnumeric);
 p.addParameter('Fs',2000,@isnumeric);
 p.addParameter('dur_in_sec',1.5,@isnumeric);
 p.addParameter('plot_all',false,@islogical);
+p.addParameter('norm_vep',1,@isnumeric);
 
 p.parse(varargin{:});
 
 dur_in_freq=p.Results.dur_in_sec*p.Results.Fs;
-f=p.Results.Fs*(0:(dur_in_freq/2))/dur_in_freq;
 XX=(1:length(vep_Fr))/p.Results.Fs;
-vep_FrM=squeeze(nanmean(vep_Fr,2));
+vep_FrM=squeeze(nanmean(vep_Fr,2))./p.Results.norm_vep;
 
 for xx=1:size(vep_FrM,1)
-    ft=fft(vep_FrM(xx,:));
-    P=abs(ft/dur_in_freq);
-    ttf_M(xx,:)=P(1:dur_in_freq/2+1);
-    Bootstat=bootstrp(1000,@nanmean,squeeze(vep_Fr(xx,:,:)),1);
+    [psd_temp,f]=pwelch(vep_FrM(xx,:),1500,[],[],p.Results.Fs);
+    ttf_M(xx,:)=psd_temp';
+    Bootstat=bootstrp(100,@nanmean,squeeze(vep_Fr(xx,:,:)),1)./p.Results.norm_vep;
     for yy=1:size(Bootstat,1)
-        boot_ft=fft(Bootstat(yy,:));
-        P_boot=abs(boot_ft/dur_in_freq);
-        ttf_boot=P_boot(1:dur_in_freq/2+1);
+        ttf_boot=pwelch(Bootstat(yy,:),1500,[],[],p.Results.Fs);
+        ttf_boot=ttf_boot';
         
         TTF_boot(xx,:,yy)=ttf_boot;
-        temp=find(f>=p.Results.TemporalFrequency(xx));
-        ttf_Fr_boot(:,yy)=max(ttf_boot(:,temp(1)-1:temp(1)));
-        
-        temp2=find(f>=8 & f<=12);
-        ttf_Fr_bootAlpha(:,yy)=mean(ttf_boot(:,temp2(1):temp2(end)));
-        
-        temp3=find(f>=0.5 & f<=4);
-        ttf_Fr_bootDelta(:,yy)=mean(ttf_boot(:,temp2(1):temp2(end)));
+        temp=abs(f-p.Results.TemporalFrequency(xx));
+        temp2=find(temp==min(temp));
+        ttf_Fr_boot(:,yy)=sum(ttf_boot(:,temp2-1:temp2+1));
     end
    
     TTF_boot=sort(TTF_boot,3);
-    ttf_CI(xx,:,:)=TTF_boot(xx,:,[50 950]);
+    ttf_CI(xx,:,:)=TTF_boot(xx,:,[5 95]);
     
-    temp=find(f>=p.Results.TemporalFrequency(xx));
-    ttf_FrM(xx,:)=max(ttf_M(xx,temp(1)-1:temp(1)));
+    temp=abs(f-p.Results.TemporalFrequency(xx));
+    temp2=find(temp==min(temp));
+    ttf_FrM(xx,:)=sum(ttf_M(xx,temp2-1:temp2+1));
     ttf_Fr_boot=sort(ttf_Fr_boot);
-    ttf_FrCI(xx,:)=ttf_Fr_boot(:,[50 950]);
+    ttf_FrCI(xx,:)=ttf_Fr_boot(:,[5 95]);
     
-    temp2=find(f>=8 & f<=12);
-    ttf_alphaM(xx,:)=mean(ttf_M(xx,temp2(1)-1:temp2(end)));
-    ttf_Fr_bootAlpha=sort(ttf_Fr_bootAlpha);
-    ttf_alphaCI(xx,:)=ttf_Fr_bootAlpha(:,[50 950]);
-    
-    temp3=find(f>=0.5 & f<=4);
-    ttf_deltaM(xx,:)=mean(ttf_M(xx,temp3(1)-1:temp3(end)));
-    ttf_Fr_bootDelta=sort(ttf_Fr_bootDelta);
-    ttf_deltaCI(xx,:)=ttf_Fr_bootDelta(:,[50 950]);
-        
+   
     if p.Results.plot_all==1
         figure(3)
         subplot(1,2,1)
@@ -87,20 +72,16 @@ for xx=1:size(vep_FrM,1)
         ax.TickDir='out';
         ax.Box='off';
         ax.XLim=[0 130];
-        ax.YLim=[0 0.02];
+        ax.YLim=[0 0.0003];
         pause
         hold off
     end
 end
 
-
+f=f';
 ttf_VEP.f=f;
 ttf_VEP.ttf_M=ttf_M;
 ttf_VEP.ttf_CI=ttf_CI;
 ttf_VEP.ttf_FrM=ttf_FrM;
 ttf_VEP.ttf_FrCI=ttf_FrCI;
-ttf_VEP.ttf_deltaM=ttf_deltaM;
-ttf_VEP.ttf_deltaCI=ttf_deltaCI;
-ttf_VEP.ttf_alphaM=ttf_alphaM;
-ttf_VEP.ttf_alphaCI=ttf_alphaCI;
 end
