@@ -7,7 +7,6 @@ p.addParameter('dur_in_sec',1.5,@isnumeric); % length (in seconds) of VEP epoch 
 p.addParameter('Fs',2000,@isnumeric);
 p.addParameter('normalize1',0,@islogical);
 p.addParameter('normalize2',0,@islogical);
-p.addParameter('normalize3',0,@islogical);
 p.addParameter('plot_all',0,@islogical);
 p.parse(varargin{:});
 
@@ -67,7 +66,7 @@ for XXX=1:size(parsedVEPdata,2)
         end
 end
 
-%% Normalize signal - mean to 0
+%% Normalize signal - median to 0
 if p.Results.normalize1==1
     epoch=(0:0.5:p.Results.dur_in_sec)*p.Results.Fs;
     temp_all_epoch=[];
@@ -80,8 +79,8 @@ if p.Results.normalize1==1
                     else
                         temp_epoch=vep_Fr(XXX,w,x,epoch(y)+1:epoch(y+1));
                     end
-                    temp_mean=nanmean(squeeze(temp_epoch));
-                    temp_epoch=temp_epoch-(temp_mean*ones(size(temp_epoch,1),size(temp_epoch,2)));
+                    temp_median=nanmedian(squeeze(temp_epoch));
+                    temp_epoch=temp_epoch-(temp_median*ones(size(temp_epoch,1),size(temp_epoch,2)));
                     temp_all_epoch=cat(4,temp_all_epoch,temp_epoch);
                 end
                 if p.Results.plot_all==1
@@ -102,7 +101,7 @@ if p.Results.normalize1==1
             end
         end
 
-        clear temp_epoch temp_mean
+        clear temp_epoch temp_median
         temp_all_epoch=[];
 
         for w=1:size(vep_bkgd,1)
@@ -112,8 +111,8 @@ if p.Results.normalize1==1
                 else
                     temp_epoch=vep_bkgd(w,epoch(y)+1:epoch(y+1));
                 end
-                temp_mean=nanmean(squeeze(temp_epoch));
-                temp_epoch=temp_epoch-(temp_mean*ones(size(temp_epoch,1),size(temp_epoch,2)));
+                temp_median=nanmedian(squeeze(temp_epoch));
+                temp_epoch=temp_epoch-(temp_median*ones(size(temp_epoch,1),size(temp_epoch,2)));
                 temp_all_epoch=cat(2,temp_all_epoch,temp_epoch);
             end
             if p.Results.plot_all==1
@@ -144,7 +143,7 @@ end
 if p.Results.normalize2==1
     
     for XXX=1:size(vep_Fr,1)
-        norm_vep=nanmean(nanmean(vep_Fr(XXX,:,:,:),3),2);
+        norm_vep=nanmedian(nanmedian(vep_Fr(XXX,:,:,:),3),2);
         for x=1:size(vep_Fr,2)
             for y=1:size(vep_Fr,3)
                 vep_FrN(XXX,x,y,:)=vep_Fr(XXX,x,y,:)-norm_vep;
@@ -166,7 +165,7 @@ if p.Results.normalize2==1
 
         clear norm_vep;
 
-        norm_vep=nanmean(vep_bkgd(XXX,:,:),1);
+        norm_vep=nanmedian(vep_bkgd(XXX,:,:),1);
         for x=1:size(vep_Fr,2)
             vep_bkgdN(XXX,x,:)=vep_bkgd(x,:)-norm_vep;
             if p.Results.plot_all==1
@@ -191,13 +190,6 @@ if p.Results.normalize2==1
     
 end
 
-%% Normalize setting max of the mean 
-if p.Results.normalize3==1
-        norm_vep=max(max(max(abs(nanmean(vep_Fr,3)))));
-        processedVEPdata(1).norm_vep=norm_vep;
-        processedVEPdata(2).norm_vep=norm_vep;
-        processedVEPdata(3).norm_vep=norm_vep;
-end
 
 processedVEPdata(1).vep_Fr=squeeze(vep_Fr(1,:,:,:));
 processedVEPdata(2).vep_Fr=squeeze(vep_Fr(2,:,:,:));

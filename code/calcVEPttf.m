@@ -15,23 +15,23 @@ function [ttf_VEP]=calcVEPttf(vep_Fr,varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('TemporalFrequency',[1.625 3.25 7.5 15 30],@isnumeric);
+p.addParameter('Window',1500,@isnumeric);
 p.addParameter('Fs',2000,@isnumeric);
 p.addParameter('dur_in_sec',1.5,@isnumeric);
 p.addParameter('plot_all',false,@islogical);
-p.addParameter('norm_vep',1,@isnumeric);
 
 p.parse(varargin{:});
 
 dur_in_freq=p.Results.dur_in_sec*p.Results.Fs;
 XX=(1:length(vep_Fr))/p.Results.Fs;
-vep_FrM=squeeze(nanmean(vep_Fr,2))./p.Results.norm_vep;
+vep_FrM=squeeze(nanmedian(vep_Fr,2));
 
 for xx=1:size(vep_FrM,1)
-    [psd_temp,f]=pwelch(vep_FrM(xx,:),1500,[],[],p.Results.Fs);
+    [psd_temp,f]=pwelch(vep_FrM(xx,:),p.Results.Window,[],[],p.Results.Fs);
     ttf_M(xx,:)=psd_temp';
-    Bootstat=bootstrp(100,@nanmean,squeeze(vep_Fr(xx,:,:)),1)./p.Results.norm_vep;
+    Bootstat=bootstrp(100,@nanmedian,squeeze(vep_Fr(xx,:,:)),1);
     for yy=1:size(Bootstat,1)
-        ttf_boot=pwelch(Bootstat(yy,:),1500,[],[],p.Results.Fs);
+        ttf_boot=pwelch(Bootstat(yy,:),p.Results.Window,[],[],p.Results.Fs);
         ttf_boot=ttf_boot';
         
         TTF_boot(xx,:,yy)=ttf_boot;

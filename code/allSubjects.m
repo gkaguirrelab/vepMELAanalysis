@@ -28,10 +28,26 @@ for x=1:size(subjects,1)
             counter_MVA=counter_MVA+1;
             MVA_vds(counter_MVA,:,:,:)=compiledData.vds;
             MVA_fooof_fr(counter_MVA,:,:)=compiledData.fooof_peak_Fr;
+            MVA_nulling(counter_MVA,:)=compiledData.nulling;
+            for xx=1:3
+                for yy=1:5
+                    MVA_ap(counter_MVA,xx,yy,:)=compiledData.fooof_results(xx,yy).bg_fit;
+                    MVA_psd(counter_MVA,xx,yy,:)=compiledData.fooof_results(xx,yy).power_spectrum;
+                    MVA_fooof(counter_MVA,xx,yy,:)=compiledData.fooof_results(xx,yy).fooofed_spectrum;
+                end
+            end
         else if compiledData(1).group=='HA f'
                 counter_HAF=counter_HAF+1;
                 HAF_vds(counter_HAF,:,:,:)=compiledData.vds;
                 HAF_fooof_fr(counter_HAF,:,:)=compiledData.fooof_peak_Fr;
+                HAF_nulling(counter_HAF,:)=compiledData.nulling;
+                   for xx=1:3
+                        for yy=1:5
+                            HAF_ap(counter_HAF,xx,yy,:)=compiledData.fooof_results(xx,yy).bg_fit;
+                            HAF_psd(counter_HAF,xx,yy,:)=compiledData.fooof_results(xx,yy).power_spectrum;
+                            HAF_fooof(counter_HAF,xx,yy,:)=compiledData.fooof_results(xx,yy).fooofed_spectrum;
+                        end
+                    end
             else
                 disp('error: group');
             end
@@ -39,15 +55,126 @@ for x=1:size(subjects,1)
 
 end
 
+clear x xx yy ans
+
+freqs=compiledData.fooof_results(1,1).freqs;
+for x=1:size(MVA_fooof,1)
+    for y=1:size(MVA_fooof,2)
+        for z=1:size(MVA_fooof,3)
+            psd=10.^squeeze(squeeze(MVA_psd(x,y,z,:)));
+            fooof_psd=10.^squeeze(squeeze(MVA_fooof(x,y,z,:)));
+            ap=10.^squeeze(squeeze(MVA_ap(x,y,z,:)));
+            periodic=fooof_psd-ap;
+            
+            figure(1)
+            subplot(1,2,1)
+            plot(freqs,psd,'k')
+            hold on
+            plot(freqs,fooof_psd,'r')
+            plot(freqs,ap,'--')
+            title('MVA - full model')
+            ylabel('power spectra')
+            xlabel('frequency')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.XLim=[0 35];
+            ax.YLim=[0 0.0005];
+            hold off
+            
+            subplot(1,2,2)
+            plot(freqs,psd,'k')
+            hold on
+            plot(freqs,periodic,'b')
+            ylabel('power spectra')
+            xlabel('frequency')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.XLim=[0 35];
+            ax.YLim=[0 0.0005];
+            hold off
+            
+            pause
+        end
+    end
+end
+
+
+for x=1:size(HAF_fooof,1)
+    for y=1:size(HAF_fooof,2)
+        for z=1:size(HAF_fooof,3)
+            psd=10.^squeeze(squeeze(HAF_psd(x,y,z,:)));
+            fooof_psd=10.^squeeze(squeeze(HAF_fooof(x,y,z,:)));
+            ap=10.^squeeze(squeeze(HAF_ap(x,y,z,:)));
+            periodic=fooof_psd-ap;
+            
+            figure(1)
+            subplot(1,2,1)
+            plot(freqs,psd,'k')
+            hold on
+            plot(freqs,fooof_psd,'r')
+            plot(freqs,ap,'--')
+            title('HAF - full model')
+            ylabel('power spectra')
+            xlabel('frequency')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.XLim=[0 35];
+            ax.YLim=[0 0.0005];
+            hold off
+            
+            subplot(1,2,2)
+            plot(freqs,psd,'k')
+            hold on
+            plot(freqs,periodic,'b')
+            ylabel('power spectra')
+            xlabel('frequency')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.XLim=[0 35];
+            ax.YLim=[0 0.0005];
+            hold off
+            
+            pause
+        end
+    end
+end
+
+% Calculate bootstrapped confidence intervals
+for a=1:size(HAF_vds,2)
+    for b=1:size(HAF_vds,3)
+        MVA_temp=squeeze(MVA_fooof_fr(:,a,b));
+        Bootstat=bootstrp(1000,@nanmedian,MVA_temp,1);
+        Bootstat=sort(Bootstat,1);
+        MVA_fooof_CI(a,b,:)=Bootstat([50 950],:)';
+        
+        HAF_temp=squeeze(HAF_fooof_fr(:,a,b));
+        Bootstat2=bootstrp(1000,@nanmedian,HAF_temp,1);
+        Bootstat2=sort(Bootstat2,1);
+        HAF_fooof_CI(a,b,:)=Bootstat2([50 950],:)';
+        
+        
+        
+        MVA_temp2=squeeze(squeeze(squeeze(nanmedian(MVA_vds(:,a,b,:),4))));
+        Bootstat3=bootstrp(1000,@nanmedian,MVA_temp2,1);
+        Bootstat3=sort(Bootstat3,1);
+        MVA_vds_CI(a,b,:)=Bootstat3([50 950],:)';
+        
+        HAF_temp2=squeeze(squeeze(squeeze(nanmedian(HAF_vds(:,a,b,:),4))));
+        Bootstat4=bootstrp(1000,@nanmedian,HAF_temp2,1);
+        Bootstat4=sort(Bootstat4,1);
+        HAF_vds_CI(a,b,:)=Bootstat4([50 950],:)';
+    end
+end
+        
     % Plot TFF by stimulus frequency
-    
-    
     figure(5)
-    MVA_fooof_M=squeeze(mean(MVA_fooof_fr,1));
-    MVA_fooof_std=squeeze(std(MVA_fooof_fr,[],1));
-    HAF_fooof_M=squeeze(mean(HAF_fooof_fr,1));
-    HAF_fooof_std=squeeze(std(HAF_fooof_fr,[],1));
-    for y=1:size(MVA_vds,2)
+    MVA_fooof_M=squeeze(median(MVA_fooof_fr,1));
+    HAF_fooof_M=squeeze(median(HAF_fooof_fr,1));
+    for y=1:size(HAF_vds,2)
         switch y
             case 1
                 color='k';
@@ -59,37 +186,42 @@ end
                 color='b';
                 flicker_stim=[1:3 5];
         end
+        
         subplot(2,2,1)
-        errorbar(A(flicker_stim),MVA_fooof_M(y,flicker_stim),MVA_fooof_std(y,flicker_stim),['-o' color])
+        neg=MVA_fooof_M-squeeze(MVA_fooof_CI(:,:,1));
+        pos=squeeze(MVA_fooof_CI(:,:,2))-MVA_fooof_M;
+        errorbar(A(flicker_stim),MVA_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color])
         hold on
-        title(observerID)
+        title('Migraine with visual aura')
         ylabel('power spectra for stimulus frequency')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[0 0.15];
+        ax.YLim=[0 0.0003];
         
         subplot(2,2,2)
-        errorbar(A(flicker_stim),HAF_fooof_M(y,flicker_stim),HAF_fooof_std(y,flicker_stim),['-.' color])
+        neg=HAF_fooof_M-squeeze(HAF_fooof_CI(:,:,1));
+        pos=squeeze(HAF_fooof_CI(:,:,2))-HAF_fooof_M;
+        errorbar(A(flicker_stim),HAF_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-s' color])
         hold on
-        title(observerID)
+        title('Headache free')
         ylabel('power spectra for stimulus frequency')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[0 0.15];
+        ax.YLim=[0 0.0003];
     end
  
     
-    % Plot mean Visual discomfort data
+    % Plot median Visual discomfort data
     figure(5)
     MVA_vds=squeeze(nanmedian(MVA_vds,4));
     HAF_vds=squeeze(nanmedian(HAF_vds,4));
-    for y=1:size(MVA_vds,2)
+    for y=1:size(HAF_vds,2)
         switch y
             case 1
                 color='k';
@@ -101,10 +233,11 @@ end
                 color='b';
                 flicker_stim=[1:3 5];
         end
-        subplot(2,2,4)
+        subplot(2,2,3)
         VDS_MVA=squeeze(nanmedian(MVA_vds,1));
-        VDSstd_MVA=squeeze(nanstd(MVA_vds,[],1));
-        errorbar(A(flicker_stim),VDS_MVA(y,flicker_stim),VDSstd_MVA(y,flicker_stim),['-o' color])
+        neg=VDS_MVA-squeeze(MVA_vds_CI(:,:,1));
+        pos=squeeze(MVA_vds_CI(:,:,2))-VDS_MVA;
+        errorbar(A(flicker_stim),VDS_MVA(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color])
         hold on
         ylabel('visual discomfort scale')
         xlabel('temporal frequency of stimulus')
@@ -112,22 +245,68 @@ end
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
-        ax.XLim=[0.95 65];
+        ax.XLim=[0.95 35];
         ax.YLim=[0 11];
     
-        subplot(2,2,3)
+        subplot(2,2,4)
         VDS_HAF=squeeze(nanmedian(HAF_vds,1));
-        VDSstd_HAF=squeeze(nanstd(HAF_vds,[],1));
-        errorbar(A(flicker_stim),VDS_HAF(y,flicker_stim),VDSstd_HAF(y,flicker_stim),['-.' color])
+        neg=VDS_HAF-squeeze(HAF_vds_CI(:,:,1));
+        pos=squeeze(HAF_vds_CI(:,:,2))-VDS_HAF;
+        errorbar(A(flicker_stim),VDS_HAF(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-s' color])
         hold on
-                ylabel('visual discomfort scale')
+        ylabel('visual discomfort scale')
         xlabel('temporal frequency of stimulus')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
-        ax.XLim=[0.95 65];
+        ax.XLim=[0.95 35];
         ax.YLim=[0 11];
     end
 
+    % Plot aperiodic signal
+    figure(9)
+    for xx=1:3
+        for yy=1:5
+            subplot(1,2,1)
+            hold on
+            plot(freqs,10.^squeeze(squeeze(MVA_ap(:,xx,yy,:))))
+            title('Migraine with visual aura')
+            ylabel('power spectra for stimulus frequency')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.XScale='log';
+            ax.XLim=[0.95 35];
+            ax.YLim=[0 0.00005];
+            
+            subplot(1,2,2)
+            hold on
+            plot(freqs,10.^squeeze(squeeze(HAF_ap(:,xx,yy,:))))
+            title('Headache free aperiodic')
+            ylabel('power spectra for stimulus frequency')
+            ax=gca;
+            ax.TickDir='out';
+            ax.Box='off';
+            ax.XScale='log';
+            ax.XLim=[0.95 35];
+            ax.YLim=[0 0.00005];
+        end
+    end
+    
+    % Plot nulling
+    figure(10)
+    plot([1 2],MVA_nulling,'ok','MarkerFaceColor','k')
+    hold on
+    plot([1 2],HAF_nulling,'ok')
+    plot([0 1 3],[0 0 0],'--')
+    title('Nulling values')
+    ylabel('RGB adjustment values')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XTick=[1 2];
+    ax.XTickLabel={'L-M','S'};
+    ax.XLim=[0.5 2.5];
+    ax.YLim=[-0.12 0.02];
     

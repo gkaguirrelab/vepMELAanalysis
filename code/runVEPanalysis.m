@@ -12,6 +12,9 @@ filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
 %% run all analyses for the 3 channel conditions
 dur_in_sec=1.5;
 starttime=0.5;
+window=1500; % Welch window
+nulling(1)=input('LM nulling value:');
+nulling(2)=input('S nulling value:');
 
 for x=1:3
     %% Load compiled data for a single observer from a single channel
@@ -45,12 +48,12 @@ for x=1:3
 end
 
 %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
-    [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec,'normalize3',true);
+    [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec);
     
     % analyze background data across channels
-    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,processedVEPdata(1).norm_vep);
+    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,window);
     
-    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,processedVEPdata(1).norm_vep);
+    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,window);
 %%
 for x=1:3
     switch x
@@ -68,14 +71,14 @@ for x=1:3
                 Color=[0.8 0.8 1];
     end
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A,'norm_vep',processedVEPdata(x).norm_vep);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A,'Window',window);
 
     %% FOOOF
-    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,processedVEPdata(x).norm_vep);
+    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,window);
 
     
     %% Plotting
-    % Plot mean Visual discomfort data
+    % Plot median Visual discomfort data
     figure(5)
     subplot(2,1,2)
     VDSm=nanmedian(parsedVEPdata(x).vds_Fr,2);
@@ -89,7 +92,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 65];
-    ax.YLim=[0 10];
+    ax.YLim=[0 11];
     
     % Plot TTF
     if x==1
@@ -142,7 +145,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.15];
+    ax.YLim=[0 0.0005];
   
     % plot background across channels
     if x==3     
@@ -170,7 +173,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.15];
+    ax.YLim=[0 0.0005];
     
     % get FOOOF peak psd
 %     G=@(x0,xdata)x0(2)*exp((-((xdata-x0(1)).^2))/(2*(x0(3)^2)));
@@ -182,7 +185,7 @@ for x=1:3
         temp=fooof_results(x,a).peak_params(:,1);
         temp2=abs(temp-A(a));
         temp3=find(temp2==min(temp2));
-        if isempty(temp3)
+        if isempty(temp3) || min(temp2)>2
             peak_freq=A(a);
             temp4=abs(xdata-peak_freq);
             peak_freq_loc=find(temp4==min(temp4));  
@@ -256,7 +259,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.15];
+    ax.YLim=[0 0.0005];
   
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
@@ -264,7 +267,7 @@ for x=1:3
     figure(11)
     for z=1:length(A)
         subplot(3,2,z)
-        vep_temp=squeeze(nanmean(processedVEPdata(x).vep_Fr(z,:,:),2));
+        vep_temp=squeeze(nanmedian(processedVEPdata(x).vep_Fr(z,:,:),2));
         plot(XX,vep_temp,['-' color])
         title(['frequency=' num2str(A(z))]);
         xlabel('Time(s)')
@@ -297,7 +300,7 @@ compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
 compiledData.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
 compiledData.ttf_FrM=ttf.ttf_FrM;
 compiledData.ttf_FrCI=ttf.ttf_FrCI;
-
+compiledData.nulling=nulling;
 
 save(filenameComp,'compiledData')
 

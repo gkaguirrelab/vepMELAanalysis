@@ -1,4 +1,4 @@
-function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,norm_vep)
+function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,window)
 
         background=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
         background2=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
@@ -12,13 +12,13 @@ function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,norm
         rand_trial=sort(randi(size(background2,1),1,21));
         background2=background2(rand_trial,:);
         vep_bkgd=background2;
-        backgroundM=nanmean(background2,1)./norm_vep;
+        backgroundM=nanmedian(background2,1);
         [ttf_BKGD,f]=pwelch(backgroundM,1500,[],[],Fs);
         ttf_BKGD=ttf_BKGD';
         f=f';
-        Bootstat=bootstrp(100,@nanmean,background,1);
+        Bootstat=bootstrp(100,@nanmedian,background,1);
         for yy=1:size(Bootstat,1)
-            ttf_bkgd_boot(yy,:)=pwelch(Bootstat(yy,:),1500,[],[],Fs);
+            ttf_bkgd_boot(yy,:)=pwelch(Bootstat(yy,:),window,[],[],Fs);
         end
         
         ttf_bkgd_boot=sort(ttf_bkgd_boot,1);
