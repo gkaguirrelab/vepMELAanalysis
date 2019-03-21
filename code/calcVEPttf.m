@@ -37,7 +37,7 @@ for xx=1:size(vep_FrM,1)
         TTF_boot(xx,:,yy)=ttf_boot;
         temp=abs(f-p.Results.TemporalFrequency(xx));
         temp2=find(temp==min(temp));
-        ttf_Fr_boot(:,yy)=sum(ttf_boot(:,temp2-1:temp2+1));
+        ttf_Fr_boot(:,yy)=ttf_boot(:,temp2);
     end
    
     TTF_boot=sort(TTF_boot,3);
@@ -45,7 +45,7 @@ for xx=1:size(vep_FrM,1)
     
     temp=abs(f-p.Results.TemporalFrequency(xx));
     temp2=find(temp==min(temp));
-    ttf_FrM(xx,:)=sum(ttf_M(xx,temp2-1:temp2+1));
+    ttf_FrM(xx,:)=ttf_M(xx,temp2);
     ttf_Fr_boot=sort(ttf_Fr_boot);
     ttf_FrCI(xx,:)=ttf_Fr_boot(:,[5 95]);
     

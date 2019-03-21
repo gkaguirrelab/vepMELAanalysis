@@ -41,7 +41,7 @@ for x=1:3
 
     %% Parse VEP data
     
-    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'bandstop120',true,'plot_sessions',false);
+    [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'plot_sessions',false);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
     A=unique(VEP_main(x).mtrp.TFtrials);
@@ -103,7 +103,9 @@ for x=1:3
     for YY=1:length(A)
         YYY=x+((YY-1)*3);
         subplot(5,3,YYY)
-        TEMP=fill(cat(2,ttf(x).f,fliplr(ttf(x).f)),cat(2,squeeze(ttf(x).ttf_CI(YY,:,1)),fliplr(squeeze(ttf(x).ttf_CI(YY,:,2)))),Color,'EdgeColor','none');
+        xdata=cat(2,ttf(x).f,fliplr(ttf(x).f));
+        ydata=cat(2,squeeze(ttf(x).ttf_CI(YY,:,1)),fliplr(squeeze(ttf(x).ttf_CI(YY,:,2))));
+        TEMP=fill(xdata,ydata,Color,'EdgeColor','none');
         hold on
         plot(ttf(x).f,ttf(x).ttf_M(YY,:),['-' color])
         ax=gca;
@@ -131,7 +133,7 @@ for x=1:3
     if x==3
         neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
         pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
-         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
+        errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
     else
         neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
         pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
@@ -159,7 +161,7 @@ for x=1:3
     if x==3
         neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
         pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
-         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
+        errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
     else
         neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
         pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
@@ -175,69 +177,45 @@ for x=1:3
     ax.XLim=[0.95 35];
     ax.YLim=[0 0.0005];
     
+    
     % get FOOOF peak psd
-%     G=@(x0,xdata)x0(2)*exp((-((xdata-x0(1)).^2))/(2*(x0(3)^2)));
+     AA=[1.625 3.25 7.5 15 30];
+    xdata=fooof_results(x,1).freqs;
+    for a=1:length(AA)
+        peak_freq=AA(a);
+        temp4=abs(xdata-peak_freq);
+        peak_freq_loc(a)=find(temp4==min(temp4));
+    end
     
     for a=1:length(A)
         xdata=fooof_results(x,a).freqs;
-        ydata=10.^(fooof_results(x,a).fooofed_spectrum)-10.^(fooof_results(x,a).bg_fit);
-        
-        temp=fooof_results(x,a).peak_params(:,1);
-        temp2=abs(temp-A(a));
-        temp3=find(temp2==min(temp2));
-        if isempty(temp3) || min(temp2)>2
-            peak_freq=A(a);
-            temp4=abs(xdata-peak_freq);
-            peak_freq_loc=find(temp4==min(temp4));  
-        else
-        peak_freq=temp(temp3);
-        temp4=abs(xdata-peak_freq);
-        peak_freq_loc=find(temp4==min(temp4));
-        end
+        ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
+       
     
-%         figure(12)
-%         plot(xdata,ydata,'k')
-%         hold on
-%         plot(xdata(peak_freq_loc),ydata(peak_freq_loc),'or')
-%         ax=gca;
-%         ax.Box='off';
-%         ax.TickDir='out';
-%         ax.XLim=[0 100];
-%         pause
-%         hold off
-        if peak_freq_loc==1
-           fooof_peak_Fr(x,a)=sum(ydata(peak_freq_loc:peak_freq_loc+2)); 
-        else
-           fooof_peak_Fr(x,a)=sum(ydata(peak_freq_loc-1:peak_freq_loc+1)); 
-        end
+        figure(12)
+        plot(xdata,ydata,'k')
+        hold on
+        plot(xdata(peak_freq_loc),ydata(peak_freq_loc),'or')
+        ax=gca;
+        ax.Box='off';
+        ax.TickDir='out';
+        ax.XLim=[0 100];
+        ax.YLim=[0 0.0005];
+        pause
+        hold off
+        
+        fooof_peak_Fr(x,a)=ydata(peak_freq_loc(a));
+        fooof_peak_harmonics(x,:)=ydata(peak_freq_loc);
         
     end
     
     if x==3
+        xdata=fooof_bkgd.freqs;
+        ydata=10.^(fooof_bkgd.power_spectrum)-10.^(fooof_bkgd.bg_fit);
 
-            xdata=fooof_bkgd.freqs;
-            ydata=10.^(fooof_bkgd.fooofed_spectrum)-10.^(fooof_bkgd.bg_fit);
-
-            for a=1:length(A)
-                temp=fooof_bkgd.peak_params(:,1);
-                temp2=abs(temp-A(a));
-                temp3=find(temp2==min(temp2));
-                if isempty(temp3)
-                    peak_freq=A(a);
-                    temp4=abs(xdata-peak_freq);
-                    peak_freq_loc=find(temp4==min(temp4));  
-                else
-                peak_freq=temp(temp3);
-                temp4=abs(xdata-peak_freq);
-                peak_freq_loc=find(temp4==min(temp4));
-                end
-
-                if peak_freq_loc==1
-                   fooof_bkgdFr(:,a)=sum(ydata(peak_freq_loc:peak_freq_loc+2)); 
-                else
-                   fooof_bkgdFr(:,a)=sum(ydata(peak_freq_loc-1:peak_freq_loc+1)); 
-                end
-            end
+        for a=1:length(A)
+           fooof_bkgdFr(:,a)=ydata(peak_freq_loc(a)); 
+        end
     end
     
     figure(7)
@@ -291,6 +269,7 @@ compiledData.vds=vds;
 compiledData.vep_Fr=vep_Fr;
 compiledData.vep_bkgd=vep_BKGD;
 compiledData.fooof_peak_Fr=fooof_peak_Fr;
+compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
 compiledData.fooof_results=fooof_results;
 compiledData.fooof_bkgd=fooof_bkgd;
 compiledData.ttf_M=ttf(x).ttf_M;

@@ -19,9 +19,9 @@ for y=1:size(vep_FrM,1)
     end
 
     % FOOOF settings
-    f_range=[1, 100];
-    settings=struct('peak_width_limits', [2, 12],'background_mode', 'fixed',...
-        'min_peak_amplitude', 0.5,'peak_threshold', 2,'max_n_peak', 10);
+    f_range=[1, 35];
+    settings=struct('peak_width_limits', [1.8, 12],'background_mode', 'fixed',...
+        'min_peak_amplitude', 0,'peak_threshold', 2);
 
     % Run FOOOF
     fooof_results(y,:)=fooof(freqs,psd,f_range,settings,'return_model');

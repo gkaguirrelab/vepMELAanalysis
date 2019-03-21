@@ -4,7 +4,8 @@
 subjects=['MELA_0121';'MELA_0131';...
     'MELA_0181';'MELA_0167';...
     'MELA_0187';'MELA_0175';...
-    'MELA_0170';'MELA_0169'];
+    'MELA_0170';'MELA_0169';...
+    'MELA_0132'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -26,6 +27,7 @@ for x=1:size(subjects,1)
 
         if compiledData(1).group=='MWVA'
             counter_MVA=counter_MVA+1;
+            MVA_ID(counter_MVA,:)=compiledData.observerID;
             MVA_vds(counter_MVA,:,:,:)=compiledData.vds;
             MVA_fooof_fr(counter_MVA,:,:)=compiledData.fooof_peak_Fr;
             MVA_nulling(counter_MVA,:)=compiledData.nulling;
@@ -38,6 +40,7 @@ for x=1:size(subjects,1)
             end
         else if compiledData(1).group=='HA f'
                 counter_HAF=counter_HAF+1;
+                HAF_ID(counter_HAF,:)=compiledData.observerID;
                 HAF_vds(counter_HAF,:,:,:)=compiledData.vds;
                 HAF_fooof_fr(counter_HAF,:,:)=compiledData.fooof_peak_Fr;
                 HAF_nulling(counter_HAF,:)=compiledData.nulling;
@@ -58,122 +61,123 @@ end
 clear x xx yy ans
 
 freqs=compiledData.fooof_results(1,1).freqs;
-for x=1:size(MVA_fooof,1)
-    for y=1:size(MVA_fooof,2)
-        for z=1:size(MVA_fooof,3)
-            psd=10.^squeeze(squeeze(MVA_psd(x,y,z,:)));
-            fooof_psd=10.^squeeze(squeeze(MVA_fooof(x,y,z,:)));
-            ap=10.^squeeze(squeeze(MVA_ap(x,y,z,:)));
-            periodic=fooof_psd-ap;
-            
-            figure(1)
-            subplot(1,2,1)
-            plot(freqs,psd,'k')
-            hold on
-            plot(freqs,fooof_psd,'r')
-            plot(freqs,ap,'--')
-            title('MVA - full model')
-            ylabel('power spectra')
-            xlabel('frequency')
-            ax=gca;
-            ax.TickDir='out';
-            ax.Box='off';
-            ax.XLim=[0 35];
-            ax.YLim=[0 0.0005];
-            hold off
-            
-            subplot(1,2,2)
-            plot(freqs,psd,'k')
-            hold on
-            plot(freqs,periodic,'b')
-            ylabel('power spectra')
-            xlabel('frequency')
-            ax=gca;
-            ax.TickDir='out';
-            ax.Box='off';
-            ax.XLim=[0 35];
-            ax.YLim=[0 0.0005];
-            hold off
-            
-            pause
-        end
-    end
-end
+% for x=1:size(MVA_fooof,1)
+%     for y=1:size(MVA_fooof,2)
+%         for z=1:size(MVA_fooof,3)
+%             psd=10.^squeeze(squeeze(MVA_psd(x,y,z,:)));
+%             fooof_psd=10.^squeeze(squeeze(MVA_fooof(x,y,z,:)));
+%             ap=10.^squeeze(squeeze(MVA_ap(x,y,z,:)));
+%             periodic=fooof_psd-ap;
+%             
+%             figure(1)
+%             subplot(1,2,1)
+%             plot(freqs,psd,'k')
+%             hold on
+%             plot(freqs,fooof_psd,'r')
+%             plot(freqs,ap,'--')
+%             title('MVA - full model')
+%             ylabel('power spectra')
+%             xlabel('frequency')
+%             ax=gca;
+%             ax.TickDir='out';
+%             ax.Box='off';
+%             ax.XLim=[0 35];
+%             ax.YLim=[0 0.0005];
+%             hold off
+%             
+%             subplot(1,2,2)
+%             plot(freqs,psd,'k')
+%             hold on
+%             plot(freqs,periodic,'b')
+%             ylabel('power spectra')
+%             xlabel('frequency')
+%             ax=gca;
+%             ax.TickDir='out';
+%             ax.Box='off';
+%             ax.XLim=[0 35];
+%             ax.YLim=[0 0.0005];
+%             hold off
+%             
+%             pause
+%         end
+%     end
+% end
+% 
+% 
+% for x=1:size(HAF_fooof,1)
+%     for y=1:size(HAF_fooof,2)
+%         for z=1:size(HAF_fooof,3)
+%             psd=10.^squeeze(squeeze(HAF_psd(x,y,z,:)));
+%             fooof_psd=10.^squeeze(squeeze(HAF_fooof(x,y,z,:)));
+%             ap=10.^squeeze(squeeze(HAF_ap(x,y,z,:)));
+%             periodic=fooof_psd-ap;
+%             
+%             figure(1)
+%             subplot(1,2,1)
+%             plot(freqs,psd,'k')
+%             hold on
+%             plot(freqs,fooof_psd,'r')
+%             plot(freqs,ap,'--')
+%             title('HAF - full model')
+%             ylabel('power spectra')
+%             xlabel('frequency')
+%             ax=gca;
+%             ax.TickDir='out';
+%             ax.Box='off';
+%             ax.XLim=[0 35];
+%             ax.YLim=[0 0.0005];
+%             hold off
+%             
+%             subplot(1,2,2)
+%             plot(freqs,psd,'k')
+%             hold on
+%             plot(freqs,periodic,'b')
+%             ylabel('power spectra')
+%             xlabel('frequency')
+%             ax=gca;
+%             ax.TickDir='out';
+%             ax.Box='off';
+%             ax.XLim=[0 35];
+%             ax.YLim=[0 0.0005];
+%             hold off
+%             
+%             pause
+%         end
+%     end
+% end
 
+% Calculate bootstrapped confidence intervals for fooof by frequency
 
-for x=1:size(HAF_fooof,1)
-    for y=1:size(HAF_fooof,2)
-        for z=1:size(HAF_fooof,3)
-            psd=10.^squeeze(squeeze(HAF_psd(x,y,z,:)));
-            fooof_psd=10.^squeeze(squeeze(HAF_fooof(x,y,z,:)));
-            ap=10.^squeeze(squeeze(HAF_ap(x,y,z,:)));
-            periodic=fooof_psd-ap;
-            
-            figure(1)
-            subplot(1,2,1)
-            plot(freqs,psd,'k')
-            hold on
-            plot(freqs,fooof_psd,'r')
-            plot(freqs,ap,'--')
-            title('HAF - full model')
-            ylabel('power spectra')
-            xlabel('frequency')
-            ax=gca;
-            ax.TickDir='out';
-            ax.Box='off';
-            ax.XLim=[0 35];
-            ax.YLim=[0 0.0005];
-            hold off
-            
-            subplot(1,2,2)
-            plot(freqs,psd,'k')
-            hold on
-            plot(freqs,periodic,'b')
-            ylabel('power spectra')
-            xlabel('frequency')
-            ax=gca;
-            ax.TickDir='out';
-            ax.Box='off';
-            ax.XLim=[0 35];
-            ax.YLim=[0 0.0005];
-            hold off
-            
-            pause
-        end
-    end
-end
-
-% Calculate bootstrapped confidence intervals
 for a=1:size(HAF_vds,2)
     for b=1:size(HAF_vds,3)
         MVA_temp=squeeze(MVA_fooof_fr(:,a,b));
         Bootstat=bootstrp(1000,@nanmedian,MVA_temp,1);
         Bootstat=sort(Bootstat,1);
-        MVA_fooof_CI(a,b,:)=Bootstat([50 950],:)';
+        MVA_fooof_CI(a,b,:)=Bootstat([250 750],:)';
         
         HAF_temp=squeeze(HAF_fooof_fr(:,a,b));
         Bootstat2=bootstrp(1000,@nanmedian,HAF_temp,1);
         Bootstat2=sort(Bootstat2,1);
-        HAF_fooof_CI(a,b,:)=Bootstat2([50 950],:)';
-        
-        
+        HAF_fooof_CI(a,b,:)=Bootstat2([250 750],:)';
         
         MVA_temp2=squeeze(squeeze(squeeze(nanmedian(MVA_vds(:,a,b,:),4))));
         Bootstat3=bootstrp(1000,@nanmedian,MVA_temp2,1);
         Bootstat3=sort(Bootstat3,1);
-        MVA_vds_CI(a,b,:)=Bootstat3([50 950],:)';
+        MVA_vds_CI(a,b,:)=Bootstat3([250 750],:)';
         
         HAF_temp2=squeeze(squeeze(squeeze(nanmedian(HAF_vds(:,a,b,:),4))));
         Bootstat4=bootstrp(1000,@nanmedian,HAF_temp2,1);
         Bootstat4=sort(Bootstat4,1);
-        HAF_vds_CI(a,b,:)=Bootstat4([50 950],:)';
+        HAF_vds_CI(a,b,:)=Bootstat4([250 750],:)';
     end
 end
+
+clear a b
         
     % Plot TFF by stimulus frequency
     figure(5)
-    MVA_fooof_M=squeeze(median(MVA_fooof_fr,1));
-    HAF_fooof_M=squeeze(median(HAF_fooof_fr,1));
+    MVA_fooof_M=squeeze(nanmedian(MVA_fooof_fr,1));
+    HAF_fooof_M=squeeze(nanmedian(HAF_fooof_fr,1));
     for y=1:size(HAF_vds,2)
         switch y
             case 1
@@ -199,7 +203,7 @@ end
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[0 0.0003];
+        ax.YLim=[-0.00001 0.00025];
         
         subplot(2,2,2)
         neg=HAF_fooof_M-squeeze(HAF_fooof_CI(:,:,1));
@@ -213,9 +217,55 @@ end
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[0 0.0003];
+        ax.YLim=[-0.00001 0.00025];
+           
+
     end
- 
+
+
+
+   % plot individual subjects fooof frequency
+for y=1:size(HAF_vds,2)
+        switch y
+            case 1
+                color='k';
+                flicker_stim=1:5;
+            case 2
+                color='r';
+                flicker_stim=1:5;
+            case 3
+                color='b';
+                flicker_stim=[1:3 5];
+        end
+            figure(101)
+            for c=1:size(HAF_fooof_fr,1)
+                subplot(3,2,c)
+                hold on
+                plot(A(flicker_stim),squeeze(HAF_fooof_fr(c,y,flicker_stim)),['-s' color])
+                title(num2str(HAF_ID(c,:)))
+                ax=gca;
+                ax.TickDir='out';
+                ax.Box='off';
+                ax.XScale='log';
+                ax.XLim=[0.95 35];
+                ax.YLim=[-0.00001 0.00025];
+            end
+            
+            figure(100)
+            for b=1:size(MVA_fooof_fr,1)
+                subplot(3,2,b)
+                hold on
+                plot(A(flicker_stim),squeeze(MVA_fooof_fr(b,y,flicker_stim)),['-o' color])
+                title(num2str(MVA_ID(b,:)))
+                ylabel('power spectra for stimulus frequency')
+                ax=gca;
+                ax.TickDir='out';
+                ax.Box='off';
+                ax.XScale='log';
+                ax.XLim=[0.95 35];
+                ax.YLim=[-0.00001 0.00025];
+            end
+end
     
     % Plot median Visual discomfort data
     figure(5)
@@ -266,33 +316,70 @@ end
 
     % Plot aperiodic signal
     figure(9)
-    for xx=1:3
-        for yy=1:5
-            subplot(1,2,1)
+    for xx=1:size(MVA_ap,1)
+        MVA_ap_subject(xx,:)=nanmedian(reshape(squeeze(MVA_ap(xx,:,:,:)),15,size(MVA_ap,4)));
+        
+         % plot median by subject
+            subplot(1,3,1)
             hold on
-            plot(freqs,10.^squeeze(squeeze(MVA_ap(:,xx,yy,:))))
+            plot(freqs,MVA_ap_subject(xx,:),'k')
             title('Migraine with visual aura')
             ylabel('power spectra for stimulus frequency')
             ax=gca;
             ax.TickDir='out';
             ax.Box='off';
-            ax.XScale='log';
-            ax.XLim=[0.95 35];
-            ax.YLim=[0 0.00005];
-            
-            subplot(1,2,2)
+            ax.XLim=[0 35];
+            ax.YLim=[-7 -4.5];
+    end
+    
+    for xx=1:size(HAF_ap,1)
+        HAF_ap_subject(xx,:)=nanmedian(reshape(squeeze(HAF_ap(xx,:,:,:)),15,size(HAF_ap,4)));
+        
+         % plot median by subject
+            subplot(1,3,2)
             hold on
-            plot(freqs,10.^squeeze(squeeze(HAF_ap(:,xx,yy,:))))
-            title('Headache free aperiodic')
+            plot(freqs,HAF_ap_subject(xx,:),'--k')
+            title('Headache free')
             ylabel('power spectra for stimulus frequency')
             ax=gca;
             ax.TickDir='out';
             ax.Box='off';
-            ax.XScale='log';
-            ax.XLim=[0.95 35];
-            ax.YLim=[0 0.00005];
-        end
+            ax.XLim=[0 35];
+            ax.YLim=[-7 -4.5];
     end
+    
+   
+    
+    subplot(1,3,3)
+    hold on
+    
+    Bootstat=bootstrp(1000,@nanmedian,HAF_ap_subject,1);
+    Bootstat=sort(Bootstat,1);
+    Bootstat=Bootstat([50 950],:);
+    median=nanmedian(HAF_ap_subject,1);
+    Y=cat(2,Bootstat(2,:),fliplr(Bootstat(1,:)));
+    X=cat(2,freqs,fliplr(freqs));
+    TEMP=fill(X,Y,[0.8 0.8 0.8],'EdgeColor','none');
+    plot(freqs,median,'--k')
+    
+    Bootstat=bootstrp(1000,@nanmedian,MVA_ap_subject,1);
+    Bootstat=sort(Bootstat,1);
+    Bootstat=Bootstat([50 950],:);
+    median=nanmedian(MVA_ap_subject,1);
+    Y=cat(2,Bootstat(2,:),fliplr(Bootstat(1,:)));
+    X=cat(2,freqs,fliplr(freqs));
+    TEMP=fill(X,Y,[0.5 0.5 0.5],'EdgeColor','none');
+    plot(freqs,median,'k')
+    
+    title('Comparison')
+    ylabel('power spectra for stimulus frequency')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XLim=[0 35];
+    ax.YLim=[-7 -4.5];
+            
+  
     
     % Plot nulling
     figure(10)
