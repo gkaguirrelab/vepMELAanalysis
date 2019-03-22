@@ -41,6 +41,6 @@ for y=1:size(vep_FrM,1)
     ax.YLim=[-5 -1];
     hold off
 end
-pause
+% pause
 
 end
