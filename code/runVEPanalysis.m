@@ -178,8 +178,7 @@ for x=1:3
     ax.YLim=[-0.002 0.02];
     
     
-    % get FOOOF peak psd
-    xdata=fooof_results(x,1).freqs;    
+    % get FOOOF peak psd 
     
     for a=1:length(A)
         xdata=fooof_results(x,a).freqs;
@@ -200,26 +199,45 @@ for x=1:3
         
     end
     
+    % get harmonics
+    harmonic=[0.5 1 2 3 4];
     for a=1:length(A)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
         
+        peak_freq=A(a);
+        peak_freq_harmonic=harmonic.*peak_freq;
+        peak_freq_harmonic=peak_freq_harmonic(find(peak_freq_harmonic<100 & peak_freq_harmonic>1));
+        for b=1:length(peak_freq_harmonic)
+            temp=abs(xdata-peak_freq_harmonic(b));
+            temp2=find(temp==min(temp));
+            if length(temp2)>1
+                temp3=max(ydata(temp2));
+                peak_freq_harm_loc(b)=find(ydata==temp3);
+            else
+                peak_freq_harm_loc(b)=temp2;
+            end
+        end
         figure(12)
         plot(xdata,ydata,'k')
         hold on
-        plot(xdata(peak_freq_loc),ydata(peak_freq_loc),'or')
+        plot(xdata(peak_freq_harm_loc),ydata(peak_freq_harm_loc),'or')
         
         ax=gca;
         ax.Box='off';
         ax.TickDir='out';
         ax.XLim=[0 100];
         ax.YLim=[-0.002 0.02];
-        pause
+%         pause
         hold off
         
-        fooof_peak_harmonics(x,:)=ydata(peak_freq_loc);
+        fooof_peak_harmonics{x,a,:}=ydata(peak_freq_loc);
+        fooof_peak_harmonics_freq{x,a,:}=xdata(peak_freq_harm_loc);
         
     end
+    
+    
+        
     
     if x==3
         xdata=fooof_bkgd.freqs;
@@ -281,7 +299,9 @@ compiledData.vds=vds;
 compiledData.vep_Fr=vep_Fr;
 compiledData.vep_bkgd=vep_BKGD;
 compiledData.fooof_peak_Fr=fooof_peak_Fr;
+compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
 compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
+compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
 compiledData.fooof_results=fooof_results;
 compiledData.fooof_bkgd=fooof_bkgd;
 compiledData.ttf_M=ttf(x).ttf_M;
