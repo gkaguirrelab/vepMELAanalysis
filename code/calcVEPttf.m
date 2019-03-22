@@ -22,22 +22,30 @@ p.addParameter('plot_all',false,@islogical);
 
 p.parse(varargin{:});
 
-dur_in_freq=p.Results.dur_in_sec*p.Results.Fs;
+L=p.Results.dur_in_sec*p.Results.Fs;
 XX=(1:length(vep_Fr))/p.Results.Fs;
 vep_FrM=squeeze(nanmedian(vep_Fr,2));
+f=p.Results.Fs*(0:(L/2))/L;
+f=f';
 
 for xx=1:size(vep_FrM,1)
-    [psd_temp,f]=pwelch(vep_FrM(xx,:),p.Results.Window,[],[],p.Results.Fs);
-    ttf_M(xx,:)=psd_temp';
+%     [psd_temp,f]=pwelch(vep_FrM(xx,:),p.Results.Window,[],[],p.Results.Fs);
+    psd_temp=fft(vep_FrM(xx,:));
+    psd_temp=abs(psd_temp/L);
+    ttf_M(xx,:)=psd_temp(:,1:(L/2)+1);
+%     ttf_M(xx,:)=psd_temp';
     Bootstat=bootstrp(100,@nanmedian,squeeze(vep_Fr(xx,:,:)),1);
     for yy=1:size(Bootstat,1)
-        ttf_boot=pwelch(Bootstat(yy,:),p.Results.Window,[],[],p.Results.Fs);
-        ttf_boot=ttf_boot';
+%         ttf_boot=pwelch(Bootstat(yy,:),p.Results.Window,[],[],p.Results.Fs);
+        ttf_boot=fft(Bootstat(yy,:));
+        ttf_boot=abs(ttf_boot/L);
+        ttf_boot=ttf_boot(1:L/2+1);
+%         ttf_boot=ttf_boot';
         
         TTF_boot(xx,:,yy)=ttf_boot;
         temp=abs(f-p.Results.TemporalFrequency(xx));
         temp2=find(temp==min(temp));
-        ttf_Fr_boot(:,yy)=ttf_boot(:,temp2);
+        ttf_Fr_boot(:,yy)=max(ttf_boot(:,temp2));
     end
    
     TTF_boot=sort(TTF_boot,3);
@@ -45,7 +53,7 @@ for xx=1:size(vep_FrM,1)
     
     temp=abs(f-p.Results.TemporalFrequency(xx));
     temp2=find(temp==min(temp));
-    ttf_FrM(xx,:)=ttf_M(xx,temp2);
+    ttf_FrM(xx,:)=max(ttf_M(xx,temp2));
     ttf_Fr_boot=sort(ttf_Fr_boot);
     ttf_FrCI(xx,:)=ttf_Fr_boot(:,[5 95]);
     

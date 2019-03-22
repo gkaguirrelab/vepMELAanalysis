@@ -51,9 +51,9 @@ end
     [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec);
     
     % analyze background data across channels
-    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,A,window);
+    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A,window);
     
-    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,window);
+    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,dur_in_sec,window);
 %%
 for x=1:3
     switch x
@@ -74,7 +74,7 @@ for x=1:3
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A,'Window',window);
 
     %% FOOOF
-    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,window);
+    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,dur_in_sec,window);
 
     
     %% Plotting
@@ -147,7 +147,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.0005];
+    ax.YLim=[0 0.02];
   
     % plot background across channels
     if x==3     
@@ -175,37 +175,39 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.0005];
+    ax.YLim=[0 0.02];
     
     
     % get FOOOF peak psd
-     AA=[1.625 3.25 7.5 15 30];
-    xdata=fooof_results(x,1).freqs;
-    for a=1:length(AA)
-        peak_freq=AA(a);
-        temp4=abs(xdata-peak_freq);
-        peak_freq_loc(a)=find(temp4==min(temp4));
-    end
+    xdata=fooof_results(x,1).freqs;    
     
     for a=1:length(A)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
        
-    
+        peak_freq=A(a);
+        temp=abs(xdata-peak_freq);
+        temp2=find(temp==min(temp));
+        if length(temp2)>1
+            temp3=max(ydata(temp2));
+            peak_freq_loc(a)=find(ydata==temp3);
+        else
+            peak_freq_loc(a)=temp2;
+        end
+        
         figure(12)
         plot(xdata,ydata,'k')
         hold on
-        plot(xdata(peak_freq_loc),ydata(peak_freq_loc),'or')
+        plot(xdata(peak_freq_loc(a)),ydata(peak_freq_loc(a)),'or')
         ax=gca;
         ax.Box='off';
         ax.TickDir='out';
         ax.XLim=[0 100];
-        ax.YLim=[0 0.0005];
+        ax.YLim=[0 0.02];
         pause
         hold off
         
         fooof_peak_Fr(x,a)=ydata(peak_freq_loc(a));
-        fooof_peak_harmonics(x,:)=ydata(peak_freq_loc);
         
     end
     
@@ -237,7 +239,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.0005];
+    ax.YLim=[0 0.02];
   
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
@@ -269,7 +271,6 @@ compiledData.vds=vds;
 compiledData.vep_Fr=vep_Fr;
 compiledData.vep_bkgd=vep_BKGD;
 compiledData.fooof_peak_Fr=fooof_peak_Fr;
-compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
 compiledData.fooof_results=fooof_results;
 compiledData.fooof_bkgd=fooof_bkgd;
 compiledData.ttf_M=ttf(x).ttf_M;

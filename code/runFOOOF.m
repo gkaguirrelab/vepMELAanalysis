@@ -1,5 +1,7 @@
-function [fooof_results]=runFOOOF(vep_Fr,Fs,window)
+function [fooof_results]=runFOOOF(vep_Fr,Fs,dur_in_sec,window)
 
+L=dur_in_sec*Fs;
+freqs=Fs*(0:(L/2))/L;
 
 switch length(size(vep_Fr))
     case 2
@@ -12,11 +14,10 @@ end
 
 for y=1:size(vep_FrM,1)
     % FOOOF inputs must be row vectors
-    [psd, freqs]=pwelch(vep_FrM(y,:),window,[],[],Fs);
-    
-    if size(psd,1)>1
-        psd=psd'; freqs=freqs';
-    end
+%     [psd, freqs]=pwelch(vep_FrM(y,:),window,[],[],Fs);
+    temp=fft(vep_FrM(y,:));
+    temp2=abs(temp/L);
+    psd=temp2(:,1:(L/2)+1);
 
     % FOOOF settings
     f_range=[1, 35];
