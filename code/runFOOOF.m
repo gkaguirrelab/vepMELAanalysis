@@ -20,8 +20,8 @@ for y=1:size(vep_FrM,1)
     psd=temp2(:,1:(L/2)+1);
 
     % FOOOF settings
-    f_range=[1, 35];
-    settings=struct('peak_width_limits', [1.8, 12],'background_mode', 'fixed',...
+    f_range=[1, 100];
+    settings=struct('peak_width_limits', [1.5, 12],'background_mode', 'knee',...
         'min_peak_amplitude', 0,'peak_threshold', 2);
 
     % Run FOOOF
@@ -38,7 +38,7 @@ for y=1:size(vep_FrM,1)
     ax=gca;
     ax.Box='off';
     ax.TickDir='out';
-    ax.YLim=[-8 -1];
+    ax.YLim=[-5 -1];
     hold off
 end
 pause

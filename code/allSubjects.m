@@ -118,7 +118,7 @@ clear a b
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[-0.001 0.02];
+        ax.YLim=[-0.001 0.015];
         
         subplot(2,3,2)
         neg=HAF_fooof_M-squeeze(HAF_fooof_CI(:,:,1));
@@ -132,7 +132,7 @@ clear a b
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[-0.001 0.02];
+        ax.YLim=[-0.001 0.015];
         
         subplot(2,3,3)
         MVA_temp3=squeeze(sum(MVA_fooof_fr(:,y,flicker_stim),3));
@@ -160,7 +160,7 @@ clear a b
         ax.TickDir='out';
         ax.Box='off';
         ax.XLim=[0.5 3.5];
-        ax.YLim=[-0.001 0.02];
+        ax.YLim=[-0.001 0.04];
         ax.XTick=[1 2 3];
         ax.XTickLabel={'LMS','L-M','S'};
 
@@ -193,7 +193,7 @@ for y=1:size(HAF_vds,2)
                 ax.Box='off';
                 ax.XScale='log';
                 ax.XLim=[0.95 35];
-                ax.YLim=[-0.001 0.02];
+                ax.YLim=[-0.001 0.015];
             end
             
             figure(100)
@@ -208,7 +208,7 @@ for y=1:size(HAF_vds,2)
                 ax.Box='off';
                 ax.XScale='log';
                 ax.XLim=[0.95 35];
-                ax.YLim=[-0.001 0.02];
+                ax.YLim=[-0.001 0.015];
             end
 end
     
@@ -274,7 +274,7 @@ end
             ax.TickDir='out';
             ax.Box='off';
             ax.XLim=[0 35];
-            ax.YLim=[-4 -0.5];
+            ax.YLim=[-4 -2];
     end
     
     for xx=1:size(HAF_ap,1)
@@ -290,7 +290,7 @@ end
             ax.TickDir='out';
             ax.Box='off';
             ax.XLim=[0 35];
-            ax.YLim=[-4 -0.5];
+            ax.YLim=[-4 -2];
     end
     
    
@@ -322,7 +322,7 @@ end
     ax.TickDir='out';
     ax.Box='off';
     ax.XLim=[0 35];
-    ax.YLim=[-4 -0.5];
+    ax.YLim=[-4 -2];
             
   
     

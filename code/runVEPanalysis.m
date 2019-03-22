@@ -114,7 +114,7 @@ for x=1:3
         ax.YScale='log';
         ax.XLim=[min(ttf(x).f) 100];
         ax.XTick=A;
-        ax.YLim=[0.00000001 0.4];
+        ax.YLim=[0.00001 0.2];
         title(num2str(A(YY)))
         if YYY==7
             ylabel('Power')
@@ -147,7 +147,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.02];
+    ax.YLim=[-0.002 0.02];
   
     % plot background across channels
     if x==3     
@@ -175,7 +175,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.02];
+    ax.YLim=[-0.002 0.02];
     
     
     % get FOOOF peak psd
@@ -195,19 +195,29 @@ for x=1:3
             peak_freq_loc(a)=temp2;
         end
         
+        
+        fooof_peak_Fr(x,a)=ydata(peak_freq_loc(a));
+        
+    end
+    
+    for a=1:length(A)
+        xdata=fooof_results(x,a).freqs;
+        ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
+        
         figure(12)
         plot(xdata,ydata,'k')
         hold on
-        plot(xdata(peak_freq_loc(a)),ydata(peak_freq_loc(a)),'or')
+        plot(xdata(peak_freq_loc),ydata(peak_freq_loc),'or')
+        
         ax=gca;
         ax.Box='off';
         ax.TickDir='out';
         ax.XLim=[0 100];
-        ax.YLim=[0 0.02];
+        ax.YLim=[-0.002 0.02];
         pause
         hold off
         
-        fooof_peak_Fr(x,a)=ydata(peak_freq_loc(a));
+        fooof_peak_harmonics(x,:)=ydata(peak_freq_loc);
         
     end
     
@@ -239,7 +249,7 @@ for x=1:3
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[0 0.02];
+    ax.YLim=[-0.002 0.02];
   
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
@@ -271,6 +281,7 @@ compiledData.vds=vds;
 compiledData.vep_Fr=vep_Fr;
 compiledData.vep_bkgd=vep_BKGD;
 compiledData.fooof_peak_Fr=fooof_peak_Fr;
+compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
 compiledData.fooof_results=fooof_results;
 compiledData.fooof_bkgd=fooof_bkgd;
 compiledData.ttf_M=ttf(x).ttf_M;
