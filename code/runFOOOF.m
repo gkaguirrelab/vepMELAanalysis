@@ -1,4 +1,4 @@
-function [fooof_results]=runFOOOF(vep_Fr,Fs,dur_in_sec,window)
+function [fooof_results]=runFOOOF(vep_Fr,Fs,dur_in_sec)
 
 L=dur_in_sec*Fs;
 freqs=Fs*(0:(L/2))/L;
@@ -13,8 +13,6 @@ switch length(size(vep_Fr))
 end
 
 for y=1:size(vep_FrM,1)
-    % FOOOF inputs must be row vectors
-%     [psd, freqs]=pwelch(vep_FrM(y,:),window,[],[],Fs);
     temp=fft(vep_FrM(y,:));
     temp2=abs(temp/L);
     psd=temp2(:,1:(L/2)+1);
@@ -41,6 +39,6 @@ for y=1:size(vep_FrM,1)
     ax.YLim=[-5 -1];
     hold off
 end
-% pause
+pause
 
 end

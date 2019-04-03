@@ -1,4 +1,4 @@
-function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A,window)
+function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A)
 
         L=dur_in_sec*Fs;
         f=Fs*(0:(L/2))/L;
@@ -16,9 +16,6 @@ function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in
         background2=background2(rand_trial,:);
         vep_bkgd=background2;
         backgroundM=nanmedian(background2,1);
-%         [ttf_BKGD,f]=pwelch(backgroundM,1500,[],[],Fs);
-%         ttf_BKGD=ttf_BKGD';
-%         f=f';
 
         psd_temp=fft(backgroundM);
         psd_temp=abs(psd_temp/L);
@@ -26,7 +23,6 @@ function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in
 
         Bootstat=bootstrp(100,@nanmedian,background,1);
         for yy=1:size(Bootstat,1)
-%             ttf_bkgd_boot(yy,:)=pwelch(Bootstat(yy,:),window,[],[],Fs);
                 psd_temp=fft(Bootstat(yy,:));
                 psd_temp=abs(psd_temp/L);
                 ttf_bkgd_boot(yy,:)=psd_temp(1:L/2+1);

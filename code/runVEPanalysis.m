@@ -10,9 +10,8 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=1.5;
-starttime=0.5;
-window=1500; % Welch window
+dur_in_sec=2;
+starttime=0;
 nulling(1)=input('LM nulling value:');
 nulling(2)=input('S nulling value:');
 
@@ -51,9 +50,9 @@ end
     [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec);
     
     % analyze background data across channels
-    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A,window);
+    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A);
     
-    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,dur_in_sec,window);
+    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,dur_in_sec);
 %%
 for x=1:3
     switch x
@@ -71,10 +70,10 @@ for x=1:3
                 Color=[0.8 0.8 1];
     end
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A,'Window',window);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',true,'TemporalFrequency',A);
 
     %% FOOOF
-    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,dur_in_sec,window);
+    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,dur_in_sec);
 
     
     %% Plotting
@@ -231,9 +230,10 @@ for x=1:3
 %         pause
         hold off
         
-        fooof_peak_harmonics{x,a,:}=ydata(peak_freq_loc);
+        fooof_peak_harmonics{x,a,:}=ydata(peak_freq_harm_loc);
         fooof_peak_harmonics_freq{x,a,:}=xdata(peak_freq_harm_loc);
         
+        clear ydata xdata peak_freq_harm_loc peak_freq_harmonic peak_freq
     end
     
     

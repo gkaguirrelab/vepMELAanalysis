@@ -5,7 +5,7 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0181';'MELA_0167';...
     'MELA_0187';'MELA_0175';...
     'MELA_0170';'MELA_0169';...
-    'MELA_0132'];
+    'MELA_0194'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -106,7 +106,7 @@ clear a b
                 flicker_stim=[1:3 5];
         end
         
-        subplot(2,3,1)
+        subplot(1,3,1)
         neg=MVA_fooof_M-squeeze(MVA_fooof_CI(:,:,1));
         pos=squeeze(MVA_fooof_CI(:,:,2))-MVA_fooof_M;
         errorbar(A(flicker_stim),MVA_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor',color)
@@ -120,7 +120,7 @@ clear a b
         ax.XLim=[0.95 35];
         ax.YLim=[-0.001 0.015];
         
-        subplot(2,3,2)
+        subplot(1,3,2)
         neg=HAF_fooof_M-squeeze(HAF_fooof_CI(:,:,1));
         pos=squeeze(HAF_fooof_CI(:,:,2))-HAF_fooof_M;
         errorbar(A(flicker_stim),HAF_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color])
@@ -134,7 +134,7 @@ clear a b
         ax.XLim=[0.95 35];
         ax.YLim=[-0.001 0.015];
         
-        subplot(2,3,3)
+        subplot(1,3,3)
         MVA_temp3=squeeze(sum(MVA_fooof_fr(:,y,flicker_stim),3));
         Bootstat5=bootstrp(1000,@nanmedian,MVA_temp3,1);
         Bootstat5=sort(Bootstat5,1);
@@ -213,7 +213,7 @@ for y=1:size(HAF_vds,2)
 end
     
     % Plot median Visual discomfort data
-    figure(5)
+    figure(6)
     MVA_vds=squeeze(nanmedian(MVA_vds,4));
     HAF_vds=squeeze(nanmedian(HAF_vds,4));
     for y=1:size(HAF_vds,2)
@@ -228,11 +228,11 @@ end
                 color='b';
                 flicker_stim=[1:3 5];
         end
-        subplot(2,3,4)
+        subplot(1,2,2)
         VDS_MVA=squeeze(nanmedian(MVA_vds,1));
         neg=VDS_MVA-squeeze(MVA_vds_CI(:,:,1));
         pos=squeeze(MVA_vds_CI(:,:,2))-VDS_MVA;
-        errorbar(A(flicker_stim),VDS_MVA(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color])
+        errorbar(A(flicker_stim),VDS_MVA(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor',color)
         hold on
         ylabel('visual discomfort scale')
         xlabel('temporal frequency of stimulus')
@@ -243,11 +243,11 @@ end
         ax.XLim=[0.95 35];
         ax.YLim=[0 11];
     
-        subplot(2,3,5)
+        subplot(1,2,1)
         VDS_HAF=squeeze(nanmedian(HAF_vds,1));
         neg=VDS_HAF-squeeze(HAF_vds_CI(:,:,1));
         pos=squeeze(HAF_vds_CI(:,:,2))-VDS_HAF;
-        errorbar(A(flicker_stim),VDS_HAF(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-s' color])
+        errorbar(A(flicker_stim),VDS_HAF(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor','w')
         hold on
         ylabel('visual discomfort scale')
         xlabel('temporal frequency of stimulus')

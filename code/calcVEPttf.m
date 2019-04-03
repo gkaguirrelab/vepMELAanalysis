@@ -15,7 +15,6 @@ function [ttf_VEP]=calcVEPttf(vep_Fr,varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('TemporalFrequency',[1.625 3.25 7.5 15 30],@isnumeric);
-p.addParameter('Window',1500,@isnumeric);
 p.addParameter('Fs',2000,@isnumeric);
 p.addParameter('dur_in_sec',1.5,@isnumeric);
 p.addParameter('plot_all',false,@islogical);
@@ -27,20 +26,17 @@ XX=(1:length(vep_Fr))/p.Results.Fs;
 vep_FrM=squeeze(nanmedian(vep_Fr,2));
 f=p.Results.Fs*(0:(L/2))/L;
 f=f';
+counter=1;
 
 for xx=1:size(vep_FrM,1)
-%     [psd_temp,f]=pwelch(vep_FrM(xx,:),p.Results.Window,[],[],p.Results.Fs);
     psd_temp=fft(vep_FrM(xx,:));
     psd_temp=abs(psd_temp/L);
     ttf_M(xx,:)=psd_temp(:,1:(L/2)+1);
-%     ttf_M(xx,:)=psd_temp';
     Bootstat=bootstrp(100,@nanmedian,squeeze(vep_Fr(xx,:,:)),1);
     for yy=1:size(Bootstat,1)
-%         ttf_boot=pwelch(Bootstat(yy,:),p.Results.Window,[],[],p.Results.Fs);
         ttf_boot=fft(Bootstat(yy,:));
         ttf_boot=abs(ttf_boot/L);
         ttf_boot=ttf_boot(1:L/2+1);
-%         ttf_boot=ttf_boot';
         
         TTF_boot(xx,:,yy)=ttf_boot;
         temp=abs(f-p.Results.TemporalFrequency(xx));
@@ -60,7 +56,7 @@ for xx=1:size(vep_FrM,1)
    
     if p.Results.plot_all==1
         figure(3)
-        subplot(1,2,1)
+        subplot(5,2,counter)
         plot(XX,vep_FrM(xx,:),'-k')
         title(['frequency=' num2str(p.Results.TemporalFrequency(xx))]);
         xlabel('Time(s)')
@@ -68,9 +64,9 @@ for xx=1:size(vep_FrM,1)
         ax.TickDir='out';
         ax.Box='off';
         ax.YLim=[-0.1 0.1];
-        ax.XLim=[0 dur_in_freq/p.Results.Fs];
+        ax.XLim=[0 p.Results.dur_in_sec];
 
-        subplot(1,2,2)
+        subplot(5,2,counter+1)
         plot(f,ttf_M(xx,:),'-k')
         hold on
         plot(p.Results.TemporalFrequency(xx),ttf_FrM(xx,:),'ob')
@@ -79,10 +75,11 @@ for xx=1:size(vep_FrM,1)
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
-        ax.XLim=[0 130];
-        ax.YLim=[0 0.0003];
+        ax.XLim=[0 100];
+        ax.YLim=[0 0.01];
         pause
         hold off
+        counter=counter+2;
     end
 end
 
