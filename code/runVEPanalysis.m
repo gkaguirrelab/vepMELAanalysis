@@ -10,8 +10,8 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=2;
-starttime=0;
+dur_in_sec=1.5;
+starttime=0.5;
 nulling(1)=input('LM nulling value:');
 nulling(2)=input('S nulling value:');
 
@@ -50,9 +50,9 @@ end
     [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec);
     
     % analyze background data across channels
-    [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A);
+    [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A);
     
-    [fooof_bkgd]=runFOOOF(vep_bkgd,Fs,dur_in_sec);
+    [fooof_bkgd,fooof_bkgd5,fooof_bkgd95]=runFOOOF(ttf_bkgd.ttf_BKGD,ttf_bkgd.ttf_bkgdCI,Fs,dur_in_sec);
 %%
 for x=1:3
     switch x
@@ -70,10 +70,10 @@ for x=1:3
                 Color=[0.8 0.8 1];
     end
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',true,'TemporalFrequency',A);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A);
 
     %% FOOOF
-    [fooof_results(x,:)]=runFOOOF(processedVEPdata(x).vep_Fr,Fs,dur_in_sec);
+    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,Fs,dur_in_sec);
 
     
     %% Plotting
@@ -133,6 +133,10 @@ for x=1:3
         neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
         pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
+        
+        neg=ttf_bkgd.ttf_bkgd_Fr-ttf_bkgd.ttf_bkgdCI_Fr(:,1);
+        pos=ttf_bkgd.ttf_bkgdCI_Fr(:,2)-ttf_bkgd.ttf_bkgd_Fr;
+        errorbar(A,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
     else
         neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
         pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
@@ -150,7 +154,7 @@ for x=1:3
   
     % plot background across channels
     if x==3     
-        errorbar(A,ttf_bkgd_Fr,ttf_bkgdCI_Fr(:,1),ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
+        errorbar(A,ttf_bkgd.ttf_bkgd_Fr,ttf_bkgd.ttf_bkgdCI_Fr(:,1),ttf_bkgd.ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
     end
    
      % Plot psd FOOOF
@@ -161,6 +165,10 @@ for x=1:3
         neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
         pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
         errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
+        
+        neg=ttf_bkgd.ttf_bkgd_Fr-ttf_bkgd.ttf_bkgdCI_Fr(:,1);
+        pos=ttf_bkgd.ttf_bkgdCI_Fr(:,2)-ttf_bkgd.ttf_bkgd_Fr;
+        errorbar(A,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
     else
         neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
         pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
@@ -182,6 +190,8 @@ for x=1:3
     for a=1:length(A)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
+        ydata5=10.^(fooof_results5(x,a).power_spectrum)-10.^(fooof_results5(x,a).bg_fit);
+        ydata95=10.^(fooof_results95(x,a).power_spectrum)-10.^(fooof_results95(x,a).bg_fit);
        
         peak_freq=A(a);
         temp=abs(xdata-peak_freq);
@@ -195,6 +205,8 @@ for x=1:3
         
         
         fooof_peak_Fr(x,a)=ydata(peak_freq_loc(a));
+        fooof_peak_Fr5(x,a)=ydata5(peak_freq_loc(a));
+        fooof_peak_Fr95(x,a)=ydata95(peak_freq_loc(a));
         
     end
     
@@ -217,18 +229,17 @@ for x=1:3
                 peak_freq_harm_loc(b)=temp2;
             end
         end
-        figure(12)
-        plot(xdata,ydata,'k')
-        hold on
-        plot(xdata(peak_freq_harm_loc),ydata(peak_freq_harm_loc),'or')
-        
-        ax=gca;
-        ax.Box='off';
-        ax.TickDir='out';
-        ax.XLim=[0 100];
-        ax.YLim=[-0.002 0.02];
+%         figure(12)
+%         plot(xdata,ydata,'k')
+%         hold on
+%         plot(xdata(peak_freq_harm_loc),ydata(peak_freq_harm_loc),'or')
+%         ax=gca;
+%         ax.Box='off';
+%         ax.TickDir='out';
+%         ax.XLim=[0 100];
+%         ax.YLim=[-0.002 0.02];
 %         pause
-        hold off
+%         hold off
         
         fooof_peak_harmonics{x,a,:}=ydata(peak_freq_harm_loc);
         fooof_peak_harmonics_freq{x,a,:}=xdata(peak_freq_harm_loc);
@@ -242,9 +253,13 @@ for x=1:3
     if x==3
         xdata=fooof_bkgd.freqs;
         ydata=10.^(fooof_bkgd.power_spectrum)-10.^(fooof_bkgd.bg_fit);
+        ydata5=10.^(fooof_bkgd5.power_spectrum)-10.^(fooof_bkgd5.bg_fit);
+        ydata95=10.^(fooof_bkgd95.power_spectrum)-10.^(fooof_bkgd95.bg_fit);
 
         for a=1:length(A)
-           fooof_bkgdFr(:,a)=ydata(peak_freq_loc(a)); 
+           fooof_bkgdFr(:,a)=ydata(peak_freq_loc(a));
+           fooof_bkgdFr5(:,a)=ydata5(peak_freq_loc(a));
+           fooof_bkgdFr95(:,a)=ydata95(peak_freq_loc(a));
         end
     end
     
@@ -252,12 +267,12 @@ for x=1:3
     subplot(1,2,2)
     hold on
     if x==3
-        plot(A([1:3 5]),fooof_peak_Fr(x,[1:3 5]),['-o' color])
+        errorbar(A([1:3 5]),fooof_peak_Fr(x,[1:3 5]),fooof_peak_Fr(x,[1:3 5])-fooof_peak_Fr5(x,[1:3 5]),fooof_peak_Fr95(x,[1:3 5])-fooof_peak_Fr(x,[1:3 5]),['-o' color])
 
-        plot(A,fooof_bkgdFr,'-o','Color',[0.5 0.5 0.5])
+        errorbar(A,fooof_bkgdFr,fooof_bkgdFr-fooof_bkgdFr5,fooof_bkgdFr95-fooof_bkgdFr,'-o','Color',[0.5 0.5 0.5])
          
     else
-        plot(A,fooof_peak_Fr(x,:),['-o' color])
+        errorbar(A,fooof_peak_Fr(x,:),fooof_peak_Fr(x,:)-fooof_peak_Fr5(x,:),fooof_peak_Fr95(x,:)-fooof_peak_Fr(x,:),['-o' color])
     end
    
     title([observerID ' fooofed'])
@@ -289,29 +304,29 @@ for x=1:3
 
     vds(x,:,:)=parsedVEPdata(x).vds_Fr;
     vep_Fr(x,:,:,:)=processedVEPdata(x).vep_Fr;
-    vep_BKGD(x,:,:)=vep_bkgd;
+    vep_BKGD(x,:,:)=ttf_bkgd.vep_bkgd;
 end
 
-compiledData.observerID=observerID;
-compiledData.group=VEP_main(1).mtrp.group;
-compiledData.Fs=Fs;
-compiledData.vds=vds;
-compiledData.vep_Fr=vep_Fr;
-compiledData.vep_bkgd=vep_BKGD;
-compiledData.fooof_peak_Fr=fooof_peak_Fr;
-compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
-compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
-compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
-compiledData.fooof_results=fooof_results;
-compiledData.fooof_bkgd=fooof_bkgd;
-compiledData.ttf_M=ttf(x).ttf_M;
-compiledData.ttf_CI=ttf(x).ttf_CI;
-compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
-compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
-compiledData.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
-compiledData.ttf_FrM=ttf.ttf_FrM;
-compiledData.ttf_FrCI=ttf.ttf_FrCI;
-compiledData.nulling=nulling;
-
-save(filenameComp,'compiledData')
+% compiledData.observerID=observerID;
+% compiledData.group=VEP_main(1).mtrp.group;
+% compiledData.Fs=Fs;
+% compiledData.vds=vds;
+% compiledData.vep_Fr=vep_Fr;
+% compiledData.vep_bkgd=vep_BKGD;
+% compiledData.fooof_peak_Fr=fooof_peak_Fr;
+% compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
+% compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
+% compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
+% compiledData.fooof_results=fooof_results;
+% compiledData.fooof_bkgd=fooof_bkgd;
+% compiledData.ttf_M=ttf(x).ttf_M;
+% compiledData.ttf_CI=ttf(x).ttf_CI;
+% compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
+% compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
+% compiledData.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
+% compiledData.ttf_FrM=ttf.ttf_FrM;
+% compiledData.ttf_FrCI=ttf.ttf_FrCI;
+% compiledData.nulling=nulling;
+% 
+% save(filenameComp,'compiledData')
 

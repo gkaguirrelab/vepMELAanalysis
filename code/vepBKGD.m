@@ -1,4 +1,4 @@
-function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A)
+function [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A)
 
         L=dur_in_sec*Fs;
         f=Fs*(0:(L/2))/L;
@@ -40,6 +40,11 @@ function [ttf_bkgd_Fr,ttf_bkgdCI_Fr,vep_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in
         
         ttf_bkgd_Fr(1,:)=ttf_BKGD(:,temp(1));
         ttf_bkgdCI_Fr(1,:)=ttf_bkgdCI(:,temp(1));
+        ttf_bkgdCI=ttf_bkgdCI';
         
-        
+        ttf_bkgd.vep_bkgd=vep_bkgd;
+        ttf_bkgd.ttf_BKGD=ttf_BKGD;
+        ttf_bkgd.ttf_bkgdCI=ttf_bkgdCI;
+        ttf_bkgd.ttf_bkgd_Fr=ttf_bkgd_Fr;
+        ttf_bkgd.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
 end

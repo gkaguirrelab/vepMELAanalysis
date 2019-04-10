@@ -26,13 +26,12 @@ XX=(1:length(vep_Fr))/p.Results.Fs;
 vep_FrM=squeeze(nanmedian(vep_Fr,2));
 f=p.Results.Fs*(0:(L/2))/L;
 f=f';
-counter=1;
 
 for xx=1:size(vep_FrM,1)
     psd_temp=fft(vep_FrM(xx,:));
     psd_temp=abs(psd_temp/L);
     ttf_M(xx,:)=psd_temp(:,1:(L/2)+1);
-    Bootstat=bootstrp(100,@nanmedian,squeeze(vep_Fr(xx,:,:)),1);
+    Bootstat=bootstrp(1000,@nanmedian,squeeze(vep_Fr(xx,:,:)),1);
     for yy=1:size(Bootstat,1)
         ttf_boot=fft(Bootstat(yy,:));
         ttf_boot=abs(ttf_boot/L);
@@ -45,7 +44,7 @@ for xx=1:size(vep_FrM,1)
     end
    
     TTF_boot=sort(TTF_boot,3);
-    ttf_CI(xx,:,:)=TTF_boot(xx,:,[5 95]);
+    ttf_CI(xx,:,:)=TTF_boot(xx,:,[50 950]);
     
     temp=abs(f-p.Results.TemporalFrequency(xx));
     temp2=find(temp==min(temp));
@@ -56,7 +55,7 @@ for xx=1:size(vep_FrM,1)
    
     if p.Results.plot_all==1
         figure(3)
-        subplot(5,2,counter)
+        subplot(1,5,xx)
         plot(XX,vep_FrM(xx,:),'-k')
         title(['frequency=' num2str(p.Results.TemporalFrequency(xx))]);
         xlabel('Time(s)')
@@ -65,8 +64,9 @@ for xx=1:size(vep_FrM,1)
         ax.Box='off';
         ax.YLim=[-0.1 0.1];
         ax.XLim=[0 p.Results.dur_in_sec];
-
-        subplot(5,2,counter+1)
+        
+        figure(4)
+        subplot(1,5,xx)
         plot(f,ttf_M(xx,:),'-k')
         hold on
         plot(p.Results.TemporalFrequency(xx),ttf_FrM(xx,:),'ob')
@@ -75,11 +75,10 @@ for xx=1:size(vep_FrM,1)
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
-        ax.XLim=[0 100];
+        ax.XLim=[0 60];
         ax.YLim=[0 0.01];
         pause
         hold off
-        counter=counter+2;
     end
 end
 
