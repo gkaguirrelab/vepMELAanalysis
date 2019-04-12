@@ -5,13 +5,14 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0181';'MELA_0167';...
     'MELA_0187';'MELA_0175';...
     'MELA_0170';'MELA_0169';...
-    'MELA_0194'];
+    'MELA_0194';'MELA_0179';...
+    'MELA_0191';'MELA_0174'];
 
 counter_MVA=0;
 counter_HAF=0;
 A=[1.625 3.25 7.5 15 30];
-ub=750;
-lb=250;
+lb=50;
+ub=950;
 
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
     'vepMELAanalysis','allChannels');
@@ -43,6 +44,38 @@ end
 
 clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 
+% plot visual discomfort scale
+VDS=calcVDS(compiledData_MVA,compiledData_HAF,A,lb,ub);
+
+figure(6)
+   
+    subplot(1,2,2)
+    hold on
+    errorbar(A,VDS.LMS_mvaM,VDS.LMS_mvaM-VDS.LMS_mvaCI(1,:),VDS.LMS_mvaCI(2,:)-VDS.LMS_mvaM,'-ok','LineWidth',2,'MarkerFaceColor','k')
+    errorbar(A,VDS.LM_mvaM,VDS.LM_mvaM-VDS.LM_mvaCI(1,:),VDS.LM_mvaCI(2,:)-VDS.LM_mvaM,'-or','LineWidth',2,'MarkerFaceColor','r')
+    errorbar(A([1:3 5]),VDS.S_mvaM(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5])-VDS.S_mvaCI(1,[1:3 5]),VDS.S_mvaCI(2,[1:3 5])-VDS.S_mvaM(:,[1:3 5]),'-ob','LineWidth',2,'MarkerFaceColor','b')
+    ylabel('visual discomfort scale')
+    xlabel('temporal frequency of stimulus')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XScale='log';
+    ax.XLim=[0.95 35];
+    ax.YLim=[0 11];
+
+    subplot(1,2,1)
+    hold on
+    errorbar(A,VDS.LMS_hafM,VDS.LMS_hafM-VDS.LMS_hafCI(1,:),VDS.LMS_hafCI(2,:)-VDS.LMS_hafM,'-ok','LineWidth',2,'MarkerFaceColor','w')
+    errorbar(A,VDS.LM_hafM,VDS.LM_hafM-VDS.LM_hafCI(1,:),VDS.LM_hafCI(2,:)-VDS.LM_hafM,'-or','LineWidth',2,'MarkerFaceColor','w')
+    errorbar(A([1:3 5]),VDS.S_hafM(:,[1:3 5]),VDS.S_hafM(:,[1:3 5])-VDS.S_hafCI(1,[1:3 5]),VDS.S_hafCI(2,[1:3 5])-VDS.S_hafM(:,[1:3 5]),'-ob','LineWidth',2,'MarkerFaceColor','w')
+    ylabel('visual discomfort scale')
+    xlabel('temporal frequency of stimulus')
+    ax=gca;
+    ax.TickDir='out';
+    ax.Box='off';
+    ax.XScale='log';
+    ax.XLim=[0.95 35];
+    ax.YLim=[0 11];
 
 % Plot median psd for stimulus frequency across groups
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_all,lb,ub);
@@ -86,7 +119,28 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.02];
+ax.YLim=[-0.001 0.012];
+
+% plot visual discomfort data as a function of VEP power at the stimulus
+% frequency
+figure(7)
+subplot(2,1,1)
+hold on
+errorbar(LMSm,VDS.LMS_mvaM,VDS.LMS_mvaM-VDS.LMS_mvaCI(1,:),VDS.LMS_mvaCI(2,:)-VDS.LMS_mvaM,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2,'MarkerFaceColor','k')
+errorbar(LMm,VDS.LM_mvaM,VDS.LM_mvaM-VDS.LM_mvaCI(1,:),VDS.LM_mvaCI(2,:)-VDS.LM_mvaM,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2,'MarkerFaceColor','r')
+errorbar(Sm(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5])-VDS.S_mvaCI(1,[1:3 5]),VDS.S_mvaCI(2,[1:3 5])-VDS.S_mvaM(:,[1:3 5]),...
+    Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','b')
+plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+title(['Migraine with visual aura (n=' num2str(size(compiledData_MVA,1)) ')'])
+ylabel('visual discomfort scale')
+xlabel('VEP power at stimulus frequency')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.XLim=[-0.001 0.012];
+ax.YLim=[0 10];
+
+mvaFit_vdsvep=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM));
 
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
@@ -110,7 +164,28 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.02];
+ax.YLim=[-0.001 0.012];
+
+% plot visual discomfort data as a function of VEP power at the stimulus
+% frequency
+figure(7)
+subplot(2,1,2)
+hold on
+errorbar(LMSm,VDS.LMS_hafM,VDS.LMS_hafM-VDS.LMS_hafCI(1,:),VDS.LMS_hafCI(2,:)-VDS.LMS_hafM,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2,'MarkerFaceColor','w')
+errorbar(LMm,VDS.LM_hafM,VDS.LM_hafM-VDS.LM_hafCI(1,:),VDS.LM_hafCI(2,:)-VDS.LM_hafM,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2,'MarkerFaceColor','w')
+errorbar(Sm(:,[1:3 5]),VDS.S_hafM(:,[1:3 5]),VDS.S_hafM(:,[1:3 5])-VDS.S_hafCI(1,[1:3 5]),VDS.S_hafCI(2,[1:3 5])-VDS.S_hafM(:,[1:3 5]),...
+    Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','w')
+plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+title(['Headache free control (n=' num2str(size(compiledData_HAF,1)) ')'])
+ylabel('visual discomfort scale')
+xlabel('VEP power at stimulus frequency')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.XLim=[-0.001 0.012];
+ax.YLim=[0 10];
+
+hafFit_vdsvep=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM));
 
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
@@ -121,8 +196,6 @@ plotFooofHarmonics(compiledData_MVA,4,A,lb,ub);
 
 plotFooofHarmonics(compiledData_HAF,5,A,lb,ub);
 
-% plot visual discomfort scale
-plotVDS(compiledData_MVA,compiledData_HAF,6,A,lb,ub);
 
 %% local functions
 
@@ -210,7 +283,7 @@ function []=plotFooofHarmonics(compiledData,fig_num,A,lb,ub)
     end
 end
 
-function []=plotVDS(compiledData_MVA,compiledData_HAF,fig_num,A,lb,ub)
+function [VDS]=calcVDS(compiledData_MVA,compiledData_HAF,A,lb,ub)
     
     LMS_mva=[];
     LM_mva=[];
@@ -269,34 +342,19 @@ function []=plotVDS(compiledData_MVA,compiledData_HAF,fig_num,A,lb,ub)
     Bootstat=sort(Bootstat,1);
     S_hafCI=Bootstat([lb ub],:);
     S_hafM=Bootstat(500,:);
+    
+    VDS.LMS_mvaM=LMS_mvaM;
+    VDS.LMS_mvaCI=LMS_mvaCI;
+    VDS.LM_mvaM=LM_mvaM;
+    VDS.LM_mvaCI=LM_mvaCI;
+    VDS.S_mvaM=S_mvaM;
+    VDS.S_mvaCI=S_mvaCI;
 
-    figure(fig_num)
-   
-    subplot(1,2,2)
-    hold on
-    errorbar(A,LMS_mvaM,LMS_mvaM-LMS_mvaCI(1,:),LMS_mvaCI(2,:)-LMS_mvaM,'-ok','LineWidth',2,'MarkerFaceColor','k')
-    errorbar(A,LM_mvaM,LM_mvaM-LM_mvaCI(1,:),LM_mvaCI(2,:)-LM_mvaM,'-or','LineWidth',2,'MarkerFaceColor','r')
-    errorbar(A([1:3 5]),S_mvaM(:,[1:3 5]),S_mvaM(:,[1:3 5])-S_mvaCI(1,[1:3 5]),S_mvaCI(2,[1:3 5])-S_mvaM(:,[1:3 5]),'-ob','LineWidth',2,'MarkerFaceColor','b')
-    ylabel('visual discomfort scale')
-    xlabel('temporal frequency of stimulus')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XScale='log';
-    ax.XLim=[0.95 35];
-    ax.YLim=[0 11];
+    VDS.LMS_hafM=LMS_hafM;
+    VDS.LMS_hafCI=LMS_hafCI;
+    VDS.LM_hafM=LM_hafM;
+    VDS.LM_hafCI=LM_hafCI;
+    VDS.S_hafM=S_hafM;
+    VDS.S_hafCI=S_hafCI;
 
-    subplot(1,2,1)
-    hold on
-    errorbar(A,LMS_hafM,LMS_hafM-LMS_hafCI(1,:),LMS_hafCI(2,:)-LMS_hafM,'-ok','LineWidth',2,'MarkerFaceColor','w')
-    errorbar(A,LM_hafM,LM_hafM-LM_hafCI(1,:),LM_hafCI(2,:)-LM_hafM,'-or','LineWidth',2,'MarkerFaceColor','w')
-    errorbar(A([1:3 5]),S_hafM(:,[1:3 5]),S_hafM(:,[1:3 5])-S_hafCI(1,[1:3 5]),S_hafCI(2,[1:3 5])-S_hafM(:,[1:3 5]),'-ob','LineWidth',2,'MarkerFaceColor','w')
-    ylabel('visual discomfort scale')
-    xlabel('temporal frequency of stimulus')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XScale='log';
-    ax.XLim=[0.95 35];
-    ax.YLim=[0 11];
 end

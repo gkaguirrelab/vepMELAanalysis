@@ -307,26 +307,22 @@ for x=1:3
     vep_BKGD(x,:,:)=ttf_bkgd.vep_bkgd;
 end
 
-% compiledData.observerID=observerID;
-% compiledData.group=VEP_main(1).mtrp.group;
-% compiledData.Fs=Fs;
-% compiledData.vds=vds;
-% compiledData.vep_Fr=vep_Fr;
-% compiledData.vep_bkgd=vep_BKGD;
-% compiledData.fooof_peak_Fr=fooof_peak_Fr;
-% compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
-% compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
-% compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
-% compiledData.fooof_results=fooof_results;
-% compiledData.fooof_bkgd=fooof_bkgd;
-% compiledData.ttf_M=ttf(x).ttf_M;
-% compiledData.ttf_CI=ttf(x).ttf_CI;
-% compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
-% compiledData.ttf_bkgd_Fr=ttf_bkgd_Fr;
-% compiledData.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
-% compiledData.ttf_FrM=ttf.ttf_FrM;
-% compiledData.ttf_FrCI=ttf.ttf_FrCI;
-% compiledData.nulling=nulling;
-% 
-% save(filenameComp,'compiledData')
+compiledData.observerID=observerID;
+compiledData.group=VEP_main(1).mtrp.group;
+compiledData.Fs=Fs;
+compiledData.vds=vds;
+compiledData.vep_Fr=vep_Fr;
+compiledData.vep_bkgd=vep_BKGD;
+compiledData.fooof_peak_Fr=fooof_peak_Fr;
+compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
+compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
+compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
+compiledData.fooof_results=fooof_results;
+compiledData.fooof_bkgd=fooof_bkgd;
+compiledData.ttf_M=ttf(x).ttf_M;
+compiledData.ttf_CI=ttf(x).ttf_CI;
+compiledData.ttf_bkgd=ttf_bkgd;
+compiledData.nulling=nulling;
+
+save(filenameComp,'compiledData')
 
