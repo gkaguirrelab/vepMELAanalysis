@@ -48,18 +48,24 @@ for XXX=1:size(parsedVEPdata,2)
 
     % gray background
     for w=1:size(vep_BKGD,1)
-    %     figure(15)
-    %     plot(XX,vep_bkgd(w,:))
-    %     title(['Background, trial: ' num2str(w)])
-    %     ax=gca;
-    %     ax.YLim=[-0.5 0.5];
-    %     ax.XLim=[0 dur_in_freq/p.Results.Fs];
-    %     ax.TickDir='out';
-    %     ax.Box='off';
-    %     hold off
+         if p.Results.plot_all==1
+            figure(15)
+            plot(XX,vep_BKGD(w,:))
+            title(['Background, trial: ' num2str(w)])
+            ax=gca;
+            ax.YLim=[-0.5 0.5];
+            ax.XLim=[0 dur_in_freq/p.Results.Fs];
+            ax.TickDir='out';
+            ax.Box='off';
+            hold off
+         end
 
         if max(abs(vep_BKGD(w,:)))>=0.5 || max(abs(vep_BKGD(w,:)))<0.02
             vep_bkgd(XXX,w,:)=vep_BKGD(w,:).*NaN;
+             if p.Results.plot_all==1
+                xlabel('bad')
+                pause
+             end
         else
             vep_bkgd(XXX,w,:)=vep_BKGD(w,:);
         end
@@ -169,7 +175,7 @@ if p.Results.normalize2==1
         for x=1:size(vep_Fr,2)
             vep_bkgdN(XXX,x,:)=vep_bkgd(x,:)-norm_vep;
             if p.Results.plot_all==1
-                plot(XX,vep_bkgd(x,:),'Color',[0.5 0.5 0.5])
+                plot(XX,vep_BKGD(x,:),'Color',[0.5 0.5 0.5])
                 hold on
                 plot(XX,vep_bkgdN(x,:),'k')
                 ax=gca;

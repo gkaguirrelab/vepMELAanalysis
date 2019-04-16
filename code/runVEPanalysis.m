@@ -47,7 +47,7 @@ for x=1:3
 end
 
 %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
-    [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec);
+    [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec,'plot_all',false);
     
     % analyze background data across channels
     [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A);
@@ -211,7 +211,7 @@ for x=1:3
     end
     
     % get harmonics
-    harmonic=[0.5 1 2 3 4];
+    harmonic=[1 2 3 4];
     for a=1:length(A)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
@@ -229,17 +229,17 @@ for x=1:3
                 peak_freq_harm_loc(b)=temp2;
             end
         end
-%         figure(12)
-%         plot(xdata,ydata,'k')
-%         hold on
-%         plot(xdata(peak_freq_harm_loc),ydata(peak_freq_harm_loc),'or')
-%         ax=gca;
-%         ax.Box='off';
-%         ax.TickDir='out';
-%         ax.XLim=[0 100];
-%         ax.YLim=[-0.002 0.02];
-%         pause
-%         hold off
+        figure(12)
+        plot(xdata,ydata,'k')
+        hold on
+        plot(xdata(peak_freq_harm_loc),ydata(peak_freq_harm_loc),'or')
+        ax=gca;
+        ax.Box='off';
+        ax.TickDir='out';
+        ax.XLim=[0 100];
+        ax.YLim=[-0.002 0.02];
+        pause
+        hold off
         
         fooof_peak_harmonics{x,a,:}=ydata(peak_freq_harm_loc);
         fooof_peak_harmonics_freq{x,a,:}=xdata(peak_freq_harm_loc);

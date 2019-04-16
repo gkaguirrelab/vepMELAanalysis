@@ -6,7 +6,8 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0187';'MELA_0175';...
     'MELA_0170';'MELA_0169';...
     'MELA_0194';'MELA_0179';...
-    'MELA_0191';'MELA_0174'];
+    'MELA_0191';'MELA_0174';...
+    'MELA_0120'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -185,7 +186,7 @@ for y=1:size(HAF_vds,2)
         end
             figure(101)
             for c=1:size(HAF_fooof_fr,1)
-                subplot(3,2,c)
+                subplot(3,3,c)
                 hold on
                 plot(A(flicker_stim),squeeze(HAF_fooof_fr(c,y,flicker_stim)),['-o' color])
                 title(num2str(HAF_ID(c,:)))
@@ -199,7 +200,7 @@ for y=1:size(HAF_vds,2)
             
             figure(100)
             for b=1:size(MVA_fooof_fr,1)
-                subplot(3,2,b)
+                subplot(3,3,b)
                 hold on
                 plot(A(flicker_stim),squeeze(MVA_fooof_fr(b,y,flicker_stim)),['-o' color],'MarkerFaceColor',color)
                 title(num2str(MVA_ID(b,:)))
