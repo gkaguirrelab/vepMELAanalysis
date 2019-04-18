@@ -11,12 +11,14 @@ subjects=['MELA_0121';'MELA_0131';...
 
 counter_MVA=0;
 counter_HAF=0;
-A=[1.625 3.25 7.5 15 30];
-lb=250;
-ub=750;
+TemporalFrequency=[1.625 3.25 7.5 15 30];
+lb=50;
+ub=950;
 
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
     'vepMELAanalysis','allChannels');
+
+load('/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat')
 
 for x=1:size(subjects,1)
     
@@ -28,6 +30,9 @@ for x=1:size(subjects,1)
 
         open(filenameComp);
         compiledData=ans.compiledData;
+        temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
+        temp2=scoreTable(temp,:);
+        compiledData.subject=temp2;
         compiledData_all(x,:)=compiledData;
 
         if compiledData(1).group=='MWVA'
@@ -45,54 +50,23 @@ end
 
 clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 
-% plot visual discomfort scale
-VDS=calcVDS(compiledData_MVA,compiledData_HAF,A,lb,ub);
-% 
-% figure(6)
-%    
-%     subplot(1,2,2)
-%     hold on
-%     errorbar(A,VDS.LMS_mvaM,VDS.LMS_mvaM-VDS.LMS_mvaCI(1,:),VDS.LMS_mvaCI(2,:)-VDS.LMS_mvaM,'-ok','LineWidth',2,'MarkerFaceColor','k')
-%     errorbar(A,VDS.LM_mvaM,VDS.LM_mvaM-VDS.LM_mvaCI(1,:),VDS.LM_mvaCI(2,:)-VDS.LM_mvaM,'-or','LineWidth',2,'MarkerFaceColor','r')
-%     errorbar(A([1:3 5]),VDS.S_mvaM(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5])-VDS.S_mvaCI(1,[1:3 5]),VDS.S_mvaCI(2,[1:3 5])-VDS.S_mvaM(:,[1:3 5]),'-ob','LineWidth',2,'MarkerFaceColor','b')
-%     ylabel('visual discomfort scale')
-%     xlabel('temporal frequency of stimulus')
-%     ax=gca;
-%     ax.TickDir='out';
-%     ax.Box='off';
-%     ax.XScale='log';
-%     ax.XLim=[0.95 35];
-%     ax.YLim=[0 11];
-% 
-%     subplot(1,2,1)
-%     hold on
-%     errorbar(A,VDS.LMS_hafM,VDS.LMS_hafM-VDS.LMS_hafCI(1,:),VDS.LMS_hafCI(2,:)-VDS.LMS_hafM,'-ok','LineWidth',2,'MarkerFaceColor','w')
-%     errorbar(A,VDS.LM_hafM,VDS.LM_hafM-VDS.LM_hafCI(1,:),VDS.LM_hafCI(2,:)-VDS.LM_hafM,'-or','LineWidth',2,'MarkerFaceColor','w')
-%     errorbar(A([1:3 5]),VDS.S_hafM(:,[1:3 5]),VDS.S_hafM(:,[1:3 5])-VDS.S_hafCI(1,[1:3 5]),VDS.S_hafCI(2,[1:3 5])-VDS.S_hafM(:,[1:3 5]),'-ob','LineWidth',2,'MarkerFaceColor','w')
-%     ylabel('visual discomfort scale')
-%     xlabel('temporal frequency of stimulus')
-%     ax=gca;
-%     ax.TickDir='out';
-%     ax.Box='off';
-%     ax.XScale='log';
-%     ax.XLim=[0.95 35];
-%     ax.YLim=[0 11];
+% visual discomfort scale
+VDS=calcVDS(compiledData_MVA,compiledData_HAF,lb,ub);
 
 % Plot median psd for stimulus frequency across groups
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_all,lb,ub);
 
-x0 = [4 2 1];
-[ttf_fitLMS,A_fitLMS]=getTTFfits(LMSm,A,x0);
-[ttf_fitLM,A_fitLM]=getTTFfits(LMm,A,x0);
-[ttf_fitS,A_fitS]=getTTFfits(Sm([1:3 5]),A([1:3 5]),x0);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[4 2 1 max(LMSm)]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 2 1 max(LMm)]);
+[ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[4 2 1 max(Sm)]);
 
 figure(1)
 subplot(1,4,1)
 hold on
-X=cat(2,A,fliplr(A));
+X=cat(2,TemporalFrequency,fliplr(TemporalFrequency));
 CI=cat(2,BKGDci(1,:),fliplr(BKGDci(2,:)));
 fill(X,CI,[0.95 0.95 0.95],'EdgeColor',[0.85 0.85 0.85]);
-plot(A,BKGDm,'ok','MarkerFaceColor',[0.5 0.5 0.5])
+plot(TemporalFrequency,BKGDm,'ok','MarkerFaceColor',[0.5 0.5 0.5])
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 ylabel('power spectra at stimulus frequency')
 title(['all subjects (n=' num2str(size(compiledData_all,1)) '), Background'])
@@ -107,8 +81,8 @@ subplot(1,4,2)
 hold on
 CI=cat(2,LMSci(1,:),fliplr(LMSci(2,:)));
 fill(X,CI,[0.9 0.9 0.9],'EdgeColor',[0.75 0.75 0.75]);
-plot(A,LMSm,'ok','MarkerFaceColor','k')
-plot(A_fitLMS,ttf_fitLMS,'-k')
+plot(TemporalFrequency,LMSm,'ok','MarkerFaceColor','k')
+plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['LMS'])
 ax=gca;
@@ -122,8 +96,8 @@ subplot(1,4,3)
 hold on
 CI=cat(2,LMci(1,:),fliplr(LMci(2,:)));
 fill(X,CI,[1 0.9 0.9],'EdgeColor',[1 0.8 0.8]);
-plot(A,LMm,'or','MarkerFaceColor','r')
-plot(A_fitLM,ttf_fitLM,'-r')
+plot(TemporalFrequency,LMm,'or','MarkerFaceColor','r')
+plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 xlabel('Stimulus frequency')
 title(['LM'])
@@ -136,11 +110,11 @@ ax.YLim=[-0.001 0.01];
 
 subplot(1,4,4)
 hold on
-X=cat(2,A([1:3 5]),fliplr(A([1:3 5])));
+X=cat(2,TemporalFrequency([1:3 5]),fliplr(TemporalFrequency([1:3 5])));
 CI=cat(2,Sci(1,[1:3 5]),fliplr(Sci(2,[1:3 5])));
 fill(X,CI,[0.9 0.9 1],'EdgeColor',[0.8 0.8 1]);
-plot(A([1:3 5]),Sm([1:3 5]),'ob','MarkerFaceColor','b')
-plot(A_fitS,ttf_fitS,'-b')
+plot(TemporalFrequency([1:3 5]),Sm([1:3 5]),'ob','MarkerFaceColor','b')
+plot(TemporalFrequency_fitS,ttf_fitS,'-b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['S'])
 ax=gca;
@@ -152,21 +126,69 @@ ax.YLim=[-0.001 0.01];
 
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
+% Plot the harmonics across subjects
+[lmsFit_harmonics, lmFit_harmonics, Sfit_harmonics]=plotFooofHarmonics(compiledData_all,3,lb,ub);
+[lmsFit_harmonicsMVA, lmFit_harmonicsMVA, Sfit_harmonicsMVA]=plotFooofHarmonics(compiledData_MVA,4,lb,ub);
+[lmsFit_harmonicsHAF, lmFit_harmonicsHAF, Sfit_harmonicsHAF]=plotFooofHarmonics(compiledData_HAF,5,lb,ub);
+
+% Plot the sum of harmonics across subjects
+sumFooofHarmonics(compiledData_all,10,TemporalFrequency,lb,ub);
+[LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_MVA,11,TemporalFrequency,lb,ub);
+% plot visual discomfort data as a function of VEP power at the stimulus
+% frequency+harmonics
+figure(7)
+subplot(2,2,3)
+hold on
+errorbar(LMSm,VDS.LMS_mvaM,VDS.LMS_mvaM-VDS.LMS_mvaCI(1,:),VDS.LMS_mvaCI(2,:)-VDS.LMS_mvaM,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2,'MarkerFaceColor','k')
+errorbar(LMm,VDS.LM_mvaM,VDS.LM_mvaM-VDS.LM_mvaCI(1,:),VDS.LM_mvaCI(2,:)-VDS.LM_mvaM,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2,'MarkerFaceColor','r')
+errorbar(Sm(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5])-VDS.S_mvaCI(1,[1:3 5]),VDS.S_mvaCI(2,[1:3 5])-VDS.S_mvaM(:,[1:3 5]),...
+    Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','b')
+plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+title(['Migraine with visual aura (n=' num2str(size(compiledData_MVA,1)) ') fundamental+harmonics'])
+ylabel('visual discomfort scale')
+xlabel('VEP power at stimulus frequency')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.XLim=[-0.001 0.021];
+ax.YLim=[0 10];
+mvaFit_vdsvep_harm=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM));
+
+
+[LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_HAF,12,TemporalFrequency,lb,ub);
+figure(7)
+subplot(2,2,4)
+hold on
+errorbar(LMSm,VDS.LMS_hafM,VDS.LMS_hafM-VDS.LMS_hafCI(1,:),VDS.LMS_hafCI(2,:)-VDS.LMS_hafM,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2,'MarkerFaceColor','w')
+errorbar(LMm,VDS.LM_hafM,VDS.LM_hafM-VDS.LM_hafCI(1,:),VDS.LM_hafCI(2,:)-VDS.LM_hafM,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2,'MarkerFaceColor','w')
+errorbar(Sm(:,[1:3 5]),VDS.S_hafM(:,[1:3 5]),VDS.S_hafM(:,[1:3 5])-VDS.S_hafCI(1,[1:3 5]),VDS.S_hafCI(2,[1:3 5])-VDS.S_hafM(:,[1:3 5]),...
+    Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','w')
+plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+title(['Headache free control (n=' num2str(size(compiledData_HAF,1)) ') fundamental+harmonics'])
+ylabel('visual discomfort scale')
+xlabel('VEP power at stimulus frequency')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.XLim=[-0.001 0.021];
+ax.YLim=[0 10];
+hafFit_vdsvep_harm=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM));
+
 
 % Plot median psd for stimulus frequency between groups
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_MVA,lb,ub);
 
-[ttf_fitLMS,A_fitLMS]=getTTFfits(LMSm,A,x0);
-[ttf_fitLM,A_fitLM]=getTTFfits(LMm,A,x0);
-[ttf_fitS,A_fitS]=getTTFfits(Sm([1:3 5]),A([1:3 5]),x0);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[4 2 1 max(LMSm)]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 2 1 max(LMm)]);
+[ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[4 2 1 max(Sm)]);
 
 figure(2)
 subplot(1,4,1)
 hold on
-X=cat(2,A,fliplr(A));
+X=cat(2,TemporalFrequency,fliplr(TemporalFrequency));
 CI=cat(2,BKGDci(1,:),fliplr(BKGDci(2,:)));
 fill(X,CI,[0.95 0.95 0.95],'EdgeColor',[0.85 0.85 0.85]);
-plot(A,BKGDm,'ok','MarkerFaceColor',[0.5 0.5 0.5])
+plot(TemporalFrequency,BKGDm,'ok','MarkerFaceColor',[0.5 0.5 0.5])
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 ylabel('power spectra at stimulus frequency')
 title(['migraine with visual aura (n=' num2str(size(compiledData_MVA,1)) '), Background'])
@@ -181,8 +203,8 @@ subplot(1,4,2)
 hold on
 CI=cat(2,LMSci(1,:),fliplr(LMSci(2,:)));
 fill(X,CI,[0.9 0.9 0.9],'EdgeColor',[0.75 0.75 0.75]);
-plot(A,LMSm,'ok','MarkerFaceColor','k')
-plot(A_fitLMS,ttf_fitLMS,'-k')
+plot(TemporalFrequency,LMSm,'ok','MarkerFaceColor','k')
+plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['LMS'])
 ax=gca;
@@ -196,8 +218,8 @@ subplot(1,4,3)
 hold on
 CI=cat(2,LMci(1,:),fliplr(LMci(2,:)));
 fill(X,CI,[1 0.9 0.9],'EdgeColor',[1 0.8 0.8]);
-plot(A,LMm,'or','MarkerFaceColor','r')
-plot(A_fitLM,ttf_fitLM,'-r')
+plot(TemporalFrequency,LMm,'or','MarkerFaceColor','r')
+plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 xlabel('Stimulus frequency')
 title(['LM'])
@@ -210,11 +232,11 @@ ax.YLim=[-0.001 0.01];
 
 subplot(1,4,4)
 hold on
-X=cat(2,A([1:3 5]),fliplr(A([1:3 5])));
+X=cat(2,TemporalFrequency([1:3 5]),fliplr(TemporalFrequency([1:3 5])));
 CI=cat(2,Sci(1,[1:3 5]),fliplr(Sci(2,[1:3 5])));
 fill(X,CI,[0.9 0.9 1],'EdgeColor',[0.8 0.8 1]);
-plot(A([1:3 5]),Sm([1:3 5]),'ob','MarkerFaceColor','b')
-plot(A_fitS,ttf_fitS,'-b')
+plot(TemporalFrequency([1:3 5]),Sm([1:3 5]),'ob','MarkerFaceColor','b')
+plot(TemporalFrequency_fitS,ttf_fitS,'-b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['S'])
 ax=gca;
@@ -227,7 +249,7 @@ ax.YLim=[-0.001 0.01];
 % plot visual discomfort data as a function of VEP power at the stimulus
 % frequency
 figure(7)
-subplot(2,1,1)
+subplot(2,2,1)
 hold on
 errorbar(LMSm,VDS.LMS_mvaM,VDS.LMS_mvaM-VDS.LMS_mvaCI(1,:),VDS.LMS_mvaCI(2,:)-VDS.LMS_mvaM,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2,'MarkerFaceColor','k')
 errorbar(LMm,VDS.LM_mvaM,VDS.LM_mvaM-VDS.LM_mvaCI(1,:),VDS.LM_mvaCI(2,:)-VDS.LM_mvaM,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2,'MarkerFaceColor','r')
@@ -240,7 +262,7 @@ xlabel('VEP power at stimulus frequency')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.XLim=[-0.001 0.012];
+ax.XLim=[-0.001 0.021];
 ax.YLim=[0 10];
 
 mvaFit_vdsvep=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM));
@@ -251,25 +273,25 @@ clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_HAF,lb,ub);
 
-[ttf_fitLMS,A_fitLMS]=getTTFfits(LMSm,A,x0);
-[ttf_fitLM,A_fitLM]=getTTFfits(LMm,A,x0);
-[ttf_fitS,A_fitS]=getTTFfits(Sm([1:3 5]),A([1:3 5]),x0);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[4 2 1 max(LMSm)]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 2 1 max(LMm)]);
+[ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[4 2 1 max(Sm)]);
     
 figure(2)
 subplot(1,4,1)
 hold on
-X=cat(2,A,fliplr(A));
+X=cat(2,TemporalFrequency,fliplr(TemporalFrequency));
 CI=cat(2,BKGDci(1,:),fliplr(BKGDci(2,:)));
 fill(X,CI,[0.95 0.95 0.95],'EdgeColor',[0.85 0.85 0.85]);
-plot(A,BKGDm,'ok','MarkerFaceColor',[0.5 0.5 0.5])
+plot(TemporalFrequency,BKGDm,'ok','MarkerFaceColor',[0.5 0.5 0.5])
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 
 subplot(1,4,2)
 hold on
 CI=cat(2,LMSci(1,:),fliplr(LMSci(2,:)));
 fill(X,CI,[0.9 0.9 0.9],'EdgeColor',[0.75 0.75 0.75]);
-plot(A,LMSm,'ok','MarkerFaceColor','k')
-plot(A_fitLMS,ttf_fitLMS,'-k')
+plot(TemporalFrequency,LMSm,'ok','MarkerFaceColor','k')
+plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['headache free (n=' num2str(size(compiledData_HAF,1)) '), LMS'])
 
@@ -278,24 +300,24 @@ subplot(1,4,3)
 hold on
 CI=cat(2,LMci(1,:),fliplr(LMci(2,:)));
 fill(X,CI,[1 0.9 0.9],'EdgeColor',[1 0.8 0.8]);
-plot(A,LMm,'or','MarkerFaceColor','r')
-plot(A_fitLM,ttf_fitLM,'-r')
+plot(TemporalFrequency,LMm,'or','MarkerFaceColor','r')
+plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 
 
 subplot(1,4,4)
 hold on
-X=cat(2,A([1:3 5]),fliplr(A([1:3 5])));
+X=cat(2,TemporalFrequency([1:3 5]),fliplr(TemporalFrequency([1:3 5])));
 CI=cat(2,Sci(1,[1:3 5]),fliplr(Sci(2,[1:3 5])));
 fill(X,CI,[0.9 0.9 1],'EdgeColor',[0.8 0.8 1]);
-plot(A([1:3 5]),Sm([1:3 5]),'ob','MarkerFaceColor','b')
-plot(A_fitS,ttf_fitS,'-b')
+plot(TemporalFrequency([1:3 5]),Sm([1:3 5]),'ob','MarkerFaceColor','b')
+plot(TemporalFrequency_fitS,ttf_fitS,'-b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 
 % plot visual discomfort data as a function of VEP power at the stimulus
 % frequency
 figure(7)
-subplot(2,1,2)
+subplot(2,2,2)
 hold on
 errorbar(LMSm,VDS.LMS_hafM,VDS.LMS_hafM-VDS.LMS_hafCI(1,:),VDS.LMS_hafCI(2,:)-VDS.LMS_hafM,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2,'MarkerFaceColor','w')
 errorbar(LMm,VDS.LM_hafM,VDS.LM_hafM-VDS.LM_hafCI(1,:),VDS.LM_hafCI(2,:)-VDS.LM_hafM,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2,'MarkerFaceColor','w')
@@ -308,20 +330,40 @@ xlabel('VEP power at stimulus frequency')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.XLim=[-0.001 0.012];
+ax.XLim=[-0.001 0.021];
 ax.YLim=[0 10];
 
 hafFit_vdsvep=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM));
 
+
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
-% Plot harmonics across all subjects
-plotFooofHarmonics(compiledData_all,3,A,lb,ub);
+% plot luminance 30 Hz VEP response as a function of headache frequency
+figure(20)
+for i=1:size(compiledData_MVA,1)
+    X_mva(i)=table2array(compiledData_MVA(i).subject(:,4));
+    Y_mva(i)=compiledData_MVA(i).fooof_peak_Fr(1,5);
+end
 
-plotFooofHarmonics(compiledData_MVA,4,A,lb,ub);
+for i=1:size(compiledData_HAF,1)
+    X_haf(i)=table2array(compiledData_HAF(i).subject(:,4));
+    Y_haf(i)=compiledData_HAF(i).fooof_peak_Fr(1,5);
+end
 
-plotFooofHarmonics(compiledData_HAF,5,A,lb,ub);
+Fit_vepHAfr=fitlm(cat(2,X_mva,Y_haf),cat(2,Y_mva,Y_haf));
+mvaFit_vepHAfr=fitlm(X_mva,Y_mva);
 
+plot(X_mva,Y_mva,'ok','MarkerFaceColor','k')
+hold on
+plot(X_haf,Y_haf,'ok','MarkerFaceColor','w')
+title(['Luminance 30 Hz'])
+ylabel('power at stimulus frequency')
+xlabel('Number of headache days in past 3 months')
+ax=gca;
+ax.TickDir='out';
+ax.Box='off';
+ax.YLim=[-0.001 0.012];
+ax.XLim=[-1 31];
 
 %% local functions
 
@@ -361,9 +403,58 @@ BKGD=[];
     BKGDm=Bootstat(500,:);
 end
 
+function [lmsFit_harmonics, lmFit_harmonics, sFit_harmonics]=plotFooofHarmonics(compiledData,fig_num,lb,ub)
+
+    for x=1:5     
+        for y=1:size(compiledData,1)
+            fooof_peak_harmonics=compiledData(y).fooof_peak_harmonics;
+            x_harmonics=cell2mat(compiledData(y).fooof_peak_harmonics_freq(1,x));
+            LMS(y,:)=cell2mat(fooof_peak_harmonics(1,x));
+            LM(y,:)=cell2mat(fooof_peak_harmonics(2,x));
+            S(y,:)=cell2mat(fooof_peak_harmonics(3,x));
+        end
+
+        Bootstat=bootstrp(1000,@nanmedian,LMS,1);
+        Bootstat=sort(Bootstat,1);
+        LMSci=Bootstat([lb ub],:);
+        LMSm=Bootstat(500,:);
+        lmsFit_harmonics{x,:}=fitlm(x_harmonics,LMSm);
+        
+        Bootstat=bootstrp(1000,@nanmedian,LM,1);
+        Bootstat=sort(Bootstat,1);
+        LMci=Bootstat([lb ub],:);
+        LMm=Bootstat(500,:);
+        lmFit_harmonics{x,:}=fitlm(x_harmonics,LMm);
+
+        Bootstat=bootstrp(1000,@nanmedian,S,1);
+        Bootstat=sort(Bootstat,1);
+        Sci=Bootstat([lb ub],:);
+        Sm=Bootstat(500,:);
+        sFit_harmonics{x,:}=fitlm(x_harmonics,Sm);
+        
+        figure(fig_num)
+        subplot(5,1,x)
+        hold on
+        errorbar(x_harmonics,LMSm,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'-ok','LineWidth',2)
+        errorbar(x_harmonics,LMm,LMm-LMci(1,:),LMci(2,:)-LMm,'-or','LineWidth',2)
+        errorbar(x_harmonics,Sm,Sm-Sci(1,:),Sci(2,:)-Sm,'-ob','LineWidth',2)
+        plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+        title(['harmonics'])
+        ylabel('power spectra at stimulus frequency')
+        xlabel('Stimulus frequency')
+        ax=gca;
+        ax.TickDir='out';
+        ax.Box='off';
+        ax.XScale='log';
+        ax.XLim=[0.95 95];
+        ax.YLim=[-0.001 0.01];
+
+        clear LMS LM S LMSm LMm Sm BKGDm LMSci LMci Sci
+    end
+end
 
 
-function [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci]=plotFooofHarmonics(compiledData,fig_num,A,lb,ub)
+function [LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData,fig_num,TemporalFrequency,lb,ub)
 
     for x=1:5     
         for y=1:size(compiledData,1)
@@ -391,9 +482,9 @@ function [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci]=plotFooofHarmonics(compiledDat
         
         figure(fig_num)
         hold on
-        errorbar(A,LMSm,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2)
-        errorbar(A,LMm,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2)
-        errorbar(A([1:3 5]),Sm([1:3 5]),Sm([1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm([1:3 5]),'ob','LineWidth',2)
+        errorbar(TemporalFrequency,LMSm,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2)
+        errorbar(TemporalFrequency,LMm,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2)
+        errorbar(TemporalFrequency([1:3 5]),Sm([1:3 5]),Sm([1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm([1:3 5]),'ob','LineWidth',2)
         plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
         title(['Sum of harmonics'])
         ylabel('power spectra at stimulus frequency')
@@ -403,12 +494,11 @@ function [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci]=plotFooofHarmonics(compiledDat
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 95];
-        ax.YLim=[-0.001 0.01];
+        ax.YLim=[-0.001 0.03];
 
-        clear LMS LM S LMSm LMm Sm BKGDm LMSci LMci Sci
 end
 
-function [VDS]=calcVDS(compiledData_MVA,compiledData_HAF,A,lb,ub)
+function [VDS]=calcVDS(compiledData_MVA,compiledData_HAF,lb,ub)
     
     LMS_mva=[];
     LM_mva=[];
@@ -484,7 +574,7 @@ function [VDS]=calcVDS(compiledData_MVA,compiledData_HAF,A,lb,ub)
 
 end
 
-function [ttf_fit, A_fit]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
+function [ttf_fit, TemporalFrequency_fit]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
     % Fit the Watson model to data
     % Adjust the VEP response to deal with negative values
     minVEP=min(VEPresponse);
@@ -508,5 +598,5 @@ function [ttf_fit, A_fit]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
     hold off
     
     ttf_fit=watsonTemporalModel(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
-    A_fit=stimulusFreqHzFine;
+    TemporalFrequency_fit=stimulusFreqHzFine;
 end

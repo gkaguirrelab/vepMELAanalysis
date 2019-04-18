@@ -43,16 +43,16 @@ for x=1:3
     [parsedVEPdata(x)]=parseVEP(VEP_main,'dur_in_sec',dur_in_sec,'starttime',starttime,'bandstop60',true,'plot_sessions',false);
     Fs=VEP_main(1).vepDataStruct.params.frequencyInHz;
     XX=(1:length(parsedVEPdata(x).vep_Fr))/Fs;
-    A=unique(VEP_main(x).mtrp.TFtrials);
+    TemporalFrequency=unique(VEP_main(x).mtrp.TFtrials);
 end
 
 %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
     [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec,'plot_all',false);
     
     % analyze background data across channels
-    [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A);
+    [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,TemporalFrequency);
     
-    [fooof_bkgd,fooof_bkgd5,fooof_bkgd95]=runFOOOF(ttf_bkgd.ttf_BKGD,ttf_bkgd.ttf_bkgdCI,Fs,dur_in_sec);
+    [fooof_bkgd,fooof_bkgd5,fooof_bkgd95]=runFOOOF(ttf_bkgd.ttf_BKGD,ttf_bkgd.ttf_bkgdCI,'plot_all',false);
 %%
 for x=1:3
     switch x
@@ -70,10 +70,10 @@ for x=1:3
                 Color=[0.8 0.8 1];
     end
     %% Calculate TTF
-    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',A);
+    [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',TemporalFrequency);
 
     %% FOOOF
-    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,Fs,dur_in_sec);
+    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'plot_all',false);
 
     
     %% Plotting
@@ -82,7 +82,7 @@ for x=1:3
     subplot(2,1,2)
     VDSm=nanmedian(parsedVEPdata(x).vds_Fr,2);
     VDSstd=nanstd(parsedVEPdata(x).vds_Fr,[],2);
-    errorbar(A,VDSm,VDSstd,['-o' color])
+    errorbar(TemporalFrequency,VDSm,VDSstd,['-o' color])
     hold on
     ylabel('visual discomfort scale')
     xlabel('temporal frequency of stimulus')
@@ -99,7 +99,7 @@ for x=1:3
     end
     figure(figTTF)
     hold on
-    for YY=1:length(A)
+    for YY=1:length(TemporalFrequency)
         YYY=x+((YY-1)*3);
         subplot(5,3,YYY)
         xdata=cat(2,ttf(x).f,fliplr(ttf(x).f));
@@ -112,9 +112,9 @@ for x=1:3
         ax.Box='off';
         ax.YScale='log';
         ax.XLim=[min(ttf(x).f) 100];
-        ax.XTick=A;
+        ax.XTick=TemporalFrequency;
         ax.YLim=[0.00001 0.2];
-        title(num2str(A(YY)))
+        title(num2str(TemporalFrequency(YY)))
         if YYY==7
             ylabel('Power')
         end
@@ -132,15 +132,15 @@ for x=1:3
     if x==3
         neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
         pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
-        errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
+        errorbar(TemporalFrequency([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
         
         neg=ttf_bkgd.ttf_bkgd_Fr-ttf_bkgd.ttf_bkgdCI_Fr(:,1);
         pos=ttf_bkgd.ttf_bkgdCI_Fr(:,2)-ttf_bkgd.ttf_bkgd_Fr;
-        errorbar(A,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
+        errorbar(TemporalFrequency,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
     else
         neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
         pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
-        errorbar(A,ttf(x).ttf_FrM,neg,pos,['-o' color])
+        errorbar(TemporalFrequency,ttf(x).ttf_FrM,neg,pos,['-o' color])
     end
    
     title(observerID)
@@ -154,7 +154,7 @@ for x=1:3
   
     % plot background across channels
     if x==3     
-        errorbar(A,ttf_bkgd.ttf_bkgd_Fr,ttf_bkgd.ttf_bkgdCI_Fr(:,1),ttf_bkgd.ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
+        errorbar(TemporalFrequency,ttf_bkgd.ttf_bkgd_Fr,ttf_bkgd.ttf_bkgdCI_Fr(:,1),ttf_bkgd.ttf_bkgdCI_Fr(:,2),'-o','Color',[0.5 0.5 0.5])
     end
    
      % Plot psd FOOOF
@@ -164,15 +164,15 @@ for x=1:3
     if x==3
         neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
         pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
-        errorbar(A([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
+        errorbar(TemporalFrequency([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
         
         neg=ttf_bkgd.ttf_bkgd_Fr-ttf_bkgd.ttf_bkgdCI_Fr(:,1);
         pos=ttf_bkgd.ttf_bkgdCI_Fr(:,2)-ttf_bkgd.ttf_bkgd_Fr;
-        errorbar(A,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
+        errorbar(TemporalFrequency,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
     else
         neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
         pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
-        errorbar(A,ttf(x).ttf_FrM,neg,pos,['-o' color])
+        errorbar(TemporalFrequency,ttf(x).ttf_FrM,neg,pos,['-o' color])
     end
     
     title(observerID)
@@ -187,13 +187,13 @@ for x=1:3
     
     % get FOOOF peak psd 
     
-    for a=1:length(A)
+    for a=1:length(TemporalFrequency)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
         ydata5=10.^(fooof_results5(x,a).power_spectrum)-10.^(fooof_results5(x,a).bg_fit);
         ydata95=10.^(fooof_results95(x,a).power_spectrum)-10.^(fooof_results95(x,a).bg_fit);
        
-        peak_freq=A(a);
+        peak_freq=TemporalFrequency(a);
         temp=abs(xdata-peak_freq);
         temp2=find(temp==min(temp));
         if length(temp2)>1
@@ -211,14 +211,12 @@ for x=1:3
     end
     
     % get harmonics
-    harmonic=[1 2 3 4];
-    for a=1:length(A)
+    harmonic={[1.625 3.25 4.875 6.5];[3.25 6.5 9.75 13];[7.5 15 22.5 30 37.5 45];[15 30 45 75];[30 90]};
+    for a=1:length(TemporalFrequency)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
         
-        peak_freq=A(a);
-        peak_freq_harmonic=harmonic.*peak_freq;
-        peak_freq_harmonic=peak_freq_harmonic(find(peak_freq_harmonic<100 & peak_freq_harmonic>1));
+        peak_freq_harmonic=cell2mat(harmonic(a,:));
         for b=1:length(peak_freq_harmonic)
             temp=abs(xdata-peak_freq_harmonic(b));
             temp2=find(temp==min(temp));
@@ -238,7 +236,7 @@ for x=1:3
         ax.TickDir='out';
         ax.XLim=[0 100];
         ax.YLim=[-0.002 0.02];
-        pause
+%         pause
         hold off
         
         fooof_peak_harmonics{x,a,:}=ydata(peak_freq_harm_loc);
@@ -256,7 +254,7 @@ for x=1:3
         ydata5=10.^(fooof_bkgd5.power_spectrum)-10.^(fooof_bkgd5.bg_fit);
         ydata95=10.^(fooof_bkgd95.power_spectrum)-10.^(fooof_bkgd95.bg_fit);
 
-        for a=1:length(A)
+        for a=1:length(TemporalFrequency)
            fooof_bkgdFr(:,a)=ydata(peak_freq_loc(a));
            fooof_bkgdFr5(:,a)=ydata5(peak_freq_loc(a));
            fooof_bkgdFr95(:,a)=ydata95(peak_freq_loc(a));
@@ -267,12 +265,12 @@ for x=1:3
     subplot(1,2,2)
     hold on
     if x==3
-        errorbar(A([1:3 5]),fooof_peak_Fr(x,[1:3 5]),fooof_peak_Fr(x,[1:3 5])-fooof_peak_Fr5(x,[1:3 5]),fooof_peak_Fr95(x,[1:3 5])-fooof_peak_Fr(x,[1:3 5]),['-o' color])
+        errorbar(TemporalFrequency([1:3 5]),fooof_peak_Fr(x,[1:3 5]),fooof_peak_Fr(x,[1:3 5])-fooof_peak_Fr5(x,[1:3 5]),fooof_peak_Fr95(x,[1:3 5])-fooof_peak_Fr(x,[1:3 5]),['-o' color])
 
-        errorbar(A,fooof_bkgdFr,fooof_bkgdFr-fooof_bkgdFr5,fooof_bkgdFr95-fooof_bkgdFr,'-o','Color',[0.5 0.5 0.5])
+        errorbar(TemporalFrequency,fooof_bkgdFr,fooof_bkgdFr-fooof_bkgdFr5,fooof_bkgdFr95-fooof_bkgdFr,'-o','Color',[0.5 0.5 0.5])
          
     else
-        errorbar(A,fooof_peak_Fr(x,:),fooof_peak_Fr(x,:)-fooof_peak_Fr5(x,:),fooof_peak_Fr95(x,:)-fooof_peak_Fr(x,:),['-o' color])
+        errorbar(TemporalFrequency,fooof_peak_Fr(x,:),fooof_peak_Fr(x,:)-fooof_peak_Fr5(x,:),fooof_peak_Fr95(x,:)-fooof_peak_Fr(x,:),['-o' color])
     end
    
     title([observerID ' fooofed'])
@@ -288,11 +286,11 @@ for x=1:3
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
     figure(11)
-    for z=1:length(A)
+    for z=1:length(TemporalFrequency)
         subplot(3,2,z)
         vep_temp=squeeze(nanmedian(processedVEPdata(x).vep_Fr(z,:,:),2));
         plot(XX,vep_temp,['-' color])
-        title(['frequency=' num2str(A(z))]);
+        title(['frequency=' num2str(TemporalFrequency(z))]);
         xlabel('Time(s)')
         ax=gca;
         ax.TickDir='out';
