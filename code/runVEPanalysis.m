@@ -144,13 +144,13 @@ for x=1:3
     end
    
     title(observerID)
-    ylabel('power spectra for stimulus frequency')
+    ylabel('amplitude of stimulus frequency (mV)')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[-0.002 0.02];
+    ax.YLim=[-0.002 0.04];
   
     % plot background across channels
     if x==3     
@@ -176,13 +176,13 @@ for x=1:3
     end
     
     title(observerID)
-    ylabel('power spectra for stimulus frequency')
+    ylabel('amplitude of stimulus frequency (mV)')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[-0.002 0.02];
+    ax.YLim=[-0.002 0.04];
     
     
     % get FOOOF peak psd 
@@ -211,7 +211,7 @@ for x=1:3
     end
     
     % get harmonics
-    harmonic={[1.625 3.25 4.875 6.5];[3.25 6.5 9.75 13];[7.5 15 22.5 30 37.5 45];[15 30 45 75];[30 90]};
+    harmonic={[1.625 3.25 4.875 6.5 8.125];[3.25 6.5 9.75 13 16.25];[7.5 15 22.5 30 37.5];[15 30 45 75 90];[30 90]};
     for a=1:length(TemporalFrequency)
         xdata=fooof_results(x,a).freqs;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
@@ -235,7 +235,7 @@ for x=1:3
         ax.Box='off';
         ax.TickDir='out';
         ax.XLim=[0 100];
-        ax.YLim=[-0.002 0.02];
+        ax.YLim=[-0.002 0.04];
 %         pause
         hold off
         
@@ -274,13 +274,13 @@ for x=1:3
     end
    
     title([observerID ' fooofed'])
-    ylabel('power spectra for stimulus frequency')
+    ylabel('amplitude of stimulus frequency (mV)')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
     ax.XScale='log';
     ax.XLim=[0.95 35];
-    ax.YLim=[-0.002 0.02];
+    ax.YLim=[-0.002 0.04];
   
     
     % Plot superimposed luminance, red/green, and blue/yellow in time

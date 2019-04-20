@@ -28,21 +28,29 @@ f=p.Results.Fs*(0:(L/2))/L;
 f=f';
 
 for xx=1:size(vep_FrM,1)
-    psd_temp=fft(vep_FrM(xx,:));
-    psd_temp=abs(psd_temp/L);
-    ttf_M(xx,:)=psd_temp(:,1:(L/2)+1);
+    Y=fft(vep_FrM(xx,:));
+    P2=abs(Y/L);
+    P1=P2(:,1:L/2+1);
+    P1(:,2:end-1)=2*P1(:,2:end-1);
+    ttf_M(xx,:)=P1;
+    clear P1 P2 Y
+    
     Bootstat=bootstrp(1000,@nanmedian,squeeze(vep_Fr(xx,:,:)),1);
     for yy=1:size(Bootstat,1)
-        ttf_boot=fft(Bootstat(yy,:));
-        ttf_boot=abs(ttf_boot/L);
-        ttf_boot=ttf_boot(1:L/2+1);
+        Y=fft(Bootstat(yy,:));
+        P2=abs(Y/L);
+        P1=P2(:,1:L/2+1);
+        P1(:,2:end-1)=2*P1(:,2:end-1);
+        ttf_boot=P1;
+        TTF_boot(xx,:,yy)=P1;
+        clear P1 P2 Y
         
-        TTF_boot(xx,:,yy)=ttf_boot;
         temp=abs(f-p.Results.TemporalFrequency(xx));
         temp2=find(temp==min(temp));
         ttf_Fr_boot(:,yy)=max(ttf_boot(:,temp2));
     end
-   
+    
+
     TTF_boot=sort(TTF_boot,3);
     ttf_CI(xx,:,:)=TTF_boot(xx,:,[50 950]);
     

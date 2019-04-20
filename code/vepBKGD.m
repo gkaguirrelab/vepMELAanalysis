@@ -17,15 +17,21 @@ function [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A)
         vep_bkgd=background2;
         backgroundM=nanmedian(background2,1);
 
-        psd_temp=fft(backgroundM);
-        psd_temp=abs(psd_temp/L);
-        ttf_BKGD=psd_temp(1:L/2+1);
+        Y=fft(backgroundM);
+        P2=abs(Y/L);
+        P1=P2(:,1:L/2+1);
+        P1(:,2:end-1)=2*P1(:,2:end-1);
+        ttf_BKGD=P1;
+        clear P1 P2 Y
 
         Bootstat=bootstrp(100,@nanmedian,background,1);
         for yy=1:size(Bootstat,1)
-                psd_temp=fft(Bootstat(yy,:));
-                psd_temp=abs(psd_temp/L);
-                ttf_bkgd_boot(yy,:)=psd_temp(1:L/2+1);
+                Y=fft(Bootstat(yy,:));
+                P2=abs(Y/L);
+                P1=P2(:,1:L/2+1);
+                P1(:,2:end-1)=2*P1(:,2:end-1);
+                ttf_bkgd_boot(yy,:)=P1;
+                clear P1 P2 Y
         end
         
         ttf_bkgd_boot=sort(ttf_bkgd_boot,1);

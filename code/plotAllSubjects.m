@@ -50,14 +50,14 @@ end
 
 clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 
-% visual discomfort scale
+% flicker discomfort
 VDS=calcVDS(compiledData_MVA,compiledData_HAF,lb,ub);
 
 % Plot median psd for stimulus frequency across groups
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_all,lb,ub);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[4 2 1 max(LMSm)]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 2 1 max(LMm)]);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1 max(LMSm)]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1 max(LMm)]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[4 2 1 max(Sm)]);
 
 figure(1)
@@ -75,7 +75,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 subplot(1,4,2)
 hold on
@@ -90,7 +90,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 subplot(1,4,3)
 hold on
@@ -106,7 +106,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 subplot(1,4,4)
 hold on
@@ -122,18 +122,18 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
 % Plot the harmonics across subjects
-[lmsFit_harmonics, lmFit_harmonics, Sfit_harmonics]=plotFooofHarmonics(compiledData_all,3,lb,ub);
-[lmsFit_harmonicsMVA, lmFit_harmonicsMVA, Sfit_harmonicsMVA]=plotFooofHarmonics(compiledData_MVA,4,lb,ub);
-[lmsFit_harmonicsHAF, lmFit_harmonicsHAF, Sfit_harmonicsHAF]=plotFooofHarmonics(compiledData_HAF,5,lb,ub);
+[pred60lms, pred60lm, pred60s]=plotFooofHarmonics(compiledData_all,3,lb,ub);
+[pred60lmsMVA, pred60lmMVA, pred60sMVA]=plotFooofHarmonics(compiledData_MVA,4,lb,ub);
+[pred60lmsHAF, pred60lmHAF, pred60sHAF]=plotFooofHarmonics(compiledData_HAF,5,lb,ub);
 
 % Plot the sum of harmonics across subjects
-sumFooofHarmonics(compiledData_all,10,TemporalFrequency,lb,ub);
-[LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_MVA,11,TemporalFrequency,lb,ub);
+sumFooofHarmonics(compiledData_all,10,TemporalFrequency,lb,ub, pred60lms, pred60lm, pred60s);
+[LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_MVA,11,TemporalFrequency,lb,ub, pred60lmsMVA, pred60lmMVA, pred60sMVA);
 % plot visual discomfort data as a function of VEP power at the stimulus
 % frequency+harmonics
 figure(7)
@@ -145,17 +145,17 @@ errorbar(Sm(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5])-VDS.S_mvaCI(1
     Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['Migraine with visual aura (n=' num2str(size(compiledData_MVA,1)) ') fundamental+harmonics'])
-ylabel('visual discomfort scale')
-xlabel('VEP power at stimulus frequency')
+ylabel('flicker discomfort')
+xlabel('VEP amplitude at stimulus frequency (mV)')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.XLim=[-0.001 0.021];
+ax.XLim=[-0.001 0.04];
 ax.YLim=[0 10];
 mvaFit_vdsvep_harm=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM));
 
 
-[LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_HAF,12,TemporalFrequency,lb,ub);
+[LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_HAF,12,TemporalFrequency,lb,ub, pred60lms, pred60lm, pred60s);
 figure(7)
 subplot(2,2,4)
 hold on
@@ -165,12 +165,12 @@ errorbar(Sm(:,[1:3 5]),VDS.S_hafM(:,[1:3 5]),VDS.S_hafM(:,[1:3 5])-VDS.S_hafCI(1
     Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','w')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['Headache free control (n=' num2str(size(compiledData_HAF,1)) ') fundamental+harmonics'])
-ylabel('visual discomfort scale')
-xlabel('VEP power at stimulus frequency')
+ylabel('flicker discomfort')
+xlabel('amplitude at stimulus frequency (mV)')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.XLim=[-0.001 0.021];
+ax.XLim=[-0.001 0.04];
 ax.YLim=[0 10];
 hafFit_vdsvep_harm=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM));
 
@@ -178,8 +178,8 @@ hafFit_vdsvep_harm=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S
 % Plot median psd for stimulus frequency between groups
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_MVA,lb,ub);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[4 2 1 max(LMSm)]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 2 1 max(LMm)]);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1 max(LMSm)]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1 max(LMm)]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[4 2 1 max(Sm)]);
 
 figure(2)
@@ -197,7 +197,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 subplot(1,4,2)
 hold on
@@ -212,7 +212,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 subplot(1,4,3)
 hold on
@@ -228,7 +228,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 subplot(1,4,4)
 hold on
@@ -244,7 +244,7 @@ ax.TickDir='out';
 ax.Box='off';
 ax.XScale='log';
 ax.XLim=[0.95 35];
-ax.YLim=[-0.001 0.01];
+ax.YLim=[-0.001 0.02];
 
 % plot visual discomfort data as a function of VEP power at the stimulus
 % frequency
@@ -257,12 +257,12 @@ errorbar(Sm(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5])-VDS.S_mvaCI(1
     Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['Migraine with visual aura (n=' num2str(size(compiledData_MVA,1)) ')'])
-ylabel('visual discomfort scale')
-xlabel('VEP power at stimulus frequency')
+ylabel('flicker discomfort')
+xlabel('amplitude at stimulus frequency (mV)')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.XLim=[-0.001 0.021];
+ax.XLim=[-0.001 0.04];
 ax.YLim=[0 10];
 
 mvaFit_vdsvep=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM));
@@ -273,8 +273,8 @@ clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
 [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_HAF,lb,ub);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[4 2 1 max(LMSm)]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 2 1 max(LMm)]);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1 max(LMSm)]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1 max(LMm)]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[4 2 1 max(Sm)]);
     
 figure(2)
@@ -325,12 +325,12 @@ errorbar(Sm(:,[1:3 5]),VDS.S_hafM(:,[1:3 5]),VDS.S_hafM(:,[1:3 5])-VDS.S_hafCI(1
     Sm(:,[1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm(:,[1:3 5]),'ob','LineWidth',2,'MarkerFaceColor','w')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['Headache free control (n=' num2str(size(compiledData_HAF,1)) ')'])
-ylabel('visual discomfort scale')
-xlabel('VEP power at stimulus frequency')
+ylabel('flicker discomfort')
+xlabel('amplitude at stimulus frequency (mV)')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.XLim=[-0.001 0.021];
+ax.XLim=[-0.001 0.04];
 ax.YLim=[0 10];
 
 hafFit_vdsvep=fitlm(cat(2,LMSm,LMm,Sm),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM));
@@ -357,12 +357,12 @@ plot(X_mva,Y_mva,'ok','MarkerFaceColor','k')
 hold on
 plot(X_haf,Y_haf,'ok','MarkerFaceColor','w')
 title(['Luminance 30 Hz'])
-ylabel('power at stimulus frequency')
+ylabel('amplitude at stimulus frequency (mV)')
 xlabel('Number of headache days in past 3 months')
 ax=gca;
 ax.TickDir='out';
 ax.Box='off';
-ax.YLim=[-0.001 0.012];
+ax.YLim=[-0.001 0.025];
 ax.XLim=[-1 31];
 
 %% local functions
@@ -403,7 +403,12 @@ BKGD=[];
     BKGDm=Bootstat(500,:);
 end
 
-function [lmsFit_harmonics, lmFit_harmonics, sFit_harmonics]=plotFooofHarmonics(compiledData,fig_num,lb,ub)
+function [pred60lms, pred60lm, pred60s]=plotFooofHarmonics(compiledData,fig_num,lb,ub)
+
+lin_fun=@(x,xdata)x(1)+(x(2)*xdata);
+counter_lms=0;
+counter_lm=0;
+counter_s=0;
 
     for x=1:5     
         for y=1:size(compiledData,1)
@@ -418,19 +423,16 @@ function [lmsFit_harmonics, lmFit_harmonics, sFit_harmonics]=plotFooofHarmonics(
         Bootstat=sort(Bootstat,1);
         LMSci=Bootstat([lb ub],:);
         LMSm=Bootstat(500,:);
-        lmsFit_harmonics{x,:}=fitlm(x_harmonics,LMSm);
         
         Bootstat=bootstrp(1000,@nanmedian,LM,1);
         Bootstat=sort(Bootstat,1);
         LMci=Bootstat([lb ub],:);
         LMm=Bootstat(500,:);
-        lmFit_harmonics{x,:}=fitlm(x_harmonics,LMm);
-
+        
         Bootstat=bootstrp(1000,@nanmedian,S,1);
         Bootstat=sort(Bootstat,1);
         Sci=Bootstat([lb ub],:);
         Sm=Bootstat(500,:);
-        sFit_harmonics{x,:}=fitlm(x_harmonics,Sm);
         
         figure(fig_num)
         subplot(5,1,x)
@@ -448,21 +450,57 @@ function [lmsFit_harmonics, lmFit_harmonics, sFit_harmonics]=plotFooofHarmonics(
         ax.XScale='log';
         ax.XLim=[0.95 95];
         ax.YLim=[-0.001 0.01];
+        
+        if x>3
+            freq_fine=round(x_harmonics(1)):1:round(x_harmonics(end));
+            Hz60=find(freq_fine==60);
+            x0=[0.01 -0.001];
 
+            counter_lms=counter_lms+1;
+            counter_lm=counter_lm+1;
+            counter_s=counter_s+1;
+
+            fit_harm=lsqcurvefit(lin_fun,x0,x_harmonics,LMSm);
+            temp=lin_fun(fit_harm,freq_fine);
+            pred60lms(counter_lms)=temp(Hz60);
+        
+            fit_harm=lsqcurvefit(lin_fun,x0,x_harmonics,LMm);
+            temp=lin_fun(fit_harm,freq_fine);
+            pred60lm(counter_lm)=temp(Hz60);
+            
+            fit_harm=lsqcurvefit(lin_fun,x0,x_harmonics,Sm);
+            temp=lin_fun(fit_harm,freq_fine);
+            pred60s(counter_s)=temp(Hz60);
+        end
+        
         clear LMS LM S LMSm LMm Sm BKGDm LMSci LMci Sci
+        
     end
+    
 end
 
 
-function [LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData,fig_num,TemporalFrequency,lb,ub)
+function [LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData,fig_num,TemporalFrequency,lb,ub, pred60lms, pred60lm, pred60s)
 
     for x=1:5     
         for y=1:size(compiledData,1)
             fooof_peak_harmonics=compiledData(y).fooof_peak_harmonics;
             x_harmonics=cell2mat(compiledData(y).fooof_peak_harmonics_freq(1,x));
+
             LMS(y,x)=sum(cell2mat(fooof_peak_harmonics(1,x)));
             LM(y,x)=sum(cell2mat(fooof_peak_harmonics(2,x)));
             S(y,x)=sum(cell2mat(fooof_peak_harmonics(3,x)));
+            if x==4
+                LMS(y,x)=LMS(y,x)+pred60lms(1);
+                LM(y,x)=LMS(y,x)+pred60lm(1);
+                S(y,x)=LMS(y,x)+pred60s(1);
+            end
+            
+            if x==5
+                LMS(y,x)=LMS(y,x)+pred60lms(2);
+                LM(y,x)=LM(y,x)+pred60lm(2);
+                S(y,x)=S(y,x)+pred60s(2);
+            end
         end
     end
         Bootstat=bootstrp(1000,@nanmedian,LMS,1);
@@ -482,9 +520,9 @@ function [LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData,fig_nu
         
         figure(fig_num)
         hold on
-        errorbar(TemporalFrequency,LMSm,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'ok','LineWidth',2)
-        errorbar(TemporalFrequency,LMm,LMm-LMci(1,:),LMci(2,:)-LMm,'or','LineWidth',2)
-        errorbar(TemporalFrequency([1:3 5]),Sm([1:3 5]),Sm([1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm([1:3 5]),'ob','LineWidth',2)
+        errorbar(TemporalFrequency,LMSm,LMSm-LMSci(1,:),LMSci(2,:)-LMSm,'-ok','LineWidth',2)
+        errorbar(TemporalFrequency,LMm,LMm-LMci(1,:),LMci(2,:)-LMm,'-or','LineWidth',2)
+        errorbar(TemporalFrequency([1:3 5]),Sm([1:3 5]),Sm([1:3 5])-Sci(1,[1:3 5]),Sci(2,[1:3 5])-Sm([1:3 5]),'-ob','LineWidth',2)
         plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
         title(['Sum of harmonics'])
         ylabel('power spectra at stimulus frequency')
@@ -585,18 +623,21 @@ function [ttf_fit, TemporalFrequency_fit]=getTTFfits(VEPresponse,stimulusFreqHz,
         minVEP=0;
     end
     % Find the maximum interpolated VEP response
-    stimulusFreqHzFine = logspace(0,log10(max(stimulusFreqHz)),100);
-    splineInterpolatedMax = max(spline(stimulusFreqHz,scaledVEP,stimulusFreqHzFine));
-    % Scale the x vector so that the max is zero
+    stimulusFreqHzFine=logspace(0,log10(max(stimulusFreqHz)),100);
+    splineInterpolatedMax=max(spline(stimulusFreqHz,scaledVEP,stimulusFreqHzFine));
+    
+    % Scale the x vector so that the max is 0
     scaledVEP=scaledVEP./splineInterpolatedMax;
-    myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModel(stimulusFreqHz,p)).^2));
-    params = fmincon(myObj,x0,[],[]);
+    myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
+%     params=fmincon(myObj,x0,[],[]);
+    params=lsqcurvefit(myObj,x0,stimulusFreqHz,scaledVEP);
+    
     figure(100)
-    semilogx(stimulusFreqHzFine,watsonTemporalModel(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP,'-k');
+    semilogx(stimulusFreqHzFine,watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP,'-k');
     hold on
     semilogx(stimulusFreqHz, VEPresponse, '*r');
     hold off
     
-    ttf_fit=watsonTemporalModel(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
+    ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
     TemporalFrequency_fit=stimulusFreqHzFine;
 end

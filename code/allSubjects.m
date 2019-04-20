@@ -12,6 +12,8 @@ subjects=['MELA_0121';'MELA_0131';...
 counter_MVA=0;
 counter_HAF=0;
 A=[1.625 3.25 7.5 15 30];
+lb=250;
+ub=750;
 
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
     'vepMELAanalysis','allChannels');
@@ -70,22 +72,22 @@ for a=1:size(HAF_vds,2)
         MVA_temp=squeeze(MVA_fooof_fr(:,a,b));
         Bootstat=bootstrp(1000,@nanmedian,MVA_temp,1);
         Bootstat=sort(Bootstat,1);
-        MVA_fooof_CI(a,b,:)=Bootstat([50 950],:)';
+        MVA_fooof_CI(a,b,:)=Bootstat([lb ub],:)';
         
         HAF_temp=squeeze(HAF_fooof_fr(:,a,b));
         Bootstat2=bootstrp(1000,@nanmedian,HAF_temp,1);
         Bootstat2=sort(Bootstat2,1);
-        HAF_fooof_CI(a,b,:)=Bootstat2([50 950],:)';
+        HAF_fooof_CI(a,b,:)=Bootstat2([lb ub],:)';
         
         MVA_temp2=squeeze(squeeze(squeeze(nanmedian(MVA_vds(:,a,b,:),4))));
         Bootstat3=bootstrp(1000,@nanmedian,MVA_temp2,1);
         Bootstat3=sort(Bootstat3,1);
-        MVA_vds_CI(a,b,:)=Bootstat3([50 950],:)';
+        MVA_vds_CI(a,b,:)=Bootstat3([lb ub],:)';
         
         HAF_temp2=squeeze(squeeze(squeeze(nanmedian(HAF_vds(:,a,b,:),4))));
         Bootstat4=bootstrp(1000,@nanmedian,HAF_temp2,1);
         Bootstat4=sort(Bootstat4,1);
-        HAF_vds_CI(a,b,:)=Bootstat4([50 950],:)';
+        HAF_vds_CI(a,b,:)=Bootstat4([lb ub],:)';
     end
 end
 
@@ -108,63 +110,34 @@ clear a b
                 flicker_stim=[1:3 5];
         end
         
-        subplot(1,3,1)
+        subplot(2,2,1)
         neg=MVA_fooof_M-squeeze(MVA_fooof_CI(:,:,1));
         pos=squeeze(MVA_fooof_CI(:,:,2))-MVA_fooof_M;
-        errorbar(A(flicker_stim),MVA_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor',color)
+        errorbar(A(flicker_stim),MVA_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'LineWidth',2,'MarkerFaceColor',color)
         hold on
-        title('Migraine with visual aura')
-        ylabel('power spectra for stimulus frequency')
+        title(['Migraine with visual aura (n=' num2str(counter_MVA) ')'])
+        ylabel('amplitude at stimulus frequency (mV)')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[-0.001 0.015];
+        ax.YLim=[-0.001 0.03];
         
-        subplot(1,3,2)
+        subplot(2,2,2)
         neg=HAF_fooof_M-squeeze(HAF_fooof_CI(:,:,1));
         pos=squeeze(HAF_fooof_CI(:,:,2))-HAF_fooof_M;
-        errorbar(A(flicker_stim),HAF_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color])
+        errorbar(A(flicker_stim),HAF_fooof_M(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'LineWidth',2)
         hold on
-        title('Headache free')
-        ylabel('power spectra for stimulus frequency')
+        title(['Headache free (n=' num2str(counter_HAF) ')'])
+        ylabel('amplitude at stimulus frequency (mV)')
         ax=gca;
         ax.TickDir='out';
         ax.Box='off';
         ax.XScale='log';
         ax.XLim=[0.95 35];
-        ax.YLim=[-0.001 0.015];
+        ax.YLim=[-0.001 0.03];
         
-        subplot(1,3,3)
-        MVA_temp3=squeeze(sum(MVA_fooof_fr(:,y,flicker_stim),3));
-        Bootstat5=bootstrp(1000,@nanmedian,MVA_temp3,1);
-        Bootstat5=sort(Bootstat5,1);
-        MVA_sum_CI=Bootstat5([50 950],:)';
-        
-        HAF_temp3=squeeze(sum(HAF_fooof_fr(:,y,flicker_stim),3));
-        Bootstat6=bootstrp(1000,@nanmedian,HAF_temp3,1);
-        Bootstat6=sort(Bootstat6,1);
-        HAF_sum_CI=Bootstat6([50 950],:)';
-        
-        MVA_fooof_sum=squeeze(squeeze(nanmedian(sum(MVA_fooof_fr(:,y,flicker_stim),3),1)))';
-        HAF_fooof_sum=squeeze(squeeze(nanmedian(sum(HAF_fooof_fr(:,y,flicker_stim),3),1)))';
-        neg_HAF=HAF_fooof_sum-squeeze(HAF_sum_CI(:,1));
-        pos_HAF=squeeze(HAF_sum_CI(:,2))-HAF_fooof_sum;
-        neg_MVA=MVA_fooof_sum-squeeze(MVA_sum_CI(:,1));
-        pos_MVA=squeeze(MVA_sum_CI(:,2))-MVA_fooof_sum;
-        hold on
-        errorbar(y,MVA_fooof_sum,neg_MVA,pos_MVA,['o' color],'MarkerFaceColor',color)
-        errorbar(y,HAF_fooof_sum,neg_HAF,pos_HAF,['o' color])
-        title('Sum fooof frequency')
-        ylabel('power spectra for stimulus frequency')
-        ax=gca;
-        ax.TickDir='out';
-        ax.Box='off';
-        ax.XLim=[0.5 3.5];
-        ax.YLim=[-0.001 0.04];
-        ax.XTick=[1 2 3];
-        ax.XTickLabel={'LMS','L-M','S'};
 
         
     end
@@ -195,7 +168,7 @@ for y=1:size(HAF_vds,2)
                 ax.Box='off';
                 ax.XScale='log';
                 ax.XLim=[0.95 35];
-                ax.YLim=[-0.001 0.015];
+                ax.YLim=[-0.001 0.03];
             end
             
             figure(100)
@@ -204,18 +177,18 @@ for y=1:size(HAF_vds,2)
                 hold on
                 plot(A(flicker_stim),squeeze(MVA_fooof_fr(b,y,flicker_stim)),['-o' color],'MarkerFaceColor',color)
                 title(num2str(MVA_ID(b,:)))
-                ylabel('power spectra for stimulus frequency')
+                ylabel('amplitude at stimulus frequency (mV)')
                 ax=gca;
                 ax.TickDir='out';
                 ax.Box='off';
                 ax.XScale='log';
                 ax.XLim=[0.95 35];
-                ax.YLim=[-0.001 0.015];
+                ax.YLim=[-0.001 0.03];
             end
 end
     
     % Plot median Visual discomfort data
-    figure(6)
+    figure(5)
     MVA_vds=squeeze(nanmedian(MVA_vds,4));
     HAF_vds=squeeze(nanmedian(HAF_vds,4));
     for y=1:size(HAF_vds,2)
@@ -230,13 +203,13 @@ end
                 color='b';
                 flicker_stim=[1:3 5];
         end
-        subplot(1,2,2)
+        subplot(2,2,3)
         VDS_MVA=squeeze(nanmedian(MVA_vds,1));
         neg=VDS_MVA-squeeze(MVA_vds_CI(:,:,1));
         pos=squeeze(MVA_vds_CI(:,:,2))-VDS_MVA;
-        errorbar(A(flicker_stim),VDS_MVA(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor',color)
+        errorbar(A(flicker_stim),VDS_MVA(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor',color,'LineWidth',2)
         hold on
-        ylabel('visual discomfort scale')
+        ylabel('flicker discomfort')
         xlabel('temporal frequency of stimulus')
         ax=gca;
         ax.TickDir='out';
@@ -245,13 +218,13 @@ end
         ax.XLim=[0.95 35];
         ax.YLim=[0 11];
     
-        subplot(1,2,1)
+        subplot(2,2,4)
         VDS_HAF=squeeze(nanmedian(HAF_vds,1));
         neg=VDS_HAF-squeeze(HAF_vds_CI(:,:,1));
         pos=squeeze(HAF_vds_CI(:,:,2))-VDS_HAF;
-        errorbar(A(flicker_stim),VDS_HAF(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor','w')
+        errorbar(A(flicker_stim),VDS_HAF(y,flicker_stim),neg(y,flicker_stim),pos(y,flicker_stim),['-o' color],'MarkerFaceColor','w','LineWidth',2)
         hold on
-        ylabel('visual discomfort scale')
+        ylabel('flicker discomfort')
         xlabel('temporal frequency of stimulus')
         ax=gca;
         ax.TickDir='out';
@@ -271,7 +244,7 @@ end
             hold on
             plot(freqs,MVA_ap_subject(xx,:),'k')
             title('Migraine with visual aura')
-            ylabel('power spectra for stimulus frequency')
+            ylabel('amplitude at stimulus frequency (mV)')
             ax=gca;
             ax.TickDir='out';
             ax.Box='off';
@@ -287,7 +260,7 @@ end
             hold on
             plot(freqs,HAF_ap_subject(xx,:),'--k')
             title('Headache free')
-            ylabel('power spectra for stimulus frequency')
+            ylabel('amplitude at stimulus frequency (mV)')
             ax=gca;
             ax.TickDir='out';
             ax.Box='off';
@@ -302,7 +275,7 @@ end
     
     Bootstat=bootstrp(1000,@nanmedian,HAF_ap_subject,1);
     Bootstat=sort(Bootstat,1);
-    Bootstat=Bootstat([50 950],:);
+    Bootstat=Bootstat([lb ub],:);
     median=nanmedian(HAF_ap_subject,1);
     Y=cat(2,Bootstat(2,:),fliplr(Bootstat(1,:)));
     X=cat(2,freqs,fliplr(freqs));
@@ -311,7 +284,7 @@ end
     
     Bootstat=bootstrp(1000,@nanmedian,MVA_ap_subject,1);
     Bootstat=sort(Bootstat,1);
-    Bootstat=Bootstat([50 950],:);
+    Bootstat=Bootstat([lb ub],:);
     median=nanmedian(MVA_ap_subject,1);
     Y=cat(2,Bootstat(2,:),fliplr(Bootstat(1,:)));
     X=cat(2,freqs,fliplr(freqs));
@@ -319,7 +292,7 @@ end
     plot(freqs,median,'k')
     
     title('Comparison')
-    ylabel('power spectra for stimulus frequency')
+    ylabel('amplitude at stimulus frequency (mV)')
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';

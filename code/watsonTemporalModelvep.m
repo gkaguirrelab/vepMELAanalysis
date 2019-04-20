@@ -2,7 +2,7 @@ function y = watsonTemporalModelvep(frequenciesToModel, params, params_centerAmp
 % Beau Watson's 1986 center-surround neural temporal sensitivity model
 %
 % Syntax:
-%  y = watsonTemporalModel(frequenciesHz, params, params_centerAmplitude)
+%  y = watsonTemporalModelvep(frequenciesHz, params, params_centerAmplitude)
 %
 % Description:
 %	Calculates the two-component (center-surround) Watson temporal model
@@ -71,7 +71,7 @@ function y = watsonTemporalModelvep(frequenciesToModel, params, params_centerAmp
     % Demonstrate basic output of the model
     freqHz = logspace(0,log10(64),100);
     params = [2 2 1];
-    y = watsonTemporalModel(freqHz,params);
+    y = watsonTemporalModelvep(freqHz,params);
     semilogx(freqHz,y,'-k');    
 %}
 %{
@@ -91,10 +91,10 @@ function y = watsonTemporalModelvep(frequenciesToModel, params, params_centerAmp
     splineInterpolatedMax = max(spline(stimulusFreqHz,scaledBOLDresponse,stimulusFreqHzFine));
     % Scale the x vector so that the max is zero
     scaledBOLDresponse = scaledBOLDresponse ./ splineInterpolatedMax;
-    myObj = @(p) sqrt(sum((scaledBOLDresponse-watsonTemporalModel(stimulusFreqHz,p)).^2));
+    myObj = @(p) sqrt(sum((scaledBOLDresponse-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
     x0 = [4 2 1];
     params = fmincon(myObj,x0,[],[]);
-    semilogx(stimulusFreqHzFine,watsonTemporalModel(stimulusFreqHzFine,params).*splineInterpolatedMax+minBOLD,'-k');
+    semilogx(stimulusFreqHzFine,watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minBOLD,'-k');
     hold on
     semilogx(stimulusFreqHz, pctBOLDresponse, '*r');
     hold off
@@ -143,7 +143,7 @@ else
     % Search to find the center amplitude that provides a maximum response
     % of unity, then perform the computation. This is a recursive call to
     % this function.
-    myObj = @(x) abs(max(watsonTemporalModel(freqDomain, params, x, [centerFilterOrder surroundFilterOrder]))-1);
+    myObj = @(x) abs(max(watsonTemporalModelvep(freqDomain, params, x, [centerFilterOrder surroundFilterOrder]))-1);
     params_centerAmplitudeIn = fminsearch(myObj,1);
     H1 = nStageLowPassFilter(params_tau,frequenciesToModel,centerFilterOrder);
     H2 = nStageLowPassFilter(params_kappa*params_tau,frequenciesToModel,surroundFilterOrder);
