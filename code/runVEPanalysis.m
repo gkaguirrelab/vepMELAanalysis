@@ -21,15 +21,15 @@ for x=1:3
             case 1
                 expID='LMS05';
                 color='k';
-                Color=[0.8 0.8 0.8];
+                Color=[0 0 0];
             case 2
                 expID='LM004';
                 color='r';
-                Color=[1 0.8 0.8];
+                Color=[1 0 0];
             case 3
                 expID='S0004';
                 color='b';
-                Color=[0.8 0.8 1];
+                Color=[0 0 1];
     end
     
     filenameMAT=fullfile(getpref('vepMELAanalysis','melaAnalysisPath'),'experiments',...
@@ -59,15 +59,21 @@ for x=1:3
             case 1
                 expID='LMS05';
                 color='k';
-                Color=[0.8 0.8 0.8];
+                Color=[0 0 0];
+                x0=[1 2 1];
+                flicker_freq=1:5;
             case 2
                 expID='LM004';
                 color='r';
-                Color=[1 0.8 0.8];
+                Color=[1 0 0];
+                 x0=[2 2 1];
+                flicker_freq=1:5;
             case 3
                 expID='S0004';
                 color='b';
-                Color=[0.8 0.8 1];
+                Color=[0 0 1];
+                x0=[6 2 1];
+                flicker_freq=[1:3 5];
     end
     %% Calculate TTF
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',TemporalFrequency);
@@ -158,31 +164,22 @@ for x=1:3
     end
    
      % Plot psd FOOOF
+     
     figure(7)
      subplot(1,2,1)
     hold on
     if x==3
-        neg=ttf(x).ttf_FrM([1:3 5],:)-ttf(x).ttf_FrCI([1:3 5],1);
-        pos=ttf(x).ttf_FrCI([1:3 5],2)-ttf(x).ttf_FrM([1:3 5],:);
-        errorbar(TemporalFrequency([1:3 5]),ttf(x).ttf_FrM([1:3 5],:),neg,pos,['-o' color])
-        
-        neg=ttf_bkgd.ttf_bkgd_Fr-ttf_bkgd.ttf_bkgdCI_Fr(:,1);
-        pos=ttf_bkgd.ttf_bkgdCI_Fr(:,2)-ttf_bkgd.ttf_bkgd_Fr;
-        errorbar(TemporalFrequency,ttf_bkgd.ttf_bkgd_Fr,neg,pos,'-o','Color',[0.5 0.5 0.5])
-    else
-        neg=ttf(x).ttf_FrM(:,:)-ttf(x).ttf_FrCI(:,1);
-        pos=ttf(x).ttf_FrCI(:,2)-ttf(x).ttf_FrM(:,:);
-        errorbar(TemporalFrequency,ttf(x).ttf_FrM,neg,pos,['-o' color])
+        markerline='-ok';markeredge=[0.5 0.5 0.5];markerface=[0.5 0.5 0.5];
+        plotWithErrorbars(TemporalFrequency',ttf_bkgd.ttf_bkgd_Fr',ttf_bkgd.ttf_bkgdCI_Fr',markerline,markeredge,markerface)
     end
     
+%     [ttf_fit,TemporalFrequency_fit]=getTTFfits(ttf(x).ttf_FrM(flicker_freq)',TemporalFrequency(flicker_freq)',x0);    
+    markerline=['-o' color];markeredge=Color;markerface=Color;
+    plotWithErrorbars(TemporalFrequency(flicker_freq)',ttf(x).ttf_FrM(flicker_freq)',ttf(x).ttf_FrCI(flicker_freq,:)',markerline,markeredge,markerface)
+%     plot(TemporalFrequency_fit,ttf_fit,['-' color]);
     title(observerID)
     ylabel('amplitude of stimulus frequency (mV)')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XScale='log';
-    ax.XLim=[0.95 35];
-    ax.YLim=[-0.002 0.04];
+    ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.04];
     
     
     % get FOOOF peak psd 
@@ -261,27 +258,25 @@ for x=1:3
         end
     end
     
+    [ttf_fit_fooof,TemporalFrequency_fit_fooof]=getTTFfits(fooof_peak_Fr(x,flicker_freq),TemporalFrequency(flicker_freq),x0);    
+
+        
     figure(7)
     subplot(1,2,2)
     hold on
-    if x==3
-        errorbar(TemporalFrequency([1:3 5]),fooof_peak_Fr(x,[1:3 5]),fooof_peak_Fr(x,[1:3 5])-fooof_peak_Fr5(x,[1:3 5]),fooof_peak_Fr95(x,[1:3 5])-fooof_peak_Fr(x,[1:3 5]),['-o' color])
-
-        errorbar(TemporalFrequency,fooof_bkgdFr,fooof_bkgdFr-fooof_bkgdFr5,fooof_bkgdFr95-fooof_bkgdFr,'-o','Color',[0.5 0.5 0.5])
-         
-    else
-        errorbar(TemporalFrequency,fooof_peak_Fr(x,:),fooof_peak_Fr(x,:)-fooof_peak_Fr5(x,:),fooof_peak_Fr95(x,:)-fooof_peak_Fr(x,:),['-o' color])
-    end
-   
-    title([observerID ' fooofed'])
+    markerline=['o' color];markeredge=Color;markerface=Color;
+    plotWithErrorbars(TemporalFrequency(flicker_freq),fooof_peak_Fr(x,flicker_freq),cat(1,fooof_peak_Fr5(x,flicker_freq),fooof_peak_Fr95(x,flicker_freq)),markerline,markeredge,markerface)
+    plot(TemporalFrequency_fit_fooof,ttf_fit_fooof,['-' color]);
+    title('FOOOF')
     ylabel('amplitude of stimulus frequency (mV)')
-    ax=gca;
-    ax.TickDir='out';
-    ax.Box='off';
-    ax.XScale='log';
-    ax.XLim=[0.95 35];
-    ax.YLim=[-0.002 0.04];
-  
+    ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.04];
+    
+    if x==3
+        markerline='-ok';markeredge=[0.5 0.5 0.5];markerface=[0.5 0.5 0.5];
+        plotWithErrorbars(TemporalFrequency,fooof_bkgdFr,cat(1,fooof_bkgdFr5,fooof_bkgdFr95),markerline,markeredge,markerface)   
+    end
+
+
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
@@ -305,22 +300,22 @@ for x=1:3
     vep_BKGD(x,:,:)=ttf_bkgd.vep_bkgd;
 end
 
-compiledData.observerID=observerID;
-compiledData.group=VEP_main(1).mtrp.group;
-compiledData.Fs=Fs;
-compiledData.vds=vds;
-compiledData.vep_Fr=vep_Fr;
-compiledData.vep_bkgd=vep_BKGD;
-compiledData.fooof_peak_Fr=fooof_peak_Fr;
-compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
-compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
-compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
-compiledData.fooof_results=fooof_results;
-compiledData.fooof_bkgd=fooof_bkgd;
-compiledData.ttf_M=ttf(x).ttf_M;
-compiledData.ttf_CI=ttf(x).ttf_CI;
-compiledData.ttf_bkgd=ttf_bkgd;
-compiledData.nulling=nulling;
-
-save(filenameComp,'compiledData')
+% compiledData.observerID=observerID;
+% compiledData.group=VEP_main(1).mtrp.group;
+% compiledData.Fs=Fs;
+% compiledData.vds=vds;
+% compiledData.vep_Fr=vep_Fr;
+% compiledData.vep_bkgd=vep_BKGD;
+% compiledData.fooof_peak_Fr=fooof_peak_Fr;
+% compiledData.fooof_bkgd_Fr=fooof_bkgdFr;
+% compiledData.fooof_peak_harmonics=fooof_peak_harmonics;
+% compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
+% compiledData.fooof_results=fooof_results;
+% compiledData.fooof_bkgd=fooof_bkgd;
+% compiledData.ttf_M=ttf(x).ttf_M;
+% compiledData.ttf_CI=ttf(x).ttf_CI;
+% compiledData.ttf_bkgd=ttf_bkgd;
+% compiledData.nulling=nulling;
+% 
+% save(filenameComp,'compiledData')
 
