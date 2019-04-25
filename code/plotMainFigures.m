@@ -7,7 +7,7 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0170';'MELA_0169';...
     'MELA_0194';'MELA_0179';...
     'MELA_0191';'MELA_0174';...
-    'MELA_0120'];
+    'MELA_0120';'MELA_0171'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -56,15 +56,26 @@ figure(1)
 subplot(2,1,1)
 hold on
 markerline='-ok';markeredge=[0 0 0];markerface=[0 0 0];
-plotWithErrorbars(TemporalFrequency,LMSm,LMSci,markerline,markeredge,markerface)
-
+plotWithErrorbars(TemporalFrequency,VDS.LMS_mvaM,VDS.LMS_mvaCI,markerline,markeredge,markerface)
 markerline='-or';markeredge=[1 0 0];markerface=[1 0 0];
-plotWithErrorbars(TemporalFrequency,LMm,LMci,markerline,markeredge,markerface)
-markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
-plotWithErrorbars(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),markerline,markeredge,markerface)
-
+plotWithErrorbars(TemporalFrequency,VDS.LM_mvaM,VDS.LM_mvaCI,markerline,markeredge,markerface)
+markerline='-ob';markeredge=[0 0 1];markerface=[0 0 1];
+plotWithErrorbars(TemporalFrequency([1:3 5]),VDS.S_mvaM(1,[1:3 5]),VDS.S_mvaCI(:,[1:3 5]),markerline,markeredge,markerface)
 title(['Flicker discomfort MwA'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ylabel(['FLicker dicomfort'])
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
+
+subplot(2,1,2)
+hold on
+markerline='-ok';markeredge=[0 0 0];markerface=[0 0 0];
+plotWithErrorbars(TemporalFrequency,VDS.LMS_hafM,VDS.LMS_hafCI,markerline,markeredge,markerface)
+markerline='-or';markeredge=[1 0 0];markerface=[1 0 0];
+plotWithErrorbars(TemporalFrequency,VDS.LM_hafM,VDS.LM_hafCI,markerline,markeredge,markerface)
+markerline='-ob';markeredge=[0 0 1];markerface=[0 0 1];
+plotWithErrorbars(TemporalFrequency([1:3 5]),VDS.S_hafM(1,[1:3 5]),VDS.S_hafCI(:,[1:3 5]),markerline,markeredge,markerface)
+title(['Flicker discomfort HAf'])
+xlabel(['Stimulus frequency (Hz)'])
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
 
 % Plot median psd for stimulus frequency between groups
@@ -82,7 +93,7 @@ plotWithErrorbars(TemporalFrequency,BKGDm,BKGDci,markerline,markeredge,markerfac
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 ylabel('amplitude at stimulus frequency (mV)')
 title(['Migraine with visual aura (n=' num2str(size(compiledData_MVA,1)) '), Background'])
-ax=gca;ax.XScale='log'; ax.XLim=[0.95 35]; ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log'; ax.XLim=[0.95 35]; ax.YLim=[-0.002 0.022];
 
 
 subplot(2,4,2)
@@ -92,7 +103,7 @@ plotWithErrorbars(TemporalFrequency,LMSm,LMSci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['LMS'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 
 subplot(2,4,3)
@@ -103,7 +114,7 @@ plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 xlabel('Stimulus frequency')
 title(['LM'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 
 subplot(2,4,4)
@@ -113,7 +124,7 @@ plotWithErrorbars(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),marker
 plot(TemporalFrequency_fitS,ttf_fitS,'-b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['S'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 
 % plot visual discomfort data as a function of VEP power at the stimulus
@@ -148,40 +159,40 @@ clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 figure(2)
 subplot(2,4,5)
 hold on
-markerline='ok';markeredge=[0.5 0.5 0.5];markerface=[0.5 0.5 0.5];
+markerline='ok';markeredge=[0.5 0.5 0.5];markerface=[1 1 1];
 plotWithErrorbars(TemporalFrequency,BKGDm,BKGDci,markerline,markeredge,markerface)
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 ylabel('amplitude at stimulus frequency (mV)')
 title(['Headache free controls (n=' num2str(size(compiledData_HAF,1)) '), Background'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 subplot(2,4,6)
 hold on
-markerline='ok';markeredge=[0 0 0];markerface=[0 0 0];
+markerline='ok';markeredge=[0 0 0];markerface=[1 1 1];
 plotWithErrorbars(TemporalFrequency,LMSm,LMSci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['LMS'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 subplot(2,4,7)
 hold on
-markerline='or';markeredge=[1 0 0];markerface=[1 0 0];
+markerline='or';markeredge=[1 0 0];markerface=[1 1 1];
 plotWithErrorbars(TemporalFrequency,LMm,LMci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 xlabel('Stimulus frequency')
 title(['LM'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 subplot(2,4,8)
 hold on
-markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
+markerline='ob';markeredge=[0 0 1];markerface=[1 1 1];
 plotWithErrorbars(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),markerline,markeredge,markerface)
 plot(TemporalFrequency_fitS,ttf_fitS,'-b')
 plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['S'])
-ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.001 0.02];
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 % plot visual discomfort data as a function of VEP power at the stimulus
 % frequency
@@ -342,37 +353,4 @@ function [VDS]=calcVDS(compiledData_MVA,compiledData_HAF,lb,ub)
     VDS.S_hafM=S_hafM;
     VDS.S_hafCI=S_hafCI;
 
-end
-
-function [ttf_fit, TemporalFrequency_fit]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
-    % Fit the Watson model to data
-    % Adjust the VEP response to deal with negative values
-    minVEP=min(VEPresponse);
-    if minVEP<0
-        scaledVEP=VEPresponse-minVEP;
-    else
-        scaledVEP=VEPresponse;
-        minVEP=0;
-    end
-    % Find the maximum interpolated VEP response
-    stimulusFreqHzFine=logspace(0,log10(max(stimulusFreqHz)),100);
-    splineInterpolatedMax=max(spline(stimulusFreqHz,scaledVEP,stimulusFreqHzFine));
-    
-    % Scale the x vector so that the max is 0
-    scaledVEP=scaledVEP./splineInterpolatedMax;
-    x0=cat(2,x0,max(scaledVEP));
-    myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
-    x0_lb=x0-[0.5 1 0.5 0.001];
-    x0_ub=x0+[0.5 1 0.5 0.001];
-    params=fmincon(myObj,x0,[],[],[],[],x0_lb,x0_ub);
-%     params=lsqcurvefit(myObj,x0,stimulusFreqHz,scaledVEP);
-    
-    figure(100)
-    semilogx(stimulusFreqHzFine,watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP,'-k');
-    hold on
-    semilogx(stimulusFreqHz, VEPresponse, '*r');
-    hold off
-    
-    ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
-    TemporalFrequency_fit=stimulusFreqHzFine;
 end
