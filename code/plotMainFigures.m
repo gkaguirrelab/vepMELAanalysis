@@ -7,7 +7,8 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0170';'MELA_0169';...
     'MELA_0194';'MELA_0179';...
     'MELA_0191';'MELA_0174';...
-    'MELA_0120';'MELA_0171'];
+    'MELA_0120';'MELA_0171';...
+    ];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -217,14 +218,16 @@ clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 % plot luminance 30 Hz VEP response as a function of headache frequency
 figure(20)
 for i=1:size(compiledData_MVA,1)
-    X_mva(i)=table2array(compiledData_MVA(i).subject(:,4));
+    X_mva(i)=table2array(compiledData_MVA(i).subject(:,6));
     Y_mva(i)=compiledData_MVA(i).fooof_peak_Fr(1,5);
 end
 
 for i=1:size(compiledData_HAF,1)
-    X_haf(i)=table2array(compiledData_HAF(i).subject(:,4));
+    X_haf(i)=table2array(compiledData_HAF(i).subject(:,6));
     Y_haf(i)=compiledData_HAF(i).fooof_peak_Fr(1,5);
 end
+
+X_haf(find(isnan(X_haf)))=1;
 
 [R_vepHAf,P_vepHAf]=corrcoef(cat(2,X_mva,Y_haf),cat(2,Y_mva,Y_haf));
 [Rmva_vepHAf,Pmva_vepHAf]=corrcoef(X_mva,Y_mva);
@@ -235,7 +238,7 @@ plot(-1*ones(size(X_haf)),Y_haf,'ok','MarkerFaceColor','w')
 title(['Luminance 30 Hz, R squared=' num2str(Rmva_vepHAf(1,2)^2) ', p=' num2str(Pmva_vepHAf(1,2))])
 ylabel('amplitude at stimulus frequency (mV)')
 xlabel('Number of headache days in past 3 months')
-ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[-1 31];
+ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[-2 31];
 
 % compare subject demographics across groups
 

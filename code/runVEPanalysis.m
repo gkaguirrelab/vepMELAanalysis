@@ -172,23 +172,40 @@ for x=1:3
         markerline='-ok';markeredge=[0.5 0.5 0.5];markerface=[0.5 0.5 0.5];
         plotWithErrorbars(TemporalFrequency',ttf_bkgd.ttf_bkgd_Fr',ttf_bkgd.ttf_bkgdCI_Fr',markerline,markeredge,markerface)
     end
-    
-%     [ttf_fit,TemporalFrequency_fit]=getTTFfits(ttf(x).ttf_FrM(flicker_freq)',TemporalFrequency(flicker_freq)',x0);    
+       
     markerline=['-o' color];markeredge=Color;markerface=Color;
     plotWithErrorbars(TemporalFrequency(flicker_freq)',ttf(x).ttf_FrM(flicker_freq)',ttf(x).ttf_FrCI(flicker_freq,:)',markerline,markeredge,markerface)
-%     plot(TemporalFrequency_fit,ttf_fit,['-' color]);
     title(observerID)
     ylabel('amplitude of stimulus frequency (mV)')
     ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.04];
     
     
     % get FOOOF peak psd 
+    sbplot1=1:2:10; sbplot2=2:2:10;
     
     for a=1:length(TemporalFrequency)
         xdata=fooof_results(x,a).freqs;
+        ydata_psd=fooof_results(x,a).power_spectrum;
+        ydata_ap=fooof_results(x,a).bg_fit;
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
         ydata5=10.^(fooof_results5(x,a).power_spectrum)-10.^(fooof_results5(x,a).bg_fit);
         ydata95=10.^(fooof_results95(x,a).power_spectrum)-10.^(fooof_results95(x,a).bg_fit);
+        
+                figure(15)
+        subplot(5,2,sbplot1(a))
+        hold on
+        plot(xdata,10.^ydata_psd,'k')
+        plot(xdata,10.^ydata_ap,'--','Color',[0.5 0.5 0.5])
+        ax=gca;ax.TickDir='out';ax.Box='off';ax.YScale='log';ax.XLim=[0 60];ax.YLim=[0.001 0.025];
+        hold off
+        
+        figure(15)
+        subplot(5,2,sbplot2(a))
+        hold on
+        plot(xdata,ydata,'k')
+        ax=gca;ax.TickDir='out';ax.Box='off';ax.YScale='log';ax.XLim=[0 60];ax.YLim=[0.001 0.025];
+        hold off
+        
        
         peak_freq=TemporalFrequency(a);
         temp=abs(xdata-peak_freq);
@@ -206,6 +223,7 @@ for x=1:3
         fooof_peak_Fr95(x,a)=ydata95(peak_freq_loc(a));
         
     end
+    pause
     
     % get harmonics
     harmonic={[1.625 3.25 4.875 6.5 8.125];[3.25 6.5 9.75 13 16.25];[7.5 15 22.5 30 37.5];[15 30 45 75 90];[30 90]};
@@ -257,16 +275,14 @@ for x=1:3
            fooof_bkgdFr95(:,a)=ydata95(peak_freq_loc(a));
         end
     end
-    
-    [ttf_fit_fooof,TemporalFrequency_fit_fooof]=getTTFfits(fooof_peak_Fr(x,flicker_freq),TemporalFrequency(flicker_freq),x0);    
+      
 
         
     figure(7)
     subplot(1,2,2)
     hold on
-    markerline=['o' color];markeredge=Color;markerface=Color;
+    markerline=['-o' color];markeredge=Color;markerface=Color;
     plotWithErrorbars(TemporalFrequency(flicker_freq),fooof_peak_Fr(x,flicker_freq),cat(1,fooof_peak_Fr5(x,flicker_freq),fooof_peak_Fr95(x,flicker_freq)),markerline,markeredge,markerface)
-    plot(TemporalFrequency_fit_fooof,ttf_fit_fooof,['-' color]);
     title('FOOOF')
     ylabel('amplitude of stimulus frequency (mV)')
     ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.04];
