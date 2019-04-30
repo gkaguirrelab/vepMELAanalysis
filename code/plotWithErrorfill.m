@@ -2,7 +2,9 @@ function []=plotWithErrorfill(xdata,ydata,CI,edgecolor,fillcolor,markeredge,mark
     CI=cat(2,CI(1,:),fliplr(CI(2,:)));
     X=cat(2,xdata,fliplr(xdata));
     fill(X,CI,fillcolor,'EdgeColor',edgecolor);
-    plot(xdata,ydata,'o','MarkerEdgeColor',markeredge,'MarkerFaceColor',markerface)
+    if markeredge~='none'
+        plot(xdata,ydata,'o','MarkerEdgeColor',markeredge,'MarkerFaceColor',markerface)
+    end
     ax=gca;
     ax.TickDir='out';
     ax.Box='off';
