@@ -53,44 +53,59 @@ clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 % flicker discomfort
 VDS=calcVDS(compiledData_MVA,compiledData_HAF,lb,ub);
 
+[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds]=getTTFfits(VDS.LMS_mvaM,TemporalFrequency,[1 2 1]);
+[ttf_fitLM_vds,TemporalFrequency_fitLM_vds]=getTTFfits(VDS.LM_mvaM,TemporalFrequency,[2 2 1]);
+[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_mvaM(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+
 figure(1)
 subplot(3,2,1)
 hold on
-markerline='-ok';markeredge=[0 0 0];markerface=[0 0 0];
+markerline='ok';markeredge=[0 0 0];markerface=[0 0 0];
 plotWithErrorbars(TemporalFrequency,VDS.LMS_mvaM,VDS.LMS_mvaCI,markerline,markeredge,markerface)
+plot(TemporalFrequency_fitLMS_vds,ttf_fitLMS_vds,'-k')
 title(['Flicker discomfort MwA'])
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
 subplot(3,2,3)
 hold on
-markerline='-or';markeredge=[1 0 0];markerface=[1 0 0];
+markerline='or';markeredge=[1 0 0];markerface=[1 0 0];
 plotWithErrorbars(TemporalFrequency,VDS.LM_mvaM,VDS.LM_mvaCI,markerline,markeredge,markerface)
+plot(TemporalFrequency_fitLM_vds,ttf_fitLM_vds,'-r')
 ylabel(['FLicker dicomfort'])
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
 subplot(3,2,5)
 hold on
-markerline='-ob';markeredge=[0 0 1];markerface=[0 0 1];
+markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
 plotWithErrorbars(TemporalFrequency([1:3 5]),VDS.S_mvaM(1,[1:3 5]),VDS.S_mvaCI(:,[1:3 5]),markerline,markeredge,markerface)
+plot(TemporalFrequency_fitS_vds,ttf_fitS_vds,'-b')
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
+
+[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds]=getTTFfits(VDS.LMS_hafM,TemporalFrequency,[1 2 1]);
+[ttf_fitLM_vds,TemporalFrequency_fitLM_vds]=getTTFfits(VDS.LM_hafM,TemporalFrequency,[2 2 1]);
+[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_hafM(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+
 
 subplot(3,2,2)
 hold on
-markerline='-ok';markeredge=[0 0 0];markerface=[0 0 0];
+markerline='ok';markeredge=[0 0 0];markerface=[0 0 0];
 plotWithErrorbars(TemporalFrequency,VDS.LMS_hafM,VDS.LMS_hafCI,markerline,markeredge,markerface)
+plot(TemporalFrequency_fitLMS_vds,ttf_fitLMS_vds,'-k')
 title(['Flicker discomfort HAf'])
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
 subplot(3,2,4)
 hold on
-markerline='-or';markeredge=[1 0 0];markerface=[1 0 0];
+markerline='or';markeredge=[1 0 0];markerface=[1 0 0];
 plotWithErrorbars(TemporalFrequency,VDS.LM_hafM,VDS.LM_hafCI,markerline,markeredge,markerface)
+plot(TemporalFrequency_fitLM_vds,ttf_fitLM_vds,'-r')
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
 subplot(3,2,6)
 hold on
-markerline='-ob';markeredge=[0 0 1];markerface=[0 0 1];
+markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
 plotWithErrorbars(TemporalFrequency([1:3 5]),VDS.S_hafM(1,[1:3 5]),VDS.S_hafCI(:,[1:3 5]),markerline,markeredge,markerface)
+plot(TemporalFrequency_fitS_vds,ttf_fitS_vds,'-b')
 xlabel(['Stimulus frequency (Hz)'])
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
@@ -151,18 +166,16 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 figure(7)
 subplot(1,2,1)
 hold on
-markeredge=[0 0 0];markerface=[0 0 0];
-plotWithXYErrorbars(LMSm,VDS.LMS_mvaM,LMSci,VDS.LMS_mvaCI,markeredge,markerface)
-markeredge=[1 0 0];markerface=[1 0 0];
-plotWithXYErrorbars(LMm,VDS.LM_mvaM,LMci,VDS.LM_mvaCI,markeredge,markerface)
-markeredge=[0 0 1];markerface=[0 0 1];
-plotWithXYErrorbars(Sm(:,[1:3 5]),VDS.S_mvaM(:,[1:3 5]),Sci(:,[1:3 5]),VDS.S_mvaCI(:,[1:3 5]),markeredge,markerface)
-plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+plot(cat(2,LMSm,LMm,Sm([1:3 5])),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM([1:3 5])),'.','Color',[0.5 0.5 0.5])
+lsline
+plot(LMSm,VDS.LMS_mvaM,'ok','MarkerFaceColor','k','MarkerSize',8)
+plot(LMm,VDS.LM_mvaM,'or','MarkerFaceColor','r','MarkerSize',8)
+plot(Sm([1:3 5]),VDS.S_mvaM([1:3 5]),'ob','MarkerFaceColor','b','MarkerSize',8)
 [Rmva_vdsvep,Pmva_vdsvep]=corrcoef(cat(2,LMSm,LMm,Sm([1:3 5])),cat(2,VDS.LMS_mvaM,VDS.LM_mvaM,VDS.S_mvaM([1:3 5])));
 title(['n=14, R squared=' num2str(Rmva_vdsvep(1,2)^2) ' , p=' num2str(Pmva_vdsvep(1,2))])
 ylabel('flicker discomfort')
 xlabel('amplitude at stimulus frequency (mV)')
-ax=gca; ax.XLim=[-0.001 0.022]; ax.YLim=[0 10];
+ax=gca; ax.XLim=[-0.002 0.015]; ax.YLim=[0 10];
 
 
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
@@ -181,7 +194,7 @@ subplot(3,2,2)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
 plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
-markerline='ok';markeredge=[0 0 0];markerface=[1 1 1];
+markerline='ok';markeredge=[0 0 0];markerface=[0 0 0];
 plotWithErrorbars(TemporalFrequency,LMSm,LMSci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
 title(['LMS'])
@@ -191,7 +204,7 @@ subplot(3,2,4)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
 plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
-markerline='or';markeredge=[1 0 0];markerface=[1 1 1];
+markerline='or';markeredge=[1 0 0];markerface=[1 0 0];
 plotWithErrorbars(TemporalFrequency,LMm,LMci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
 xlabel('Stimulus frequency')
@@ -202,7 +215,7 @@ subplot(3,2,6)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
 plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
-markerline='ob';markeredge=[0 0 1];markerface=[1 1 1];
+markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
 plotWithErrorbars(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),markerline,markeredge,markerface)
 plot(TemporalFrequency_fitS,ttf_fitS,'-b')
 title(['S'])
@@ -213,20 +226,17 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 figure(7)
 subplot(1,2,2)
 hold on
-markeredge=[0 0 0];markerface=[1 1 1];
-plotWithXYErrorbars(LMSm,VDS.LMS_hafM,LMSci,VDS.LMS_hafCI,markeredge,markerface)
-markeredge=[1 0 0];markerface=[1 1 1];
-plotWithXYErrorbars(LMm,VDS.LM_hafM,LMci,VDS.LM_hafCI,markeredge,markerface)
-markeredge=[0 0 1];markerface=[1 1 1];
-plotWithXYErrorbars(Sm(:,[1:3 5]),VDS.S_hafM(:,[1:3 5]),Sci(:,[1:3 5]),VDS.S_hafCI(:,[1:3 5]),markeredge,markerface)
-plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+plot(cat(2,LMSm,LMm,Sm([1:3 5])),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM([1:3 5])),'.')
+lsline
+plot(LMSm,VDS.LMS_hafM,'ok','MarkerFaceColor','k','MarkerSize',8)
+plot(LMm,VDS.LM_hafM,'or','MarkerFaceColor','r','MarkerSize',8)
+plot(Sm([1:3 5]),VDS.S_hafM([1:3 5]),'ob','MarkerFaceColor','b','MarkerSize',8)
 [Rhaf_vdsvep,Phaf_vdsvep]=corrcoef(cat(2,LMSm,LMm,Sm([1:3 5])),cat(2,VDS.LMS_hafM,VDS.LM_hafM,VDS.S_hafM([1:3 5])));
 title(['n=14, R squared=' num2str(Rhaf_vdsvep(1,2)^2) ' , p=' num2str(Phaf_vdsvep(1,2))])
 ylabel('flicker discomfort')
 xlabel('amplitude at stimulus frequency (mV)')
-ax=gca; ax.TickDir='out'; ax.Box='off'; ax.XLim=[-0.001 0.022]; ax.YLim=[0 10];
+ax=gca; ax.TickDir='out'; ax.Box='off'; ax.XLim=[-0.002 0.015]; ax.YLim=[0 10];
 
-clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
 % plot luminance 30 Hz VEP response as a function of headache frequency
 figure(20)
@@ -235,19 +245,12 @@ for i=1:size(compiledData_MVA,1)
     Y_mva(i)=compiledData_MVA(i).fooof_peak_Fr(1,5);
 end
 
-for i=1:size(compiledData_HAF,1)
-    X_haf(i)=table2array(compiledData_HAF(i).subject(:,6));
-    Y_haf(i)=compiledData_HAF(i).fooof_peak_Fr(1,5);
-end
-
-X_haf(find(isnan(X_haf)))=1;
-
-[R_vepHAf,P_vepHAf]=corrcoef(cat(2,X_mva,Y_haf),cat(2,Y_mva,Y_haf));
 [Rmva_vepHAf,Pmva_vepHAf]=corrcoef(X_mva,Y_mva);
-
-plot(X_mva,Y_mva,'ok','MarkerFaceColor','k')
+plot(X_mva,Y_mva,'ok','MarkerFaceColor','k','MarkerSize',8)
 hold on
-plot(-1*ones(size(X_haf)),Y_haf,'ok','MarkerFaceColor','w')
+lsline
+markerline='ok';markeredge=[0 0 0];markerface=[1 1 1];
+plotWithErrorbars(-1,LMSm(end),LMSci(:,end),markerline,markeredge,markerface)
 title(['Luminance 30 Hz, R squared=' num2str(Rmva_vepHAf(1,2)^2) ', p=' num2str(Pmva_vepHAf(1,2))])
 ylabel('amplitude at stimulus frequency (mV)')
 xlabel('Number of headache days in past 3 months')
