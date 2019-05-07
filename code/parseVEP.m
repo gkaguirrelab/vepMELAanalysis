@@ -68,7 +68,7 @@ for AA=1:length(VEP_main)
     timestamp=VEP.timebase;
     y=0;
     startFs=p.Results.starttime*Fs;
-    bkgdFs=3*Fs;
+    bkgdFs=startFs;
 
     for x=2:length(TTL)
         if TTL(1,x)>4 && TTL(1,x)<6 && TTL(1,(x-1))<4

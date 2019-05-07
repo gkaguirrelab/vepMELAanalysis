@@ -130,7 +130,7 @@ ax=gca;ax.XScale='log'; ax.XLim=[0.95 35]; ax.YLim=[-0.002 0.022];
 subplot(3,2,1)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none'; 
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
+plotWithErrorfill(compiledData_MVA(1).ttf_bkgd.bkgd_freq,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
 markerline='ok';markeredge=[0 0 0];markerface=[0 0 0];
 plotWithErrorbars(TemporalFrequency,LMSm,LMSci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
@@ -141,7 +141,7 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 subplot(3,2,3)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
+plotWithErrorfill(compiledData_MVA(1).ttf_bkgd.bkgd_freq,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
 markerline='or';markeredge=[1 0 0];markerface=[1 0 0];
 plotWithErrorbars(TemporalFrequency,LMm,LMci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
@@ -153,7 +153,7 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 subplot(3,2,5)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
+plotWithErrorfill(compiledData_MVA(1).ttf_bkgd.bkgd_freq,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
 markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
 plotWithErrorbars(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),markerline,markeredge,markerface)
 plot(TemporalFrequency_fitS,ttf_fitS,'-b')
@@ -193,7 +193,7 @@ figure(2)
 subplot(3,2,2)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
+plotWithErrorfill(compiledData_MVA(1).ttf_bkgd.bkgd_freq,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
 markerline='ok';markeredge=[0 0 0];markerface=[0 0 0];
 plotWithErrorbars(TemporalFrequency,LMSm,LMSci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLMS,ttf_fitLMS,'-k')
@@ -203,7 +203,7 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 subplot(3,2,4)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
+plotWithErrorfill(compiledData_MVA(1).ttf_bkgd.bkgd_freq,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
 markerline='or';markeredge=[1 0 0];markerface=[1 0 0];
 plotWithErrorbars(TemporalFrequency,LMm,LMci,markerline,markeredge,markerface)
 plot(TemporalFrequency_fitLM,ttf_fitLM,'-r')
@@ -214,7 +214,7 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 subplot(3,2,6)
 hold on
 edgecolor='none';fillcolor=[0.8 0.8 0.8];markeredge='none';markerface='none';
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
+plotWithErrorfill(compiledData_MVA(1).ttf_bkgd.bkgd_freq,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
 markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
 plotWithErrorbars(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),markerline,markeredge,markerface)
 plot(TemporalFrequency_fitS,ttf_fitS,'-b')
@@ -268,7 +268,7 @@ BKGD=[];
 
     for x=1:size(compiledData,1)
         temp=compiledData(x).fooof_peak_Fr;
-        temp2=compiledData(x).fooof_bkgd_Fr;
+        temp2=compiledData(x).ttf_bkgd.bkgd_fooof_fr;
         LMS=cat(1,LMS,temp(1,:));
         LM=cat(1,LM,temp(2,:));
         S=cat(1,S,temp(3,:));

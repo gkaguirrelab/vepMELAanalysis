@@ -1,7 +1,7 @@
-function [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A)
+function [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec)
 
         L=dur_in_sec*Fs;
-        f=Fs*(0:(L/2))/L;
+        bkgd_freq=[2 5 11.25 22.5 45];
         
         background=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
         background2=cat(1,processedVEPdata(1).vep_bkgd,processedVEPdata(2).vep_bkgd,processedVEPdata(3).vep_bkgd);
@@ -12,45 +12,38 @@ function [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec,A)
                 counter=counter+1;
             end
         end
-        rand_trial=sort(randi(size(background2,1),1,21));
-        background2=background2(rand_trial,:);
-        vep_bkgd=background2;
-        backgroundM=nanmedian(background2,1);
+        
+        for i=1:1000
+            rand_trial=sort(randi(size(background2,1),1,21));
+            background2=background2(rand_trial,:);
+            backgroundM=nanmedian(background2,1);
 
-        Y=fft(backgroundM);
-        P2=abs(Y/L);
-        P1=P2(:,1:L/2+1);
-        P1(:,2:end-1)=2*P1(:,2:end-1);
-        ttf_BKGD=P1;
-        clear P1 P2 Y
+            Y=fft(backgroundM);
+            P2=abs(Y/L);
+            P1=P2(:,1:L/2+1);
+            P1(:,2:end-1)=2*P1(:,2:end-1);
+            ttf_BKGD=P1;
+            clear P1 P2 Y
+        
+            [fooof_bkgd]=runFOOOF_bkgd(ttf_BKGD);
+            
+            xdata=fooof_bkgd.freqs;
+            ydata=10.^(fooof_bkgd.power_spectrum)-10.^(fooof_bkgd.bg_fit);
 
-        Bootstat=bootstrp(100,@nanmedian,background,1);
-        for yy=1:size(Bootstat,1)
-                Y=fft(Bootstat(yy,:));
-                P2=abs(Y/L);
-                P1=P2(:,1:L/2+1);
-                P1(:,2:end-1)=2*P1(:,2:end-1);
-                ttf_bkgd_boot(yy,:)=P1;
-                clear P1 P2 Y
+            for a=1:length(bkgd_freq)
+                peak_freq=bkgd_freq(a);
+                temp=abs(xdata-peak_freq);
+                temp2=find(temp==min(temp));
+                if length(temp2)>1
+                    temp3=max(ydata(temp2));
+                    peak_freq_loc(a)=find(ydata==temp3);
+                else
+                    peak_freq_loc(a)=temp2;
+                end
+               fooof_Fr(i,a)=ydata(peak_freq_loc(a));
+            end
         end
         
-        ttf_bkgd_boot=sort(ttf_bkgd_boot,1);
-        ttf_bkgdCI=ttf_bkgd_boot([5 95],:);
-        
-        for bb=1:length(A)
-            temp=abs(f-A(bb));
-            temp2=find(temp==min(temp));
-            ttf_bkgd_Fr(bb,:)=sum(ttf_BKGD(:,temp2-1:temp2+1),2);
-            ttf_bkgdCI_Fr(bb,:)=sum(ttf_bkgdCI(:,temp2-1:temp2+1),2);
-        end
-        
-        ttf_bkgd_Fr(1,:)=ttf_BKGD(:,temp(1));
-        ttf_bkgdCI_Fr(1,:)=ttf_bkgdCI(:,temp(1));
-        ttf_bkgdCI=ttf_bkgdCI';
-        
-        ttf_bkgd.vep_bkgd=vep_bkgd;
-        ttf_bkgd.ttf_BKGD=ttf_BKGD;
-        ttf_bkgd.ttf_bkgdCI=ttf_bkgdCI;
-        ttf_bkgd.ttf_bkgd_Fr=ttf_bkgd_Fr;
-        ttf_bkgd.ttf_bkgdCI_Fr=ttf_bkgdCI_Fr;
+        ttf_bkgd.bkgd_freq=bkgd_freq;
+        ttf_bkgd.bkgd_fooof_fr=nanmedian(fooof_Fr,1);
 end
