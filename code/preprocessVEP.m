@@ -17,7 +17,6 @@ XX=(1:length(parsedVEPdata(1).vep_Fr))/p.Results.Fs;
 % temporal frequency trials
 for XXX=1:size(parsedVEPdata,2)
     vep_FR=parsedVEPdata(XXX).vep_Fr;
-    vep_BKGD=parsedVEPdata(XXX).vep_bkgd;
     for w=1:size(vep_FR,1)
         for x=1:size(vep_FR,2)
             if p.Results.plot_all==1
@@ -45,32 +44,9 @@ for XXX=1:size(parsedVEPdata,2)
 
         end
     end
-
-    % gray background
-    for w=1:size(vep_BKGD,1)
-         if p.Results.plot_all==1
-            figure(15)
-            plot(XX,vep_BKGD(w,:))
-            title(['Background, trial: ' num2str(w)])
-            ax=gca;
-            ax.YLim=[-0.5 0.5];
-            ax.XLim=[0 dur_in_freq/p.Results.Fs];
-            ax.TickDir='out';
-            ax.Box='off';
-            hold off
-         end
-
-        if max(abs(vep_BKGD(w,:)))>=0.5 || max(abs(vep_BKGD(w,:)))<0.02
-            vep_bkgd(XXX,w,:)=vep_BKGD(w,:).*NaN;
-             if p.Results.plot_all==1
-                xlabel('bad')
-                pause
-             end
-        else
-            vep_bkgd(XXX,w,:)=vep_BKGD(w,:);
-        end
-        end
 end
+
+   
 
 %% Normalize signal - median to 0
 if p.Results.normalize1==1
@@ -110,38 +86,9 @@ if p.Results.normalize1==1
         clear temp_epoch temp_median
         temp_all_epoch=[];
 
-        for w=1:size(vep_bkgd,1)
-            for y=1:length(epoch)-1
-                if y==length(epoch)-1
-                    temp_epoch=vep_bkgd(w,epoch(y)+1:epoch(y+1)+1);
-                else
-                    temp_epoch=vep_bkgd(w,epoch(y)+1:epoch(y+1));
-                end
-                temp_median=nanmedian(squeeze(temp_epoch));
-                temp_epoch=temp_epoch-(temp_median*ones(size(temp_epoch,1),size(temp_epoch,2)));
-                temp_all_epoch=cat(2,temp_all_epoch,temp_epoch);
-            end
-            if p.Results.plot_all==1
-                plot(XX,squeeze(vep_bkgd(XXX,w,:)),'Color',[0.5 0.5 0.5])
-                hold on
-                plot(XX,temp_all_epoch,'k')
-                ax=gca;
-                ax.YLim=[-0.5 0.5];
-                ax.XLim=[0 dur_in_freq/p.Results.Fs];
-                ax.TickDir='out';
-                ax.Box='off';
-                hold off
-                pause
-            end
-
-            vep_bkgdN(XXX,w,x,:)=temp_all_epoch;
-            temp_all_epoch=[];
-        end
-
-        clear vep_bkgd vep_Fr
-        vep_bkgd=vep_bkgdN;
+        clear vep_Fr
         vep_Fr=vep_FrN;
-        clear vep_bkgdN vep_FrN
+        clear vep_FrN
     end
 end
 
@@ -170,28 +117,9 @@ if p.Results.normalize2==1
         end
 
         clear norm_vep;
-
-        norm_vep=nanmedian(vep_bkgd(XXX,:,:),1);
-        for x=1:size(vep_Fr,2)
-            vep_bkgdN(XXX,x,:)=vep_bkgd(x,:)-norm_vep;
-            if p.Results.plot_all==1
-                plot(XX,vep_BKGD(x,:),'Color',[0.5 0.5 0.5])
-                hold on
-                plot(XX,vep_bkgdN(x,:),'k')
-                ax=gca;
-                ax.YLim=[-0.5 0.5];
-                ax.XLim=[0 dur_in_freq/p.Results.Fs];
-                ax.TickDir='out';
-                ax.Box='off';
-                hold off
-                pause
-            end
-        end
-
-        clear vep_bkgd vep_Fr
-        vep_bkgd=vep_bkgdN;
+        clear vep_Fr
         vep_Fr=vep_FrN;
-        clear vep_bkgdN vep_FrN
+        clear vep_FrN
     end
     
 end
@@ -200,8 +128,4 @@ end
 processedVEPdata(1).vep_Fr=squeeze(vep_Fr(1,:,:,:));
 processedVEPdata(2).vep_Fr=squeeze(vep_Fr(2,:,:,:));
 processedVEPdata(3).vep_Fr=squeeze(vep_Fr(3,:,:,:));
-
-processedVEPdata(1).vep_bkgd=squeeze(vep_bkgd(1,:,:,:));
-processedVEPdata(2).vep_bkgd=squeeze(vep_bkgd(2,:,:,:));
-processedVEPdata(3).vep_bkgd=squeeze(vep_bkgd(3,:,:,:));
 end

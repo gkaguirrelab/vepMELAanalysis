@@ -48,9 +48,7 @@ end
 
 %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
     [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec,'plot_all',false);
-    
-    % analyze background data across channels
-    [ttf_bkgd]=vepBKGD(processedVEPdata,Fs,dur_in_sec);
+
 %%
 for x=1:3
     switch x
@@ -149,23 +147,7 @@ for x=1:3
         ydata=10.^(fooof_results(x,a).power_spectrum)-10.^(fooof_results(x,a).bg_fit);
         ydata5=10.^(fooof_results5(x,a).power_spectrum)-10.^(fooof_results5(x,a).bg_fit);
         ydata95=10.^(fooof_results95(x,a).power_spectrum)-10.^(fooof_results95(x,a).bg_fit);
-        
-%         figure(15)
-%         subplot(5,2,sbplot1(a))
-%         hold on
-%         plot(xdata,10.^ydata_psd,'k')
-%         plot(xdata,10.^ydata_ap,'--','Color',[0.5 0.5 0.5])
-%         ax=gca;ax.TickDir='out';ax.Box='off';ax.YScale='log';ax.XLim=[0 60];ax.YLim=[0.001 0.025];
-%         hold off
-%         
-%         figure(15)
-%         subplot(5,2,sbplot2(a))
-%         hold on
-%         plot(xdata,ydata,'k')
-%         ax=gca;ax.TickDir='out';ax.Box='off';ax.YScale='log';ax.XLim=[0 60];ax.YLim=[0.001 0.025];
-%         hold off
-        
-       
+
         peak_freq=TemporalFrequency(a);
         temp=abs(xdata-peak_freq);
         temp2=find(temp==min(temp));
@@ -226,10 +208,6 @@ for x=1:3
     title('FOOOF')
     ylabel('amplitude of stimulus frequency (mV)')
     ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.04];
-    
-    if x==3
-        plot(ttf_bkgd.bkgd_freq,ttf_bkgd.bkgd_fooof_fr,'--','Color',[0.5 0.5 0.5]); 
-    end
 
 
     
@@ -265,7 +243,6 @@ compiledData.fooof_peak_harmonics_freq=fooof_peak_harmonics_freq;
 compiledData.fooof_results=fooof_results;
 compiledData.ttf_M=ttf(x).ttf_M;
 compiledData.ttf_CI=ttf(x).ttf_CI;
-compiledData.ttf_bkgd=ttf_bkgd;
 compiledData.nulling=nulling;
 
 save(filenameComp,'compiledData')

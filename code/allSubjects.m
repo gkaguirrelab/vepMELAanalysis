@@ -7,13 +7,15 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0170';'MELA_0169';...
     'MELA_0194';'MELA_0179';...
     'MELA_0191';'MELA_0174';...
-    'MELA_0120';'MELA_0171'];
+    'MELA_0120';'MELA_0171';...
+    'MELA_0201';'MELA_0207';...
+    'MELA_0209'];
 
 counter_MVA=0;
 counter_HAF=0;
 A=[1.625 3.25 7.5 15 30];
-lb=250;
-ub=750;
+lb=50;
+ub=950;
 
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
     'vepMELAanalysis','allChannels');
@@ -161,7 +163,7 @@ for y=1:size(HAF_vds,2)
             for c=1:size(HAF_fooof_fr,1)
                 subplot(3,3,c)
                 hold on
-                plot(A(flicker_stim),squeeze(HAF_fooof_fr(c,y,flicker_stim)),['-o' color])
+                plot(A(flicker_stim),squeeze(HAF_fooof_fr(c,y,flicker_stim)),['-o' color],'MarkerFaceColor',color)
                 title(num2str(HAF_ID(c,:)))
                 ax=gca;
                 ax.TickDir='out';

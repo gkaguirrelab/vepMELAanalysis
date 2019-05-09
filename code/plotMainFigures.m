@@ -8,7 +8,8 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0194';'MELA_0179';...
     'MELA_0191';'MELA_0174';...
     'MELA_0120';'MELA_0171';...
-    ];
+    'MELA_0201';'MELA_0207';...
+    'MELA_0209'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -111,7 +112,7 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
 
 % Plot median psd for stimulus frequency between groups
-[LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_MVA,lb,ub);
+[LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData_MVA,lb,ub);
 
 [ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
 [ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
