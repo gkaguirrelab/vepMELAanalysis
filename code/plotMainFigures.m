@@ -243,7 +243,29 @@ ylabel('amplitude at stimulus frequency (mV)')
 xlabel('Number of headache days in past 3 months')
 ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[-2 31];
 
-% compare subject demographics across groups
+
+% plot luminance 30 Hz VEP response as a function of VDS
+figure(21)
+for i=1:size(compiledData_MVA,1)
+    X_mva(i)=table2array(compiledData_MVA(i).subject(:,7));
+    Y_mva(i)=compiledData_MVA(i).fooof_peak_Fr(1,5);
+end
+
+for i=1:size(compiledData_HAF,1) 
+    X_haf(i)=table2array(compiledData_HAF(i).subject(:,7));
+    Y_haf(i)=compiledData_HAF(i).fooof_peak_Fr(1,5);
+end
+
+[R_vepVDS,P_vepVDS]=corrcoef(cat(2,X_mva,X_haf),cat(2,Y_mva,Y_haf));
+
+hold on
+plot(X_mva,Y_mva,'ok','MarkerFaceColor','k','MarkerSize',8)
+plot(X_haf,Y_haf,'ok','MarkerFaceColor','w','MarkerSize',8)
+title(['Luminance 30 Hz, R squared=' num2str(R_vepVDS(1,2)^2) ', p=' num2str(P_vepVDS(1,2))])
+xlabel('Visual discomfort score')
+ylabel('amplitude at stimulus frequency (mV)')
+ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[0 40];
+
 
 %% local functions
 

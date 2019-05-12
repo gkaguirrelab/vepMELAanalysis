@@ -75,7 +75,7 @@ for x=1:3
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',TemporalFrequency);
 
     %% FOOOF
-    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'plot_all',false);
+    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'plot_all',true);
 
     
     %% Plotting
@@ -163,7 +163,23 @@ for x=1:3
         fooof_peak_Fr5(x,a)=ydata5(peak_freq_loc(a));
         fooof_peak_Fr95(x,a)=ydata95(peak_freq_loc(a));
         
+        figure(15)
+        subplot(5,2,sbplot1(a))
+        plot(xdata,10.^ydata_psd,'k')
+        hold on
+        plot(xdata,10.^ydata_ap,'--g')
+        ylabel('amplitude (mV)')
+        xlabel('frequency (Hz)')
+        ax=gca;ax.XLim=[0 60];ax.YLim=[-0.002 0.04];ax.Box='off';ax.TickDir='out';
+       
+        subplot(5,2,sbplot2(a))
+        plot(xdata,ydata,'k')
+        ylabel('amplitude (mV)')
+        xlabel('frequency (Hz)')
+        ax=gca;ax.XLim=[0 60];ax.YLim=[-0.002 0.04];ax.Box='off';ax.TickDir='out';
+        
     end
+    pause
     
     % get harmonics
     harmonic={[1.625 3.25 4.875 6.5 8.125];[3.25 6.5 9.75 13 16.25];[7.5 15 22.5 30 37.5];[15 30 45 75 90];[30 90]};
