@@ -111,12 +111,19 @@ for i=1:size(compiledData_HAF,1)
     end
 end
 
-VDS_anova=anovan(VDS_all,{group,TF,PRP});
-VEP_anova=anovan(VEP_all,{group,TF,PRP});
+figure(100)
+temp=1:120;
+temp2=121:length(VDS_all);
+errorbar(1,mean(VDS_all(temp)),std(VDS_all(temp))./sqrt(length(temp)-1),'ok')
+hold on
+errorbar(1,mean(VDS_all(temp2)),std(VDS_all(temp2))./sqrt(length(temp2)-1),'ob')
+
+VDS_anova=anovan(VDS_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
+VEP_anova=anovan(VEP_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
 
 [ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds]=getTTFfits(VDS.LMS_M,TemporalFrequency,[1 2 1]);
 [ttf_fitLM_vds,TemporalFrequency_fitLM_vds]=getTTFfits(VDS.LM_M,TemporalFrequency,[2 2 1]);
-[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_M(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_M(1,[1:3 5]),TemporalFrequency([1:3 5]),[5.5 1 1]);
 
 figure(3)
 subplot(3,1,1)
@@ -147,7 +154,7 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 [LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData_ALL,lb,ub);
 
 [ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 1 1]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(4)

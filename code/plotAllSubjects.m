@@ -8,7 +8,8 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0194';'MELA_0179';...
     'MELA_0191';'MELA_0174';...
     'MELA_0120';'MELA_0171';...
-    ];
+    'MELA_0201';'MELA_0207';...
+    'MELA_0209'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -44,23 +45,15 @@ clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 VDS=calcVDS(compiledData_all,lb,ub);
 
 % Plot median psd for stimulus frequency across groups
-[LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData_all,lb,ub);
+[LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData_all,lb,ub);
 
 [ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
 [ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(1)
-subplot(1,4,1)
-hold on
-fillcolor=[0.95 0.95 0.95];edgecolor=[0.85 0.85 0.85];markeredge=[0.5 0.5 0.5];markerface=[0.5 0.5 0.5];
-plotWithErrorfill(TemporalFrequency,BKGDm,BKGDci,edgecolor,fillcolor,markeredge,markerface)
-plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
-ylabel('amplitude at stimulus frequency (mV)')
-title(['all subjects (n=' num2str(size(compiledData_all,1)) '), Background'])
-ax=gca;ax.XScale='log'; ax.XLim=[0.95 35]; ax.YLim=[-0.001 0.02];
 
-subplot(1,4,2)
+subplot(1,3,1)
 hold on
 fillcolor=[0.85 0.85 0.85];edgecolor=[0.75 0.75 0.75];markeredge=[0 0 0];markerface=[0 0 0];
 plotWithErrorfill(TemporalFrequency,LMSm,LMSci,edgecolor,fillcolor,markeredge,markerface)
@@ -69,7 +62,7 @@ plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
 title(['LMS'])
 ax=gca;ax.XScale='log'; ax.XLim=[0.95 35]; ax.YLim=[-0.001 0.02];
 
-subplot(1,4,3)
+subplot(1,3,2)
 hold on
 fillcolor=[1 0.9 0.9];edgecolor=[1 0.8 0.8];markeredge=[1 0 0];markerface=[1 0 0];
 plotWithErrorfill(TemporalFrequency,LMm,LMci,edgecolor,fillcolor,markeredge,markerface)
@@ -80,7 +73,7 @@ title(['LM'])
 ax=gca;ax.XScale='log'; ax.XLim=[0.95 35]; ax.YLim=[-0.001 0.02];
 
 
-subplot(1,4,4)
+subplot(1,3,3)
 hold on
 fillcolor=[0.9 0.9 1];edgecolor=[0.8 0.8 1];markeredge=[0 0 1];markerface=[0 0 1];
 plotWithErrorfill(TemporalFrequency([1:3 5]),Sm(1,[1:3 5]),Sci(:,[1:3 5]),edgecolor,fillcolor,markeredge,markerface)
@@ -113,24 +106,21 @@ ylabel('flicker discomfort')
 xlabel('amplitude at stimulus frequency (mV)')
 ax=gca; ax.TickDir='out'; ax.Box='off'; ax.XLim=[-0.001 0.022]; ax.YLim=[0 10];
 
-clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
+clear LMSm LMm Sm LMSci LMci Sci
 
 
 %% local functions
 
-function [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(compiledData,lb,ub)
+function [LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData,lb,ub)
 LMS=[];
 LM=[];
 S=[];
-BKGD=[];
 
     for x=1:size(compiledData,1)
         temp=compiledData(x).fooof_peak_Fr;
-        temp2=compiledData(x).fooof_bkgd_Fr;
         LMS=cat(1,LMS,temp(1,:));
         LM=cat(1,LM,temp(2,:));
         S=cat(1,S,temp(3,:));
-        BKGD=cat(1,BKGD,temp2);
     end
 
     Bootstat=bootstrp(1000,@nanmedian,LMS,1);
@@ -148,10 +138,6 @@ BKGD=[];
     Sci=Bootstat([lb ub],:);
     Sm=Bootstat(500,:);
     
-    Bootstat=bootstrp(1000,@nanmedian,BKGD,1);
-    Bootstat=sort(Bootstat,1);
-    BKGDci=Bootstat([lb ub],:);
-    BKGDm=Bootstat(500,:);
 end
 
 function [pred60lms, pred60lm, pred60s]=plotFooofHarmonics(compiledData,fig_num,lb,ub)
@@ -224,7 +210,7 @@ counter_s=0;
             pred60s(counter_s)=temp(Hz60);
         end
         
-        clear LMS LM S LMSm LMm Sm BKGDm LMSci LMci Sci
+        clear LMS LM S LMSm LMm Sm LMSci LMci Sci
         
     end
     

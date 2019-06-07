@@ -14,10 +14,10 @@ function [ttf_fit, TemporalFrequency_fit]=getTTFfits(VEPresponse,stimulusFreqHz,
     
     % Scale the x vector so that the max is 0
     scaledVEP=scaledVEP./splineInterpolatedMax;
-    x0=cat(2,x0,max(scaledVEP));
+%     x0=cat(2,x0,max(scaledVEP));
     myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
-    x0_lb=x0-[0.5 1 0.5 0.001];
-    x0_ub=x0+[0.5 1 0.5 0.001];
+    x0_lb=x0-[1 0.5 0.5];
+    x0_ub=x0+[1 0.5 0.5];
     params=fmincon(myObj,x0,[],[],[],[],x0_lb,x0_ub);
     
     ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
