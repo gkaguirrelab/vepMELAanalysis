@@ -1,4 +1,4 @@
-function [ttf_fit, TemporalFrequency_fit]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
+function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
     % Fit the Watson model to data
     % Adjust the VEP response to deal with negative values
     minVEP=min(VEPresponse);
@@ -10,10 +10,10 @@ function [ttf_fit, TemporalFrequency_fit]=getTTFfits(VEPresponse,stimulusFreqHz,
     end
     % Find the maximum interpolated VEP response
     stimulusFreqHzFine=logspace(0,log10(max(stimulusFreqHz)),100);
-    splineInterpolatedMax=max(spline(stimulusFreqHz,scaledVEP,stimulusFreqHzFine));
+    splineInterpolatedMax=max(spline(stimulusFreqHz,VEPresponse,stimulusFreqHzFine));
     
-    % Scale the x vector so that the max is 0
-    scaledVEP=scaledVEP./splineInterpolatedMax;
+    % Scale the x vector so that the max is 1
+    scaledVEP=scaledVEP./max(scaledVEP);
 %     x0=cat(2,x0,max(scaledVEP));
     myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
     x0_lb=x0-[1 0.5 0.5];

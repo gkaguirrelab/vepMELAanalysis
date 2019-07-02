@@ -1,19 +1,8 @@
 % Compile data across subjects
 
-% observer ID for each subject to be compiled
-subjects=['MELA_0121';'MELA_0131';...
-    'MELA_0181';'MELA_0167';...
-    'MELA_0187';'MELA_0175';...
-    'MELA_0170';'MELA_0169';...
-    'MELA_0194';'MELA_0179';...
-    'MELA_0191';'MELA_0174';...
-    'MELA_0120';'MELA_0171';...
-    'MELA_0201';'MELA_0207';...
-    'MELA_0209';'MELA_0204';...
-    'MELA_0213';'MELA_0208'];
+% observer ID
+observerID=['MELA_0121'];
 
-counter_MVA=0;
-counter_HAF=0;
 TemporalFrequency=[1.625 3.25 7.5 15 30];
 lb=50;
 ub=950;
@@ -23,42 +12,24 @@ savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments'
 
 load('/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat')
 
-for x=1:size(subjects,1)
-    
-        observerID=subjects(x,:);
-        savePath=fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
-        'vepMELAanalysis','allChannels');
+savePath=fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
+'vepMELAanalysis','allChannels');
 
-        filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
+filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
 
-        open(filenameComp);
-        compiledData=ans.compiledData;
-        temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
-        temp2=scoreTable(temp,:);
-        compiledData.subject=temp2;
-        compiledData_ALL(x,:)=compiledData;
+open(filenameComp);
+compiledData=ans.compiledData;
+temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
+temp2=scoreTable(temp,:);
+compiledData.subject=temp2;
 
-        if compiledData(1).group=='MWVA'
-            counter_MVA=counter_MVA+1;
-            compiledData_MVA(counter_MVA,:)=compiledData;
-            scoreTable_MVA(counter_MVA,:)=temp2;
-        else if compiledData(1).group=='HA f'
-                counter_HAF=counter_HAF+1;
-               compiledData_HAF(counter_HAF,:)=compiledData;
-               scoreTable_HAF(counter_HAF,:)=temp2;
-            else
-                disp('error: group');
-            end
-        end
-
-end
-
-clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
+clear ans observerID filenameComp
 
 % flicker discomfort
-VDS=calcVDS(compiledData_ALL,lb,ub);
-VDS_mva=calcVDS(compiledData_MVA,lb,ub);
-VDS_haf=calcVDS(compiledData_HAF,lb,ub);
+temp=compiledData.vds;
+LMS=squeeze(nanmedian(temp(1,:,:),3));
+LM=squeeze(nanmedian(temp(2,:,:),3));
+S=squeeze(nanmedian(temp(3,:,:),3));
 
 % calculate ANOVA for flicker discomfort by group, post-receptoral pathway,
 % and temporal frequency
@@ -73,23 +44,19 @@ for i=1:size(compiledData_MVA,1)
     temp2=compiledData_MVA(i).fooof_peak_Fr;
     for j=1:size(temp,1)
         for k=1:size(temp,2)
-               if j==3 && k==4
-                disp('ignore 15Hz S')
-               else
-                VDS_all=cat(2,VDS_all,temp(j,k));
-                VEP_all=cat(2,VEP_all,temp2(j,k));
-                group=cat(2,group,{'MVA'});
-                TF=cat(2,TF,TemporalFrequency(k));
-
-                    switch j
-                        case 1
-                            PRP=cat(2,PRP,{'LMS'});
-                        case 2
-                            PRP=cat(2,PRP,{'LM'});
-                        case 3
-                            PRP=cat(2,PRP,{'S'});
-                    end
-               end
+            VDS_all=cat(2,VDS_all,temp(j,k));
+            VEP_all=cat(2,VEP_all,temp2(j,k));
+            group=cat(2,group,{'MVA'});
+            TF=cat(2,TF,TemporalFrequency(k));
+        
+            switch j
+                case 1
+                    PRP=cat(2,PRP,{'LMS'});
+                case 2
+                    PRP=cat(2,PRP,{'LM'});
+                case 3
+                    PRP=cat(2,PRP,{'S'});
+            end
         end
     end
 end
@@ -99,23 +66,18 @@ for i=1:size(compiledData_HAF,1)
     temp2=compiledData_HAF(i).fooof_peak_Fr;
     for j=1:size(temp,1)
         for k=1:size(temp,2)
-            if j==3 && k==4
-                disp('ignore 15Hz S')
-                else
-                    VDS_all=cat(2,VDS_all,temp(j,k));
-                    VEP_all=cat(2,VEP_all,temp2(j,k));
-                    group=cat(2,group,{'HAF'});
-                    TF=cat(2,TF,TemporalFrequency(k));
-
-                    switch j
-                        case 1
-                            PRP=cat(2,PRP,{'LMS'});
-                        case 2
-                            PRP=cat(2,PRP,{'LM'});
-                        case 3
-                            PRP=cat(2,PRP,{'S'});
-
-                    end
+            VDS_all=cat(2,VDS_all,temp(j,k));
+            VEP_all=cat(2,VEP_all,temp2(j,k));
+            group=cat(2,group,{'HAF'});
+            TF=cat(2,TF,TemporalFrequency(k));
+        
+            switch j
+                case 1
+                    PRP=cat(2,PRP,{'LMS'});
+                case 2
+                    PRP=cat(2,PRP,{'LM'});
+                case 3
+                    PRP=cat(2,PRP,{'S'});
             end
         end
     end
@@ -131,9 +93,9 @@ errorbar(1,mean(VDS_all(temp2)),std(VDS_all(temp2))./sqrt(length(temp2)-1),'ob')
 VDS_anova=anovan(VDS_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
 VEP_anova=anovan(VEP_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
 
-[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds,paramsLMS_vds]=getTTFfits_VDS(VDS.LMS_M,TemporalFrequency,[0.5 4 1]);
-[ttf_fitLM_vds,TemporalFrequency_fitLM_vds,paramsLM_vds]=getTTFfits_VDS(VDS.LM_M,TemporalFrequency,[2 2 1]);
-[ttf_fitS_vds,TemporalFrequency_fitS_vds,paramsS_vds]=getTTFfits_VDS(VDS.S_M(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 1 1]);
+[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds]=getTTFfits(VDS.LMS_M,TemporalFrequency,[1 2 1]);
+[ttf_fitLM_vds,TemporalFrequency_fitLM_vds]=getTTFfits(VDS.LM_M,TemporalFrequency,[2 2 1]);
+[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_M(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(3)
 subplot(3,1,1)
@@ -163,9 +125,9 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 % Plot median psd for stimulus frequency
 [LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData_ALL,lb,ub);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS,paramsLMS_vep]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
-[ttf_fitLM,TemporalFrequency_fitLM,paramsLM_vep]=getTTFfits(LMm,TemporalFrequency,[4 1 1]);
-[ttf_fitS,TemporalFrequency_fitS,paramsS_vep]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 1 1]);
+[ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(4)
 subplot(3,1,1)
@@ -212,7 +174,7 @@ plot(Sm([1:3 5]),VDS.S_M([1:3 5]),'ob','MarkerFaceColor','b','MarkerSize',8)
 title(['n=14, R squared=' num2str(R_vdsvep(1,2)^2) ' , p=' num2str(P_vdsvep(1,2))])
 ylabel('flicker discomfort')
 xlabel('amplitude at stimulus frequency (mV)')
-ax=gca; ax.XLim=[0 0.011]; ax.YLim=[0 10]; ax.TickDir='out'; ax.Box='off';
+ax=gca; ax.XLim=[-0.002 0.015]; ax.YLim=[0 10];
 
 
 clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
@@ -274,43 +236,3 @@ S=[];
 end
 
 
-
-function [VDS]=calcVDS(compiledData,lb,ub)
-    
-    LMS=[];
-    LM=[];
-    S=[];
-
-    for x=1:size(compiledData,1)
-        temp=compiledData(x).vds;
-        LMS=cat(1,LMS,temp(1,:,:));
-        LM=cat(1,LM,temp(2,:,:));
-        S=cat(1,S,temp(3,:,:));
-    end
-    
-    LMS=squeeze(nanmedian(LMS,3));
-    Bootstat=bootstrp(1000,@nanmedian,LMS,1);
-    Bootstat=sort(Bootstat,1);
-    LMS_CI=Bootstat([lb ub],:);
-    LMS_M=Bootstat(500,:);
-    
-    LM=squeeze(nanmedian(LM,3));
-    Bootstat=bootstrp(1000,@nanmedian,LM,1);
-    Bootstat=sort(Bootstat,1);
-    LM_CI=Bootstat([lb ub],:);
-    LM_M=Bootstat(500,:);
-    
-    S=squeeze(nanmedian(S,3));
-    Bootstat=bootstrp(1000,@nanmedian,S,1);
-    Bootstat=sort(Bootstat,1);
-    S_CI=Bootstat([lb ub],:);
-    S_M=Bootstat(500,:);
-    
-    VDS.LMS_M=LMS_M;
-    VDS.LMS_CI=LMS_CI;
-    VDS.LM_M=LM_M;
-    VDS.LM_CI=LM_CI;
-    VDS.S_M=S_M;
-    VDS.S_CI=S_CI;
-
-end

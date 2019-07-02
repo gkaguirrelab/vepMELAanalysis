@@ -2,7 +2,7 @@
 
 load('/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat')
 
-MwA=[3 6 8 9 10 14 17 18]';
+MwA=[3 6 8 9 10 14 17 18 19 20]';
 
 HAf=[1 2 4 5 7 11 12 13 15 16]';
 

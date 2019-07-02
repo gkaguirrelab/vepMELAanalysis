@@ -9,7 +9,8 @@ subjects=['MELA_0121';'MELA_0131';...
     'MELA_0191';'MELA_0174';...
     'MELA_0120';'MELA_0171';...
     'MELA_0201';'MELA_0207';...
-    'MELA_0209';'MELA_0204'];
+    'MELA_0209';'MELA_0204';...
+    'MELA_0213';'MELA_0208'];
 
 counter_MVA=0;
 counter_HAF=0;
@@ -56,9 +57,9 @@ clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 % flicker discomfort
 VDS=calcVDS(compiledData_MVA,compiledData_HAF,lb,ub);
 
-[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds]=getTTFfits(VDS.LMS_mvaM,TemporalFrequency,[1 2 1]);
-[ttf_fitLM_vds,TemporalFrequency_fitLM_vds]=getTTFfits(VDS.LM_mvaM,TemporalFrequency,[2 2 1]);
-[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_mvaM(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds,paramsLMS_vdsMVA]=getTTFfits_VDS(VDS.LMS_mvaM,TemporalFrequency,[1.4 2.5 1]);
+[ttf_fitLM_vds,TemporalFrequency_fitLM_vds,paramsLM_vdsMVA]=getTTFfits_VDS(VDS.LM_mvaM,TemporalFrequency,[2 2 1]);
+[ttf_fitS_vds,TemporalFrequency_fitS_vds,paramsS_vdsMVA]=getTTFfits_VDS(VDS.S_mvaM(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(1)
 subplot(3,2,1)
@@ -84,9 +85,9 @@ plotWithErrorbars(TemporalFrequency([1:3 5]),VDS.S_mvaM(1,[1:3 5]),VDS.S_mvaCI(:
 plot(TemporalFrequency_fitS_vds,ttf_fitS_vds,'-b')
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 
-[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds]=getTTFfits(VDS.LMS_hafM,TemporalFrequency,[1 2 1]);
-[ttf_fitLM_vds,TemporalFrequency_fitLM_vds]=getTTFfits(VDS.LM_hafM,TemporalFrequency,[2 2 1]);
-[ttf_fitS_vds,TemporalFrequency_fitS_vds]=getTTFfits(VDS.S_hafM(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+[ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds,paramsLMS_vdsHAF]=getTTFfits(VDS.LMS_hafM,TemporalFrequency,[1 2 1]);
+[ttf_fitLM_vds,TemporalFrequency_fitLM_vds,paramsLM_vdsHAF]=getTTFfits(VDS.LM_hafM,TemporalFrequency,[2 2 1]);
+[ttf_fitS_vds,TemporalFrequency_fitS_vds,paramsS_vdsHAF]=getTTFfits(VDS.S_hafM(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 
 subplot(3,2,2)
@@ -116,9 +117,9 @@ ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
 % Plot median psd for stimulus frequency between groups
 [LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData_MVA,lb,ub);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
-[ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+[ttf_fitLMS,TemporalFrequency_fitLMS,paramsLMS_vepMVA]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
+[ttf_fitLM,TemporalFrequency_fitLM,paramsLM_vepMVA]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
+[ttf_fitS,TemporalFrequency_fitS,paramsS_vepMVA]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(2)
 subplot(3,2,1)
@@ -175,9 +176,9 @@ clear LMSm LMm Sm BKGDm LMSci LMci Sci BKGDci
 
 [LMSm, LMm, Sm, LMSci, LMci, Sci]=medianFooofFrequency(compiledData_HAF,lb,ub);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
-[ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
+[ttf_fitLMS,TemporalFrequency_fitLMS,paramsLMS_vepHAF]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
+[ttf_fitLM,TemporalFrequency_fitLM,paramsLM_vepHAF]=getTTFfits(LMm,TemporalFrequency,[2 2 1]);
+[ttf_fitS,TemporalFrequency_fitS,paramsS_vepHAF]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
     
 figure(2)
 subplot(3,2,2)
@@ -244,27 +245,27 @@ xlabel('Number of headache days in past 3 months')
 ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[-2 31];
 
 
-% % plot luminance 30 Hz VEP response as a function of VDS
-% figure(21)
-% for i=1:size(compiledData_MVA,1)
-%     X_mva(i)=table2array(compiledData_MVA(i).subject(:,7));
-%     Y_mva(i)=compiledData_MVA(i).fooof_peak_Fr(1,5);
-% end
-% 
-% for i=1:size(compiledData_HAF,1) 
-%     X_haf(i)=table2array(compiledData_HAF(i).subject(:,7));
-%     Y_haf(i)=compiledData_HAF(i).fooof_peak_Fr(1,5);
-% end
-% 
-% [R_vepVDS,P_vepVDS]=corrcoef(cat(2,X_mva,X_haf),cat(2,Y_mva,Y_haf));
-% 
-% hold on
-% plot(X_mva,Y_mva,'ok','MarkerFaceColor','k','MarkerSize',8)
-% plot(X_haf,Y_haf,'ok','MarkerFaceColor','w','MarkerSize',8)
-% title(['Luminance 30 Hz, R squared=' num2str(R_vepVDS(1,2)^2) ', p=' num2str(P_vepVDS(1,2))])
-% xlabel('Visual discomfort score')
-% ylabel('amplitude at stimulus frequency (mV)')
-% ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[0 40];
+% plot luminance 30 Hz VEP response as a function of VDS
+figure(21)
+for i=1:size(compiledData_MVA,1)
+    X_mva(i)=table2array(compiledData_MVA(i).subject(:,7));
+    Y_mva(i)=compiledData_MVA(i).fooof_peak_Fr(1,5);
+end
+
+for i=1:size(compiledData_HAF,1) 
+    X_haf(i)=table2array(compiledData_HAF(i).subject(:,7));
+    Y_haf(i)=compiledData_HAF(i).fooof_peak_Fr(1,5);
+end
+
+[R_vepVDS,P_vepVDS]=corrcoef(cat(2,X_mva,X_haf),cat(2,Y_mva,Y_haf));
+
+hold on
+plot(X_mva,Y_mva,'ok','MarkerFaceColor','k','MarkerSize',8)
+plot(X_haf,Y_haf,'ok','MarkerFaceColor','w','MarkerSize',8)
+title(['Luminance 30 Hz, R squared=' num2str(R_vepVDS(1,2)^2) ', p=' num2str(P_vepVDS(1,2))])
+xlabel('Visual discomfort score')
+ylabel('amplitude at stimulus frequency (mV)')
+ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[0 40];
 
 
 %% local functions
