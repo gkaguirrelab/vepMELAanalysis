@@ -124,9 +124,9 @@ end
 figure(100)
 temp=1:120;
 temp2=121:length(VDS_all);
-errorbar(1,mean(VDS_all(temp)),std(VDS_all(temp))./sqrt(length(temp)-1),'ok')
+errorbar(1,median(VDS_all(temp)),std(VDS_all(temp))./sqrt(length(temp)-1),'ok')
 hold on
-errorbar(1,mean(VDS_all(temp2)),std(VDS_all(temp2))./sqrt(length(temp2)-1),'ob')
+errorbar(1,median(VDS_all(temp2)),std(VDS_all(temp2))./sqrt(length(temp2)-1),'ob')
 
 VDS_anova=anovan(VDS_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
 VEP_anova=anovan(VEP_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});

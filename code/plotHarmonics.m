@@ -66,8 +66,8 @@ VDS_haf=calcVDS(compiledData_HAF,lb,ub);
 % Plot the sum of harmonics across subjects
 [LMS, LM, S, LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_all,lb,ub, pred60lms, pred60lm, pred60s);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[1 2 1]);
-[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[4 1 1]);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[2 1 1]);
+[ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 3 0.5]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
 figure(1)
@@ -300,7 +300,7 @@ plotWithErrorbars(-1,LMSm(end),LMSci(:,end),markerline,markeredge,markerface)
 title(['Luminance 30 Hz, R squared=' num2str(Rmva_vepHAf(1,2)^2) ', p=' num2str(Pmva_vepHAf(1,2))])
 ylabel('amplitude at stimulus frequency (mV)')
 xlabel('Number of headache days in past 3 months')
-ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.025]; ax.XLim=[-2 31];
+ax=gca; ax.TickDir='out'; ax.Box='off'; ax.YLim=[-0.001 0.04]; ax.XLim=[-2 31];
 
 
 
