@@ -26,13 +26,20 @@ function vepMELAanalysisLocalHook
 
 
 %% Say hello.
-fprintf('vepMELAanalysis local hook.\n');
 projectName = 'vepMELAanalysis';
 
 %% find the correct python version
 if ~strcmp(pyversion,'3.7')
-    fprintf('attempting to change python path to anaconda v3.7')
-    pyversion('/Applications/anaconda3/bin/python')
+    fprintf('Attempting to change python path to anaconda v3.7...\n')
+    try
+        pyversion('/Applications/anaconda3/bin/python')
+        fprintf('Success\n')
+    catch
+        warnString = 'Could not find Python anaconda v3.7. Visit https://www.anaconda.com/download/';
+        warning('localHook:requiresPythonAnaconda',warnString');
+    end
+else
+    fprintf('Python anaconda v3.7 ready\n')
 end
 
 %% Delete any old prefs

@@ -1,4 +1,18 @@
 [
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "configuration/vepMELAanalysisLocalHookTemplate.m",
+        "printLocalHookOutput": "1",
+		"name": "vepMELAanalysis",
+		"pathPlacement": "append",
+		"subfolder": "code",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": ""
+	},
   	{
 		"flavor": "",
 		"hook": "",
@@ -87,19 +101,6 @@
 		"subfolder": "",
 		"toolboxRoot": "",
 		"type": "include",
-		"update": "",
-		"url": ""
-	},
-	{
-		"flavor": "",
-		"hook": "",
-		"importance": "",
-		"localHookTemplate": "configuration/vepMELAanalysisLocalHookTemplate.m",
-		"name": "vepMELAanalysis",
-		"pathPlacement": "append",
-		"subfolder": "code",
-		"toolboxRoot": "",
-		"type": "git",
 		"update": "",
 		"url": ""
 	}
