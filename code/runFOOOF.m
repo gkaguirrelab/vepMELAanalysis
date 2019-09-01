@@ -16,15 +16,8 @@ freqs=p.Results.Fs*(0:(L/2))/L;
 
 for y=1:size(ttf_M,1)
     psd=ttf_M(y,:);
-    
-    switch size(ttf_M,1)
-    case 1
-        psd5=squeeze(ttf_CI(:,1))';
-        psd95=squeeze(ttf_CI(:,2))';
-    case 5
-        psd5=squeeze(ttf_CI(y,:,1));
-        psd95=squeeze(ttf_CI(y,:,2));
-    end
+    psd5=squeeze(ttf_CI(y,:,1));
+    psd95=squeeze(ttf_CI(y,:,2));
 
     % FOOOF settings
     settings=struct('peak_width_limits', [1.5, 12],'background_mode', 'knee',...
