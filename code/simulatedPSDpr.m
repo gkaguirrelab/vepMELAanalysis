@@ -2,7 +2,7 @@
 
 % Produce a 120Hz sampled stimulus to match the monitor
 dur_in_sec=0.25; % duration of stimulus collection
-Fs_stim=120; % sampling rate of the monitor
+Fs_stim=500; % sampling rate of the monitor
 Fs=2000; % sampling rate of the brain
 dur_in_freq=dur_in_sec*Fs_stim; % duration in sampling frequency of the monitor
 sampling_monitor=0:1/Fs_stim:dur_in_sec;
@@ -34,6 +34,9 @@ for x=1:length(stim_freq)
         end
 
         [psd, freqs] = pwelch(simVEP,window(y),[],[],Fs);
+        [prS,prF,prT]=spectrogram(simVEP,window(y),[],[],Fs);
+        figure(3)
+        helperCWTTimeFreqPlot(prS,prT,prF,'surf','STFT for VEP signal','seconds','Hz')
         figure(2)
         subplot(1,length(window),y)
         plot(freqs,psd,plot_color(x))

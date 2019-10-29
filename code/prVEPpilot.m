@@ -3,7 +3,8 @@ nTrials=60; % number of trials in file
 % calls the experiment based on users input
 expID='PVEP1';
 observerID='CPG';
-sessionID=[1,2]; 
+sessionID=[1,2];
+window=250;
 
 % Establish directory for saving. The path is defined by experiment ID.
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
@@ -51,7 +52,7 @@ for x=1:size(parsedVEPdata.VEP_dataC,1)
         vep=squeeze(squeeze(parsedVEPdata.VEP_dataC(x,y,:)))';
 %         vep=vep-vepM(x,:); % induced VEP
 %         [psd(x,y,:),freqs]=pmtm(vep',3,length(vep),parsedVEPdata.Fs);
-        [psd(x,y,:),freqs]=pwelch(vep',[],[],[],parsedVEPdata.Fs);
+        [psd(x,y,:),freqs]=pwelch(vep',125,[],[],parsedVEPdata.Fs);
     end
 end
 
@@ -71,7 +72,7 @@ for x=1:size(parsedVEPdata.VEP_dataC,1)
     for y=1:size(parsedVEPdata.VEP_dataC,2)
         vep=squeeze(parsedVEPdata.VEP_dataC(x,y,:))';
 %         vep=vep-vepM(x,:); % induced VEP
-        [S(x,y,:,:),F,T]=spectrogram(vep,[],[],[],parsedVEPdata.Fs);
+        [S(x,y,:,:),F,T]=spectrogram(vep,125,[],[],parsedVEPdata.Fs);
     end
 end
 
@@ -113,7 +114,7 @@ for x=1:size(prVEP,1)
     for y=1:size(prVEP,2)
         vep=squeeze(squeeze(prVEP(x,y,:)))';
 %         vep=vep-prVEPm(x,:); % induced VEP
-        [PRpsd(x,y,:),freqs]=pwelch(vep',[],[],[],parsedVEPdata.Fs);
+        [PRpsd(x,y,:),freqs]=pwelch(vep',125,[],[],parsedVEPdata.Fs);
 %         [PRpsd(x,y,:),freqs]=pmtm(vep,3,length(vep),parsedVEPdata.Fs);
     end
 end
@@ -134,7 +135,7 @@ for x=1:size(prVEP,1)
     for y=1:size(prVEP,2)
         vep=squeeze(prVEP(x,y,:))';
 %         vep=vep-prVEPm(x,:); % induced VEP
-        [prS(x,y,:,:),prF,prT]=spectrogram(vep,[],[],[],parsedVEPdata.Fs);
+        [prS(x,y,:,:),prF,prT]=spectrogram(vep,125,[],[],parsedVEPdata.Fs);
     end
 end
 
