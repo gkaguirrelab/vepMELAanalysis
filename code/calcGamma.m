@@ -59,6 +59,7 @@ for x=1:size(VEP_data,1)
             vep=squeeze(squeeze(squeeze(VEP_data(x,y,z,:))));
             VEP(x,y,z,:)=vep;
     %             [psd(x,y,z,:),freqs]=pwelch(vep',window,[],[],Fs);
+            [PSI,X] = morlet(LB,UB,N)
             [psd(x,y,z,:),freqs]=pmtm(vep',4,length(vep),Fs);
         end
     end
@@ -78,8 +79,9 @@ end
 
 clear r x y z
 
-vepM=squeeze(nanmean(VEP,1));
-psdM=squeeze(nanmean(psd,1));
+vepM=squeeze(nanmedian(VEP,1));
+psdM=squeeze(nanmedian(psd,1));
+Sm=squeeze(squeeze(nanmedian(nanmedian(S,4),1)));
 
 figure(1)
 for x=1:size(psdM,1)
@@ -95,11 +97,20 @@ for x=1:size(psdM,1)
     end
 end
 
-% figure(3)
+figure(3)
+X=1;
+for x=1:size(Sm,1)
+    for y=1:size(Sm,2)
+        subplot(size(Sm,1),size(Sm,2),X)
+        helperCWTTimeFreqPlot(squeeze(squeeze(Sm(x,y,:,:))),T,F,'surf','STFT for VEP signal','seconds','Hz')
+        ax=gca;ax.YLim=[0 100];
+        X=X+1;
+    end
+end
+
+
+
 % vep_plot=squeeze(vepM(1,3,:));
 % subplot(1,2,1)
 % plot((1:1:length(vep_plot))/Fs,vep_plot)
 % ax=gca;ax.Box='off';ax.TickDir='out';
-% subplot(1,2,2)
-% helperCWTTimeFreqPlot(S,T,F,'surf','STFT for VEP signal','seconds','Hz')
-% ax=gca;ax.YLim=[0 100];

@@ -199,6 +199,22 @@ title(['S'])
 ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
 
 
+figure(20)
+subplot(2,1,1)
+hold on
+markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
+plotWithErrorbars(TemporalFrequency,VDS.S_M(1,:),VDS.S_CI(:,:),markerline,markeredge,markerface)
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[0 10];
+
+subplot(2,1,2)
+hold on
+plot([0.95 35],[0 0],'--','Color',[0.8 0.8 0.8])
+markerline='ob';markeredge=[0 0 1];markerface=[0 0 1];
+plotWithErrorbars(TemporalFrequency,Sm(1,:),Sci(:,:),markerline,markeredge,markerface)
+title(['S'])
+ax=gca;ax.XScale='log';ax.XLim=[0.95 35];ax.YLim=[-0.002 0.022];
+
+
 % plot visual discomfort data as a function of VEP power at the stimulus
 % frequency
 figure(5)

@@ -48,7 +48,16 @@ end
 
 %% Process VEP data (gets rid of poor quality trials, and normalizes signal)
     [processedVEPdata]=preprocessVEP(parsedVEPdata,'dur_in_sec',dur_in_sec,'plot_all',false);
+    temp=length(find(isnan(mean(processedVEPdata(1).vep_Fr,3))));
+    disp(['number of poor quality trials magno=' num2str(temp)])
 
+    temp=length(find(isnan(mean(processedVEPdata(2).vep_Fr,3))));
+    disp(['number of poor quality trials parvo=' num2str(temp)])
+
+    temp=length(find(isnan(mean(processedVEPdata(3).vep_Fr,3))));
+    disp(['number of poor quality trials konio=' num2str(temp)])
+
+    pause
 %%
 for x=1:3
     switch x
@@ -261,5 +270,6 @@ compiledData.ttf_M=ttf(x).ttf_M;
 compiledData.ttf_CI=ttf(x).ttf_CI;
 compiledData.nulling=nulling;
 
-save(filenameComp,'compiledData')
+% save(filenameComp,'compiledData')
+clear
 

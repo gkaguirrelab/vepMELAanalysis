@@ -390,14 +390,29 @@ function [LMS, LM, S, LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compile
             fooof_peak_harmonics=compiledData(y).fooof_peak_harmonics;
             x_harmonics=cell2mat(compiledData(y).fooof_peak_harmonics_freq(1,x));
 
-            LMS(y,x)=sum(cell2mat(fooof_peak_harmonics(1,x)));
-            LM(y,x)=sum(cell2mat(fooof_peak_harmonics(2,x)));
-            S(y,x)=sum(cell2mat(fooof_peak_harmonics(3,x)));
-            if x==4
-                LMS(y,x)=LMS(y,x)+pred60lms(1);
-                LM(y,x)=LMS(y,x)+pred60lm(1);
-                S(y,x)=LMS(y,x)+pred60s(1);
-            end
+% % 1st-4th harmonic
+%             LMS(y,x)=sum(cell2mat(fooof_peak_harmonics(1,x)));
+%             LM(y,x)=sum(cell2mat(fooof_peak_harmonics(2,x)));
+%             S(y,x)=sum(cell2mat(fooof_peak_harmonics(3,x)));
+%             if x==4
+%                 LMS(y,x)=LMS(y,x)+pred60lms(1);
+%                 LM(y,x)=LMS(y,x)+pred60lm(1);
+%                 S(y,x)=LMS(y,x)+pred60s(1);
+%             end
+%             
+%             if x==5
+%                 LMS(y,x)=LMS(y,x)+pred60lms(2);
+%                 LM(y,x)=LM(y,x)+pred60lm(2);
+%                 S(y,x)=S(y,x)+pred60s(2);
+%             end
+
+%1st and 2nd harmonic
+            temp=cell2mat(fooof_peak_harmonics(1,x));
+            LMS(y,x)=sum(temp(1:2));
+            temp=cell2mat(fooof_peak_harmonics(2,x));
+            LM(y,x)=sum(temp(1:2));
+            temp=cell2mat(fooof_peak_harmonics(3,x));
+            S(y,x)=sum(temp(1:2));
             
             if x==5
                 LMS(y,x)=LMS(y,x)+pred60lms(2);

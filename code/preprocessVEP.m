@@ -128,4 +128,5 @@ end
 processedVEPdata(1).vep_Fr=squeeze(vep_Fr(1,:,:,:));
 processedVEPdata(2).vep_Fr=squeeze(vep_Fr(2,:,:,:));
 processedVEPdata(3).vep_Fr=squeeze(vep_Fr(3,:,:,:));
+
 end

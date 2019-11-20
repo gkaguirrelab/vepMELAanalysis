@@ -282,16 +282,6 @@ function [LMSm, LMm, Sm, BKGDm, LMSci, LMci, Sci, BKGDci]=medianFooofFrequency(c
 LMS=[];
 LM=[];
 S=[];
-BKGD=[];
-
-    for x=1:size(compiledData,1)
-        temp=compiledData(x).fooof_peak_Fr;
-        temp2=compiledData(x).fooof_bkgd_Fr;
-        LMS=cat(1,LMS,temp(1,:));
-        LM=cat(1,LM,temp(2,:));
-        S=cat(1,S,temp(3,:));
-        BKGD=cat(1,BKGD,temp2);
-    end
 
     Bootstat=bootstrp(1000,@nanmedian,LMS,1);
     Bootstat=sort(Bootstat,1);
@@ -397,15 +387,29 @@ function [LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData,fig_nu
         for y=1:size(compiledData,1)
             fooof_peak_harmonics=compiledData(y).fooof_peak_harmonics;
             x_harmonics=cell2mat(compiledData(y).fooof_peak_harmonics_freq(1,x));
+% % 1st-4th harmonic
+%             LMS(y,x)=sum(cell2mat(fooof_peak_harmonics(1,x)));
+%             LM(y,x)=sum(cell2mat(fooof_peak_harmonics(2,x)));
+%             S(y,x)=sum(cell2mat(fooof_peak_harmonics(3,x)));
+%             if x==4
+%                 LMS(y,x)=LMS(y,x)+pred60lms(1);
+%                 LM(y,x)=LMS(y,x)+pred60lm(1);
+%                 S(y,x)=LMS(y,x)+pred60s(1);
+%             end
+%             
+%             if x==5
+%                 LMS(y,x)=LMS(y,x)+pred60lms(2);
+%                 LM(y,x)=LM(y,x)+pred60lm(2);
+%                 S(y,x)=S(y,x)+pred60s(2);
+%             end
 
-            LMS(y,x)=sum(cell2mat(fooof_peak_harmonics(1,x)));
-            LM(y,x)=sum(cell2mat(fooof_peak_harmonics(2,x)));
-            S(y,x)=sum(cell2mat(fooof_peak_harmonics(3,x)));
-            if x==4
-                LMS(y,x)=LMS(y,x)+pred60lms(1);
-                LM(y,x)=LMS(y,x)+pred60lm(1);
-                S(y,x)=LMS(y,x)+pred60s(1);
-            end
+%1st and 2nd harmonic
+            temp=cell2mat(fooof_peak_harmonics(1,x));
+            LMS(y,x)=sum(temp(1:2));
+            temp=cell2mat(fooof_peak_harmonics(2,x));
+            LM(y,x)=sum(temp(1:2));
+            temp=cell2mat(fooof_peak_harmonics(3,x));
+            S(y,x)=sum(temp(1:2));
             
             if x==5
                 LMS(y,x)=LMS(y,x)+pred60lms(2);
