@@ -59,7 +59,6 @@ for x=1:size(VEP_data,1)
             vep=squeeze(squeeze(squeeze(VEP_data(x,y,z,:))));
             VEP(x,y,z,:)=vep;
     %             [psd(x,y,z,:),freqs]=pwelch(vep',window,[],[],Fs);
-            [PSI,X] = morlet(LB,UB,N)
             [psd(x,y,z,:),freqs]=pmtm(vep',4,length(vep),Fs);
         end
     end
@@ -103,7 +102,7 @@ for x=1:size(Sm,1)
     for y=1:size(Sm,2)
         subplot(size(Sm,1),size(Sm,2),X)
         helperCWTTimeFreqPlot(squeeze(squeeze(Sm(x,y,:,:))),T,F,'surf','STFT for VEP signal','seconds','Hz')
-        ax=gca;ax.YLim=[0 100];
+        ax=gca;ax.YLim=[0 100];ax.XLim=[0.1665 1.332];ax.YScale='log';ax.Box='off';ax.TickDir='out';
         X=X+1;
     end
 end
