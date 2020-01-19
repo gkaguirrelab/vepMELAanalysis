@@ -71,15 +71,21 @@ TF=[];
 for i=1:size(compiledData_MVA,1)
     temp=nanmedian(compiledData_MVA(i).vds,3);
     temp2=compiledData_MVA(i).fooof_peak_Fr;
+    between_factor(i)=2;
     for j=1:size(temp,1)
         for k=1:size(temp,2)
                if j==3 && k==4
+                wf_MVA_VDS(i,j,k)=temp(j,k);
+                wf_MVA_VEP(i,j,k)=temp2(j,k);
                 disp('ignore 15Hz S')
                else
                 VDS_all=cat(2,VDS_all,temp(j,k));
                 VEP_all=cat(2,VEP_all,temp2(j,k));
                 group=cat(2,group,{'MVA'});
                 TF=cat(2,TF,TemporalFrequency(k));
+                
+                wf_MVA_VDS(i,j,k)=temp(j,k);
+                wf_MVA_VEP(i,j,k)=temp2(j,k);
 
                     switch j
                         case 1
@@ -97,16 +103,22 @@ end
 for i=1:size(compiledData_HAF,1)
     temp=nanmedian(compiledData_HAF(i).vds,3);
     temp2=compiledData_HAF(i).fooof_peak_Fr;
+    between_factor(i+10)=1;
     for j=1:size(temp,1)
         for k=1:size(temp,2)
             if j==3 && k==4
                 disp('ignore 15Hz S')
+                wf_HAF_VDS(i,j,k)=temp(j,k);
+                wf_HAF_VEP(i,j,k)=temp2(j,k);
                 else
                     VDS_all=cat(2,VDS_all,temp(j,k));
                     VEP_all=cat(2,VEP_all,temp2(j,k));
                     group=cat(2,group,{'HAF'});
                     TF=cat(2,TF,TemporalFrequency(k));
 
+                    wf_HAF_VDS(i,j,k)=temp(j,k);
+                    wf_HAF_VEP(i,j,k)=temp2(j,k);
+                    
                     switch j
                         case 1
                             PRP=cat(2,PRP,{'LMS'});
@@ -128,13 +140,89 @@ errorbar(1,median(VDS_all(temp)),std(VDS_all(temp))./sqrt(length(temp)-1),'ok')
 hold on
 errorbar(1,median(VDS_all(temp2)),std(VDS_all(temp2))./sqrt(length(temp2)-1),'ob')
 
-VDS_anova=anovan(VDS_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
-VEP_anova=anovan(VEP_all,{group,TF,PRP},'model','interaction','varnames',{'group','Temporal frequency','channel'});
 
+%% Fit temporal frequency response function curves
+
+% for averaged data for VDS
 [ttf_fitLMS_vds,TemporalFrequency_fitLMS_vds,paramsLMS_vds]=getTTFfits_VDS(VDS.LMS_M,TemporalFrequency,[0.5 4 1]);
 [ttf_fitLM_vds,TemporalFrequency_fitLM_vds,paramsLM_vds]=getTTFfits_VDS(VDS.LM_M,TemporalFrequency,[2 2 1]);
 [ttf_fitS_vds,TemporalFrequency_fitS_vds,paramsS_vds]=getTTFfits_VDS(VDS.S_M(1,[1:3 5]),TemporalFrequency([1:3 5]),[6 1 1]);
 
+% fit per subject
+konio_TF=[1.625 3.25 7.5 30];
+figure(300)
+for x=1:size(compiledData_ALL,1)
+    vds_subject_konio=squeeze(nanmedian(compiledData_ALL(x).vds(3,[1:3 5],:),3));
+    vep_subject_konio=compiledData_ALL(x).fooof_peak_Fr(3,[1:3 5]);
+    if sum(vds_subject_konio)==0
+        vds_sim_15Hz(x,1)=0;
+    else
+        [ttf_fit_vds_sim,TemporalFrequency_fit_vds_sim,params_vds_sim]=getTTFfits_VDS(vds_subject_konio,konio_TF,[7 1 1]);
+        sim_15Hz=find(TemporalFrequency_fit_vds_sim>15);
+        vds_sim_15Hz(x,1)=ttf_fit_vds_sim(sim_15Hz(1));
+        
+        subplot(2,1,1)
+        plot(konio_TF,vds_subject_konio,'ob')
+        hold on
+        plot(TemporalFrequency_fit_vds_sim,ttf_fit_vds_sim,'b')
+        plot(15,ttf_fit_vds_sim(sim_15Hz(1)),'or')
+        hold off
+    end
+    [ttf_fit_vep_sim,TemporalFrequency_fit_vep_sim,params_vep_sim]=getTTFfits(vep_subject_konio,konio_TF,[7 1 1]);
+    sim_15Hz=find(TemporalFrequency_fit_vep_sim>15);
+    vep_sim_15Hz(x,1)=ttf_fit_vep_sim(sim_15Hz(1));
+    
+    subplot(2,1,2)
+    plot(konio_TF,vep_subject_konio,'ob')
+    hold on
+    plot(TemporalFrequency_fit_vep_sim,ttf_fit_vep_sim,'b')
+    plot(15,ttf_fit_vep_sim(sim_15Hz(1)),'or')
+    pause
+    hold off
+   
+end
+
+%% Mixed effects repeated measures ANOVA
+withinfactor_VDS=cat(1,wf_MVA_VDS,wf_HAF_VDS);
+withinfactor_VEP=cat(1,wf_MVA_VEP,wf_HAF_VEP);
+between_factor=between_factor';
+
+bf_names={'group'};
+wf_names={'direction','TF'};
+wf_variables=fullfact([3 5]);
+wf_tbl=array2table(wf_variables,'VariableNames',wf_names);
+wf_tbl.TF=categorical(wf_tbl.TF);
+wf_tbl.direction=categorical(wf_tbl.direction);
+
+temp_vds=withinfactor_VDS(:,:);
+temp_vep=withinfactor_VEP(:,:);
+temp_vds_sim15=cat(2,temp_vds(:,1:11),vds_sim_15Hz,temp_vds(:,13:end));
+temp_vep_sim15=cat(2,temp_vep(:,1:11),vep_sim_15Hz,temp_vep(:,13:end));
+var_names=cellstr([{'y1'};{'y2'};{'y3'};{'y4'};{'y5'};{'y6'};{'y7'};{'y8'};{'y9'};{'y10'};{'y11'};{'y12'};{'y13'};{'y14'};{'y15'};{'group'}]);
+VDS_tbl=array2table([temp_vds between_factor],'VariableNames',var_names);
+VEP_tbl=array2table([temp_vep between_factor],'VariableNames',var_names);
+VDS_tbl_sim15=array2table([temp_vds_sim15 between_factor],'VariableNames',var_names);
+VEP_tbl_sim15=array2table([temp_vep_sim15 between_factor],'VariableNames',var_names);
+
+% with real 15 Hz data
+rm_VDS=fitrm(VDS_tbl,'y1-y15~group','WithinDesign',wf_tbl);
+ranova_tbl_VDS_between=ranova(rm_VDS);
+ranova_tbl_VDS_within=ranova(rm_VDS,'WithinModel','direction+TF');
+
+rm_VEP=fitrm(VEP_tbl,'y1-y15~group','WithinDesign',wf_tbl);
+ranova_tbl_VEP_between=ranova(rm_VEP);
+ranova_tbl_VEP_within=ranova(rm_VEP,'WithinModel','direction+TF');
+
+% with simulated 15 Hz data
+rm_VDS_sim=fitrm(VDS_tbl_sim15,'y1-y15~group','WithinDesign',wf_tbl);
+ranova_tbl_VDS_between_sim15=ranova(rm_VDS_sim);
+ranova_tbl_VDS_within_sim15=ranova(rm_VDS_sim,'WithinModel','direction+TF');
+
+rm_VEP_sim=fitrm(VEP_tbl_sim15,'y1-y15~group','WithinDesign',wf_tbl);
+ranova_tbl_VEP_between_sim15=ranova(rm_VEP_sim);
+ranova_tbl_VEP_within_sim15=ranova(rm_VEP_sim,'WithinModel','direction+TF');
+
+%% plot temporal frequency response functions
 figure(3)
 subplot(3,1,1)
 hold on

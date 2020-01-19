@@ -1,5 +1,11 @@
-function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulusFreqHz,x0)
+function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulusFreqHz,x0,varargin)
     % Fit the Watson model to data
+    q = inputParser;
+    q.addParameter('x0_lb',x0-[1 0.5 0.5],@isnumeric);
+    q.addParameter('x0_ub',x0+[1 0.5 0.5],@isnumeric);
+    
+    q.parse(varargin{:});
+    
     % Adjust the VEP response to deal with negative values
     minVEP=min(VEPresponse);
     if minVEP<0
@@ -14,11 +20,8 @@ function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulus
     
     % Scale the x vector so that the max is 1
     scaledVEP=scaledVEP./max(scaledVEP);
-%     x0=cat(2,x0,max(scaledVEP));
     myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
-    x0_lb=x0-[1 0.5 0.5];
-    x0_ub=x0+[1 0.5 0.5];
-    params=fmincon(myObj,x0,[],[],[],[],x0_lb,x0_ub);
+    params=fmincon(myObj,x0,[],[],[],[],q.Results.x0_lb,q.Results. x0_ub);
     
     ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
     TemporalFrequency_fit=stimulusFreqHzFine;
