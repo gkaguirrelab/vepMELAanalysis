@@ -186,10 +186,10 @@ end
 % Boostrap analysis fit
 
 % MwVA VDS
-% ydata=squeeze(nanmedian(compiledData_MVA.vds(3,[1:3 5],:),3));
-% xdata=[1.625 3.25 7.5 15 30];
-% x0=[0.5 4 1];
-% [TTF_boot]=bootstrp_ttf_fit(ydata,xdata,x0);
+ydata=squeeze(nanmedian(compiledData_MVA.vds(3,[1:3 5],:),3));
+xdata=[1.625 3.25 7.5 15 30];
+x0=[0.5 4 1];
+[TTF_boot]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 
 % %% Mixed effects repeated measures ANOVA
