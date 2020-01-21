@@ -87,44 +87,44 @@ end
 ydata=squeeze(MVA_VDS(:,1,:));
 xdata=[1.625 3.25 7.5 15 30];
 x0=[0.5 4 1];
-[TTF_boot_mvaVDS_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
+[TTF_boot_mvaVDS_magno]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 % MVA VDS parvo
 ydata=squeeze(MVA_VDS(:,2,:));
 xdata=[1.625 3.25 7.5 15 30];
 x0=[2 2 1];
-[TTF_boot_mvaVDS_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+[TTF_boot_mvaVDS_parvo]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 % MVA VDS konio
 ydata=squeeze(MVA_VDS(:,3,[1:3 5]));
 xdata=[1.625 3.25 7.5 30];
 x0=[6 1 1];
-[TTF_boot_mvaVDS_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+[TTF_boot_mvaVDS_konio]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 % HAF VDS magno
 ydata=squeeze(HAF_VDS(:,1,:));
 xdata=[1.625 3.25 7.5 15 30];
 x0=[0.5 4 1];
-[TTF_boot_hafVDS_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
+[TTF_boot_hafVDS_magno]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 % HAF VDS parvo
 ydata=squeeze(HAF_VDS(:,2,:));
 xdata=[1.625 3.25 7.5 15 30];
-x0=[2 2 1];
-[TTF_boot_hafVDS_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+x0=[4 1 1];
+[TTF_boot_hafVDS_parvo]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 % HAF VDS konio
 ydata=squeeze(HAF_VDS(:,3,[1:3 5]));
 xdata=[1.625 3.25 7.5 30];
 x0=[6 1 1];
-[TTF_boot_hafVDS_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+[TTF_boot_hafVDS_konio]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 
 
 % MVA VEP magno
 ydata=squeeze(MVA_VEP(:,1,:));
 xdata=[1.625 3.25 7.5 15 30];
-x0=[1 2 1];
+x0=[0.5 4 1];
 [TTF_boot_mvaVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 % MVA VEP parvo
@@ -136,13 +136,13 @@ x0=[4 1 1];
 % MVA VEP konio
 ydata=squeeze(MVA_VEP(:,3,[1:3 5]));
 xdata=[1.625 3.25 7.5 30];
-x0=[6 2 1];
+x0=[6 1 1];
 [TTF_boot_mvaVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 % HAF VEP magno
 ydata=squeeze(HAF_VEP(:,1,:));
 xdata=[1.625 3.25 7.5 15 30];
-x0=[1 2 1];
+x0=[0.5 4 1];
 [TTF_boot_hafVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 % HAF VEP parvo
@@ -154,8 +154,31 @@ x0=[4 1 1];
 % HAF VEP konio
 ydata=squeeze(HAF_VEP(:,3,[1:3 5]));
 xdata=[1.625 3.25 7.5 30];
-x0=[6 2 1];
+x0=[6 1 1];
 [TTF_boot_hafVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+
+% figure(1)
+% subplot(2,1,1)
+% hold on
+% errorbar(TTF_boot_mvaVDS_magno.peak_frequency(:,500),1.25,TTF_boot_mvaVDS_magno.peak_frequency(:,500)-TTF_boot_mvaVDS_magno.peak_frequency(:,50),TTF_boot_mvaVDS_magno.peak_frequency(:,950)-TTF_boot_mvaVDS_magno.peak_frequency(:,500),'ok','horizontal');
+% errorbar(TTF_boot_mvaVDS_parvo.peak_frequency(:,500),1.25,TTF_boot_mvaVDS_parvo.peak_frequency(:,500)-TTF_boot_mvaVDS_parvo.peak_frequency(:,50),TTF_boot_mvaVDS_parvo.peak_frequency(:,950)-TTF_boot_mvaVDS_parvo.peak_frequency(:,500),'or','horizontal');
+% errorbar(TTF_boot_mvaVDS_konio.peak_frequency(:,500),1.25,TTF_boot_mvaVDS_konio.peak_frequency(:,500)-TTF_boot_mvaVDS_konio.peak_frequency(:,50),TTF_boot_mvaVDS_konio.peak_frequency(:,950)-TTF_boot_mvaVDS_konio.peak_frequency(:,500),'ob','horizontal');
+% errorbar(TTF_boot_hafVDS_magno.peak_frequency(:,500),1.75,TTF_boot_hafVDS_magno.peak_frequency(:,500)-TTF_boot_hafVDS_magno.peak_frequency(:,50),TTF_boot_hafVDS_magno.peak_frequency(:,950)-TTF_boot_hafVDS_magno.peak_frequency(:,500),'ok','horizontal');
+% errorbar(TTF_boot_hafVDS_parvo.peak_frequency(:,500),1.75,TTF_boot_hafVDS_parvo.peak_frequency(:,500)-TTF_boot_hafVDS_parvo.peak_frequency(:,50),TTF_boot_hafVDS_parvo.peak_frequency(:,950)-TTF_boot_hafVDS_parvo.peak_frequency(:,500),'or','horizontal');
+% errorbar(TTF_boot_hafVDS_konio.peak_frequency(:,500),1.75,TTF_boot_hafVDS_konio.peak_frequency(:,500)-TTF_boot_hafVDS_konio.peak_frequency(:,50),TTF_boot_hafVDS_konio.peak_frequency(:,950)-TTF_boot_hafVDS_konio.peak_frequency(:,500),'ob','horizontal');
+% title(['Peak frequency - VDS'])
+% ax=gca;ax.XScale='log';ax.XLim=[2 50];ax.YLim=[1 2];ax.TickDir='out';ax.Box='off';
+% 
+% subplot(2,1,2)
+% hold on
+% errorbar(TTF_boot_mvaVEP_magno.peak_frequency(:,500),1.25,TTF_boot_mvaVEP_magno.peak_frequency(:,500)-TTF_boot_mvaVEP_magno.peak_frequency(:,50),TTF_boot_mvaVEP_magno.peak_frequency(:,950)-TTF_boot_mvaVEP_magno.peak_frequency(:,500),'ok','horizontal');
+% errorbar(TTF_boot_mvaVEP_parvo.peak_frequency(:,500),1.25,TTF_boot_mvaVEP_parvo.peak_frequency(:,500)-TTF_boot_mvaVEP_parvo.peak_frequency(:,50),TTF_boot_mvaVEP_parvo.peak_frequency(:,950)-TTF_boot_mvaVEP_parvo.peak_frequency(:,500),'or','horizontal');
+% errorbar(TTF_boot_mvaVEP_konio.peak_frequency(:,500),1.25,TTF_boot_mvaVEP_konio.peak_frequency(:,500)-TTF_boot_mvaVEP_konio.peak_frequency(:,50),TTF_boot_mvaVEP_konio.peak_frequency(:,950)-TTF_boot_mvaVEP_konio.peak_frequency(:,500),'ob','horizontal');
+% errorbar(TTF_boot_hafVEP_magno.peak_frequency(:,500),1.75,TTF_boot_hafVEP_magno.peak_frequency(:,500)-TTF_boot_hafVEP_magno.peak_frequency(:,50),TTF_boot_hafVEP_magno.peak_frequency(:,950)-TTF_boot_hafVEP_magno.peak_frequency(:,500),'ok','horizontal');
+% errorbar(TTF_boot_hafVEP_parvo.peak_frequency(:,500),1.75,TTF_boot_hafVEP_parvo.peak_frequency(:,500)-TTF_boot_hafVEP_parvo.peak_frequency(:,50),TTF_boot_hafVEP_parvo.peak_frequency(:,950)-TTF_boot_hafVEP_parvo.peak_frequency(:,500),'or','horizontal');
+% errorbar(TTF_boot_hafVEP_konio.peak_frequency(:,500),1.75,TTF_boot_hafVEP_konio.peak_frequency(:,500)-TTF_boot_hafVEP_konio.peak_frequency(:,50),TTF_boot_hafVEP_konio.peak_frequency(:,950)-TTF_boot_hafVEP_konio.peak_frequency(:,500),'ob','horizontal');
+% title(['Peak frequency - VEP'])
+% ax=gca;ax.XScale='log';ax.XLim=[2 50];ax.YLim=[1 2];ax.TickDir='out';ax.Box='off';
 
 %% plot temporal frequency response functions (Figure 2)
 VDS=calcVDS(compiledData_ALL,lb,ub);
@@ -355,9 +378,47 @@ function [TTF_boot]=bootstrp_ttf_fit(ydata,xdata,x0)
         TTF_boot.peak_amplitude(i)=nanmax(ttf_fit);
         TTF_boot.ttf_fit(i,:)=ttf_fit;
         TTF_boot.TF=TF_fit;
+        
+%         figure(10)
+%         hold on
+%         plot(xdata,Bootstat(i,:),'og')
+%         plot(TF_fit,ttf_fit,'-g')
     end
     
         TTF_boot.peak_frequency=sort(TTF_boot.peak_frequency,2);
         TTF_boot.median_amplitude=sort(TTF_boot.median_amplitude,2);
         TTF_boot.peak_amplitude=sort(TTF_boot.peak_amplitude,2);
+        
+%         pause
+%         clf
+        
+end
+
+
+function [TTF_boot]=bootstrp_ttf_fit_VDS(ydata,xdata,x0)
+    
+    Bootstat=bootstrp(1000,@nanmedian,ydata,1);
+    for i=1:size(Bootstat,1)
+        [ttf_fit,TF_fit]=getTTFfits_VDS(Bootstat(i,:),xdata,x0);
+        temp=find(ttf_fit==nanmax(ttf_fit));
+        TTF_boot.peak_frequency(i)=TF_fit(temp(1));
+        TTF_boot.median_amplitude(i)=nanmedian(ttf_fit);
+        TTF_boot.peak_amplitude(i)=nanmax(ttf_fit);
+        TTF_boot.ttf_fit(i,:)=ttf_fit;
+        TTF_boot.TF=TF_fit;
+        
+%         figure(10)
+%         hold on
+%         plot(xdata,Bootstat(i,:),'og')
+%         plot(TF_fit,ttf_fit,'-g')
+    end
+    
+        TTF_boot.peak_frequency=sort(TTF_boot.peak_frequency,2);
+        TTF_boot.median_amplitude=sort(TTF_boot.median_amplitude,2);
+        TTF_boot.peak_amplitude=sort(TTF_boot.peak_amplitude,2);
+
+%         pause
+%         clf
+
+        
 end

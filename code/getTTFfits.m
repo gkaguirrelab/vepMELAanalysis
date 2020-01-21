@@ -15,7 +15,7 @@ function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulus
         minVEP=0;
     end
     % Find the maximum interpolated VEP response
-    stimulusFreqHzFine=logspace(0,log10(max(stimulusFreqHz)),100);
+    stimulusFreqHzFine=logspace(0,log10(60),100);
     splineInterpolatedMax=max(spline(stimulusFreqHz,VEPresponse,stimulusFreqHzFine));
     
     % Scale the x vector so that the max is 1

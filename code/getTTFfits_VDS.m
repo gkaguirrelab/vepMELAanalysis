@@ -8,7 +8,7 @@ function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits_VDS(flicker_response
     q.parse(varargin{:});
 
     % Find the maximum interpolated VEP response
-    stimulusFreqHzFine=logspace(0,log10(max(stimulusFreqHz)),100);
+    stimulusFreqHzFine=logspace(0,log10(60),100);
     
     % Scale the x vector so that the max is 1
     scaledResponse=flicker_response./max(flicker_response);
