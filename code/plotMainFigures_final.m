@@ -121,41 +121,41 @@ end
 
 
 % 
-% % MVA VEP magno
-% ydata=squeeze(MVA_VEP(:,1,:));
-% xdata=[1.625 3.25 7.5 15 30];
-% x0=[0.5 4 1];
-% [TTF_boot_mvaVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
-% 
+% MVA VEP magno
+ydata=squeeze(MVA_VEP(:,1,:));
+xdata=[1.625 3.25 7.5 15 30];
+x0=[0.5 4 1];
+[TTF_boot_mvaVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
+
 % % MVA VEP parvo
 % ydata=squeeze(MVA_VEP(:,2,:));
 % xdata=[1.625 3.25 7.5 15 30];
 % x0=[4 1 1];
 % [TTF_boot_mvaVEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
 
-% MVA VEP konio
-ydata=squeeze(MVA_VEP(:,3,[1:3 5]));
-xdata=[1.625 3.25 7.5 30];
-x0=[5 2 1];
-[TTF_boot_mvaVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+% % MVA VEP konio
+% ydata=squeeze(MVA_VEP(:,3,[1:3 5]));
+% xdata=[1.625 3.25 7.5 30];
+% x0=[5 2 1];
+% [TTF_boot_mvaVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
 % 
-% % HAF VEP magno
-% ydata=squeeze(HAF_VEP(:,1,:));
-% xdata=[1.625 3.25 7.5 15 30];
-% x0=[0.5 4 1];
-% [TTF_boot_hafVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
-% 
+% HAF VEP magno
+ydata=squeeze(HAF_VEP(:,1,:));
+xdata=[1.625 3.25 7.5 15 30];
+x0=[0.5 4 1];
+[TTF_boot_hafVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
+
 % % HAF VEP parvo
 % ydata=squeeze(HAF_VEP(:,2,:));
 % xdata=[1.625 3.25 7.5 15 30];
 % x0=[4 1 1];
 % [TTF_boot_hafVEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
 
-% HAF VEP konio
-ydata=squeeze(HAF_VEP(:,3,[1:3 5]));
-xdata=[1.625 3.25 7.5 30];
-x0=[5 2 1];
-[TTF_boot_hafVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+% % HAF VEP konio
+% ydata=squeeze(HAF_VEP(:,3,[1:3 5]));
+% xdata=[1.625 3.25 7.5 30];
+% x0=[5 2 1];
+% [TTF_boot_hafVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 
 % % VDS magno
@@ -177,23 +177,23 @@ x0=[5 2 1];
 % [TTF_boot_VDS_konio]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 % 
 % 
-% % VEP magno
-% ydata=cat(1,squeeze(MVA_VEP(:,1,:)),squeeze(HAF_VEP(:,1,:)));
-% xdata=[1.625 3.25 7.5 15 30];
-% x0=[0.5 4 1];
-% [TTF_boot_VEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
-% 
+% VEP magno
+ydata=cat(1,squeeze(MVA_VEP(:,1,:)),squeeze(HAF_VEP(:,1,:)));
+xdata=[1.625 3.25 7.5 15 30];
+x0=[0.5 4 1];
+[TTF_boot_VEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
+
 % % VEP parvo
 % ydata=cat(1,squeeze(MVA_VEP(:,2,:)),squeeze(HAF_VEP(:,2,:)));
 % xdata=[1.625 3.25 7.5 15 30];
 % x0=[4 1 1];
 % [TTF_boot_VEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
-% 
-% VEP konio
-ydata=cat(1,squeeze(MVA_VEP(:,3,[1:3 5])),squeeze(HAF_VEP(:,3,[1:3 5])));
-xdata=[1.625 3.25 7.5 30];
-x0=[5 2 1];
-[TTF_boot_VEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+
+% % VEP konio
+% ydata=cat(1,squeeze(MVA_VEP(:,3,[1:3 5])),squeeze(HAF_VEP(:,3,[1:3 5])));
+% xdata=[1.625 3.25 7.5 30];
+% x0=[5 2 1];
+% [TTF_boot_VEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 
 % figure(1)
@@ -430,7 +430,7 @@ function [TTF_boot]=bootstrp_ttf_fit(ydata,xdata,x0)
         TTF_boot.peak_amplitude=sort(TTF_boot.peak_amplitude,2);
         TTF_boot.Bootstat=Bootstat;
         
-        pause
+%         pause
         clf
         
 end
@@ -460,7 +460,7 @@ function [TTF_boot]=bootstrp_ttf_fit_VDS(ydata,xdata,x0)
         TTF_boot.peak_amplitude=sort(TTF_boot.peak_amplitude,2);
         TTF_boot.Bootstat=Bootstat;
                 
-        pause
+%         pause
         clf
 
         

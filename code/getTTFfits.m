@@ -24,6 +24,6 @@ function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulus
     params=fmincon(myObj,x0,[],[],[],[],q.Results.x0_lb,q.Results.x0_ub);
     
     stimulusFreqHzFine2=logspace(0,log10(max(stimulusFreqHz)+20),100);
-    ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine2,params).*splineInterpolatedMax+minVEP;
+    ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine2,params).*max(VEPresponse)+minVEP;
     TemporalFrequency_fit=stimulusFreqHzFine2;
 end
