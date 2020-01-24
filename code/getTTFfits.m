@@ -15,14 +15,15 @@ function [ttf_fit, TemporalFrequency_fit,params]=getTTFfits(VEPresponse,stimulus
         minVEP=0;
     end
     % Find the maximum interpolated VEP response
-    stimulusFreqHzFine=logspace(0,log10(60),100);
+    stimulusFreqHzFine=logspace(0,log10(max(stimulusFreqHz)),100);
     splineInterpolatedMax=max(spline(stimulusFreqHz,VEPresponse,stimulusFreqHzFine));
     
     % Scale the x vector so that the max is 1
     scaledVEP=scaledVEP./max(scaledVEP);
     myObj=@(p)sqrt(sum((scaledVEP-watsonTemporalModelvep(stimulusFreqHz,p)).^2));
-    params=fmincon(myObj,x0,[],[],[],[],q.Results.x0_lb,q.Results. x0_ub);
+    params=fmincon(myObj,x0,[],[],[],[],q.Results.x0_lb,q.Results.x0_ub);
     
-    ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine,params).*splineInterpolatedMax+minVEP;
-    TemporalFrequency_fit=stimulusFreqHzFine;
+    stimulusFreqHzFine2=logspace(0,log10(max(stimulusFreqHz)+20),100);
+    ttf_fit=watsonTemporalModelvep(stimulusFreqHzFine2,params).*splineInterpolatedMax+minVEP;
+    TemporalFrequency_fit=stimulusFreqHzFine2;
 end
