@@ -1,59 +1,20 @@
-% Compile data across subjects
-
-% observer ID for each subject to be compiled
-subjects=['MELA_0121';'MELA_0131';...
-    'MELA_0181';'MELA_0167';...
-    'MELA_0187';'MELA_0175';...
-    'MELA_0170';'MELA_0169';...
-    'MELA_0194';'MELA_0179';...
-    'MELA_0191';'MELA_0174';...
-    'MELA_0120';'MELA_0171';...
-    'MELA_0201';'MELA_0207';...
-    'MELA_0209';'MELA_0204';...
-    'MELA_0213';'MELA_0208'];
-
-counter_MVA=0;
-counter_HAF=0;
-TemporalFrequency=[1.625 3.25 7.5 15 30];
-lb=50;
-ub=950;
-
+% Load compiled data across subjects
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
     'vepMELAanalysis','allChannels');
 
-load('/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat')
+filenameComp=fullfile(savePath,'allSubjects.mat');
 
-for x=1:size(subjects,1)
-    
-        observerID=subjects(x,:);
-        savePath=fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
-        'vepMELAanalysis','allChannels');
+open(filenameComp)
+compiledData_MVA=ans.compiledData_MVA;
+compiledData_HAF=ans.compiledData_HAF;
+compiledData_ALL=ans.compiledData_HAF;
+scoreTable_MVA=ans.scoreTable_MVA;
+scoreTable_HAF=ans.scoreTable_HAF;
+scoreTable=ans.scoreTable;
 
-        filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
-
-        open(filenameComp);
-        compiledData=ans.compiledData;
-        temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
-        temp2=scoreTable(temp,:);
-        compiledData.subject=temp2;
-        compiledData_ALL(x,:)=compiledData;
-
-        if compiledData(1).group=='MWVA'
-            counter_MVA=counter_MVA+1;
-            compiledData_MVA(counter_MVA,:)=compiledData;
-            scoreTable_MVA(counter_MVA,:)=temp2;
-        else if compiledData(1).group=='HA f'
-                counter_HAF=counter_HAF+1;
-               compiledData_HAF(counter_HAF,:)=compiledData;
-               scoreTable_HAF(counter_HAF,:)=temp2;
-            else
-                disp('error: group');
-            end
-        end
-
-end
-
-clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
+TemporalFrequency=[1.625 3.25 7.5 15 30];
+lb=50;
+ub=950;
 
 % flicker discomfort
 VDS=calcVDS(compiledData_ALL,lb,ub);
@@ -177,7 +138,7 @@ for x=1:size(compiledData_ALL,1)
     hold on
     plot(TemporalFrequency_fit_vep_sim,ttf_fit_vep_sim,'b')
     plot(15,ttf_fit_vep_sim(sim_15Hz(1)),'or')
-    pause
+%     pause
     hold off
    
 end

@@ -1,0 +1,230 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>combine_windows</title><meta name="generator" content="MATLAB 9.2"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-14"><meta name="DC.source" content="combine_windows.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% observer ID for each subject to be compiled</span>
+subjects=[<span class="string">'MELA_0121'</span>;<span class="string">'MELA_0131'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0181'</span>;<span class="string">'MELA_0167'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0187'</span>;<span class="string">'MELA_0175'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0170'</span>;<span class="string">'MELA_0169'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0194'</span>;<span class="string">'MELA_0179'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0191'</span>;<span class="string">'MELA_0174'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0120'</span>;<span class="string">'MELA_0171'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0201'</span>;<span class="string">'MELA_0207'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0209'</span>;<span class="string">'MELA_0204'</span>;<span class="keyword">...</span>
+    <span class="string">'MELA_0213'</span>;<span class="string">'MELA_0208'</span>];
+
+counter_MVA=0;
+counter_HAF=0;
+TemporalFrequency=[1.625 3.25 7.5 15 30];
+lb=50;
+ub=950;
+
+savePath = fullfile(getpref(<span class="string">'vepMELAanalysis'</span>, <span class="string">'melaAnalysisPath'</span>),<span class="string">'experiments'</span>,<span class="keyword">...</span>
+    <span class="string">'vepMELAanalysis'</span>,<span class="string">'allChannels'</span>);
+
+load(<span class="string">'/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat'</span>)
+
+<span class="keyword">for</span> x=1:size(subjects,1)
+
+        observerID=subjects(x,:);
+
+        filenameComp=fullfile(savePath,[observerID <span class="string">'allChannels_1625w.mat'</span>]);
+        open(filenameComp);
+        compiledData_1625w=ans.compiledData;
+        clear <span class="string">ans</span>
+
+        filenameComp=fullfile(savePath,[observerID <span class="string">'allChannels_1625w.mat'</span>]);
+        open(filenameComp);
+        compiledData_1625w=ans.compiledData;
+        clear <span class="string">ans</span>
+
+        filenameComp=fullfile(savePath,[observerID <span class="string">'allChannels.mat'</span>]);
+        open(filenameComp);
+        compiledData=ans.compiledData;
+        clear <span class="string">ans</span>
+
+        <span class="comment">% replace 1.625Hz and 3.25Hz stimuli with appropriate windowing</span>
+        compiledData.fooof_peak_Fr(:,1)=compiledData_1625w.fooof_peak_Fr(:,1);
+        compiledData.fooof_peak_harmonics(:,1)=compiledData_1625w.fooof_peak_harmonics(:,1);
+        compiledData.fooof_peak_harmonics_freq(:,1)=compiledData_1625w.fooof_peak_harmonics_freq(:,1);
+        compiledData.fooof_results(:,1)=compiledData_1625w.fooof_results(:,1);
+
+        compiledData.fooof_peak_Fr(:,2)=compiledData_325w.fooof_peak_Fr(:,2);
+        compiledData.fooof_peak_harmonics(:,2)=compiledData_325w.fooof_peak_harmonics(:,2);
+        compiledData.fooof_peak_harmonics_freq(:,2)=compiledData_325w.fooof_peak_harmonics_freq(:,2);
+        compiledData.fooof_results(:,2)=compiledData_325w.fooof_results(:,2);
+
+        temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
+        temp2=scoreTable(temp,:);
+        compiledData.subject=temp2;
+        compiledData_ALL(x,:)=compiledData;
+
+        <span class="keyword">if</span> compiledData(1).group==<span class="string">'MWVA'</span>
+            counter_MVA=counter_MVA+1;
+            compiledData_MVA(counter_MVA,:)=compiledData;
+            scoreTable_MVA(counter_MVA,:)=temp2;
+        <span class="keyword">else</span> <span class="keyword">if</span> compiledData(1).group==<span class="string">'HA f'</span>
+                counter_HAF=counter_HAF+1;
+               compiledData_HAF(counter_HAF,:)=compiledData;
+               scoreTable_HAF(counter_HAF,:)=temp2;
+            <span class="keyword">else</span>
+                disp(<span class="string">'error: group'</span>);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+clear <span class="string">compiledData*</span> <span class="string">counter_HAF</span> <span class="string">counter_MVA</span> <span class="string">observerID</span> <span class="string">x</span> <span class="string">filenameComp</span>
+
+<span class="comment">% save(filenameComp,'compiledData')</span>
+<span class="comment">% clear</span>
+</pre><pre class="codeoutput error">Undefined variable "compiledData_325w" or class "compiledData_325w.fooof_peak_Fr".
+
+Error in combine_windows (line 49)
+        compiledData.fooof_peak_Fr(:,2)=compiledData_325w.fooof_peak_Fr(:,2);
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% observer ID for each subject to be compiled
+subjects=['MELA_0121';'MELA_0131';...
+    'MELA_0181';'MELA_0167';...
+    'MELA_0187';'MELA_0175';...
+    'MELA_0170';'MELA_0169';...
+    'MELA_0194';'MELA_0179';...
+    'MELA_0191';'MELA_0174';...
+    'MELA_0120';'MELA_0171';...
+    'MELA_0201';'MELA_0207';...
+    'MELA_0209';'MELA_0204';...
+    'MELA_0213';'MELA_0208'];
+
+counter_MVA=0;
+counter_HAF=0;
+TemporalFrequency=[1.625 3.25 7.5 15 30];
+lb=50;
+ub=950;
+
+savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
+    'vepMELAanalysis','allChannels');
+
+load('/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat')
+
+for x=1:size(subjects,1)
+    
+        observerID=subjects(x,:);
+        
+        filenameComp=fullfile(savePath,[observerID 'allChannels_1625w.mat']);
+        open(filenameComp);
+        compiledData_1625w=ans.compiledData;
+        clear ans
+        
+        filenameComp=fullfile(savePath,[observerID 'allChannels_1625w.mat']);
+        open(filenameComp);
+        compiledData_1625w=ans.compiledData;
+        clear ans
+        
+        filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
+        open(filenameComp);
+        compiledData=ans.compiledData;
+        clear ans
+        
+        % replace 1.625Hz and 3.25Hz stimuli with appropriate windowing
+        compiledData.fooof_peak_Fr(:,1)=compiledData_1625w.fooof_peak_Fr(:,1);
+        compiledData.fooof_peak_harmonics(:,1)=compiledData_1625w.fooof_peak_harmonics(:,1);
+        compiledData.fooof_peak_harmonics_freq(:,1)=compiledData_1625w.fooof_peak_harmonics_freq(:,1);
+        compiledData.fooof_results(:,1)=compiledData_1625w.fooof_results(:,1);
+        
+        compiledData.fooof_peak_Fr(:,2)=compiledData_325w.fooof_peak_Fr(:,2);
+        compiledData.fooof_peak_harmonics(:,2)=compiledData_325w.fooof_peak_harmonics(:,2);
+        compiledData.fooof_peak_harmonics_freq(:,2)=compiledData_325w.fooof_peak_harmonics_freq(:,2);
+        compiledData.fooof_results(:,2)=compiledData_325w.fooof_results(:,2);
+        
+        temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
+        temp2=scoreTable(temp,:);
+        compiledData.subject=temp2;
+        compiledData_ALL(x,:)=compiledData;
+
+        if compiledData(1).group=='MWVA'
+            counter_MVA=counter_MVA+1;
+            compiledData_MVA(counter_MVA,:)=compiledData;
+            scoreTable_MVA(counter_MVA,:)=temp2;
+        else if compiledData(1).group=='HA f'
+                counter_HAF=counter_HAF+1;
+               compiledData_HAF(counter_HAF,:)=compiledData;
+               scoreTable_HAF(counter_HAF,:)=temp2;
+            else
+                disp('error: group');
+            end
+        end
+
+end
+
+clear compiledData* counter_HAF counter_MVA observerID x filenameComp
+
+% save(filenameComp,'compiledData')
+% clear
+##### SOURCE END #####
+--></body></html>

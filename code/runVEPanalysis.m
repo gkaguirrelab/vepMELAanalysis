@@ -7,10 +7,10 @@ if ~exist(savePath,'dir')
     mkdir(savePath);
 end
 
-filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
+filenameComp=fullfile(savePath,[observerID 'allChannels_325w.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=1.5;
+dur_in_sec=1.538;
 starttime=0.5;
 nulling(1)=input('LM nulling value:');
 nulling(2)=input('S nulling value:');
@@ -57,7 +57,7 @@ end
     temp=length(find(isnan(mean(processedVEPdata(3).vep_Fr,3))));
     disp(['number of poor quality trials konio=' num2str(temp)])
 
-    pause
+%     pause
 %%
 for x=1:3
     switch x
@@ -84,7 +84,7 @@ for x=1:3
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',TemporalFrequency);
 
     %% FOOOF
-    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'plot_all',true);
+    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'plot_all',true,'dur_in_sec',dur_in_sec);
 
     
     %% Plotting
@@ -188,7 +188,7 @@ for x=1:3
         ax=gca;ax.XLim=[0 60];ax.YLim=[-0.002 0.04];ax.Box='off';ax.TickDir='out';
         
     end
-    pause
+%     pause
     
     % get harmonics
     harmonic={[1.625 3.25 4.875 6.5 8.125];[3.25 6.5 9.75 13 16.25];[7.5 15 22.5 30 37.5];[15 30 45 75 90];[30 90]};
@@ -270,6 +270,6 @@ compiledData.ttf_M=ttf(x).ttf_M;
 compiledData.ttf_CI=ttf(x).ttf_CI;
 compiledData.nulling=nulling;
 
-% save(filenameComp,'compiledData')
+save(filenameComp,'compiledData')
 clear
 

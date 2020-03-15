@@ -1,57 +1,22 @@
 % Compile data across subjects
 
-% observer ID for each subject to be compiled
-subjects=['MELA_0121';'MELA_0131';...
-    'MELA_0181';'MELA_0167';...
-    'MELA_0187';'MELA_0175';...
-    'MELA_0170';'MELA_0169';...
-    'MELA_0194';'MELA_0179';...
-    'MELA_0191';'MELA_0174';...
-    'MELA_0120';'MELA_0171';...
-    'MELA_0201';'MELA_0207';...
-    'MELA_0209';'MELA_0204';...
-    'MELA_0213';'MELA_0208'];
-
-counter_MVA=0;
-counter_HAF=0;
-TemporalFrequency=[1.625 3.25 7.5 15 30];
-lb=50;
-ub=950;
-
 savePath = fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
     'vepMELAanalysis','allChannels');
 
-load('/Users/carlynpattersongentile/Documents/MATLAB/Carlyn/vepMELA_subjectInfo.mat')
+filenameComp=fullfile(savePath,'allSubjects.mat');
 
-for x=1:size(subjects,1)
-    
-        observerID=subjects(x,:);
-        savePath=fullfile(getpref('vepMELAanalysis', 'melaAnalysisPath'),'experiments',...
-        'vepMELAanalysis','allChannels');
+open(filenameComp)
+compiledData_MVA=ans.compiledData_MVA;
+compiledData_HAF=ans.compiledData_HAF;
+compiledData_ALL=ans.compiledData_ALL;
+scoreTable_MVA=ans.scoreTable_MVA;
+scoreTable_HAF=ans.scoreTable_HAF;
+scoreTable=ans.scoreTable;
 
-        filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
-
-        open(filenameComp);
-        compiledData=ans.compiledData;
-        temp=find(strcmp(table2array(scoreTable(:,1)),observerID));
-        temp2=scoreTable(temp,:);
-        compiledData.subject=temp2;
-        compiledData_ALL(x,:)=compiledData;
-
-        if compiledData(1).group=='MWVA'
-            counter_MVA=counter_MVA+1;
-            compiledData_MVA(counter_MVA,:)=compiledData;
-            scoreTable_MVA(counter_MVA,:)=temp2;
-        else if compiledData(1).group=='HA f'
-                counter_HAF=counter_HAF+1;
-               compiledData_HAF(counter_HAF,:)=compiledData;
-               scoreTable_HAF(counter_HAF,:)=temp2;
-            else
-                disp('error: group');
-            end
-        end
-
-end
+TemporalFrequency=[1.625 3.25 7.5 15 30];
+lb=50;
+ub=950;
+subjects=1:20;
 
 clear ans compiledData counter_HAF counter_MVA observerID x filenameComp
 
@@ -120,42 +85,42 @@ end
 % [TTF_boot_hafVDS_konio]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 
 
-% 
-% MVA VEP magno
-ydata=squeeze(MVA_VEP(:,1,:));
-xdata=[1.625 3.25 7.5 15 30];
-x0=[0.5 4 1];
-[TTF_boot_mvaVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
-
-% % MVA VEP parvo
-% ydata=squeeze(MVA_VEP(:,2,:));
+% % 
+% % MVA VEP magno
+% ydata=squeeze(MVA_VEP(:,1,:));
 % xdata=[1.625 3.25 7.5 15 30];
-% x0=[4 1 1];
-% [TTF_boot_mvaVEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+% x0=[0.5 4 1];
+% [TTF_boot_mvaVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
 
-% % MVA VEP konio
-% ydata=squeeze(MVA_VEP(:,3,[1:3 5]));
-% xdata=[1.625 3.25 7.5 30];
-% x0=[5 2 1];
-% [TTF_boot_mvaVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
-% 
-% HAF VEP magno
-ydata=squeeze(HAF_VEP(:,1,:));
+% MVA VEP parvo
+ydata=squeeze(MVA_VEP(:,2,:));
 xdata=[1.625 3.25 7.5 15 30];
-x0=[0.5 4 1];
-[TTF_boot_hafVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
+x0=[4 1 1];
+[TTF_boot_mvaVEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
 
-% % HAF VEP parvo
-% ydata=squeeze(HAF_VEP(:,2,:));
+% MVA VEP konio
+ydata=squeeze(MVA_VEP(:,3,[1:3 5]));
+xdata=[1.625 3.25 7.5 30];
+x0=[5 2 1];
+[TTF_boot_mvaVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+
+% % HAF VEP magno
+% ydata=squeeze(HAF_VEP(:,1,:));
 % xdata=[1.625 3.25 7.5 15 30];
-% x0=[4 1 1];
-% [TTF_boot_hafVEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+% x0=[0.5 4 1];
+% [TTF_boot_hafVEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
 
-% % HAF VEP konio
-% ydata=squeeze(HAF_VEP(:,3,[1:3 5]));
-% xdata=[1.625 3.25 7.5 30];
-% x0=[5 2 1];
-% [TTF_boot_hafVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+% HAF VEP parvo
+ydata=squeeze(HAF_VEP(:,2,:));
+xdata=[1.625 3.25 7.5 15 30];
+x0=[4 1 1];
+[TTF_boot_hafVEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+
+% HAF VEP konio
+ydata=squeeze(HAF_VEP(:,3,[1:3 5]));
+xdata=[1.625 3.25 7.5 30];
+x0=[5 2 1];
+[TTF_boot_hafVEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 
 % % VDS magno
@@ -177,23 +142,23 @@ x0=[0.5 4 1];
 % [TTF_boot_VDS_konio]=bootstrp_ttf_fit_VDS(ydata,xdata,x0);
 % 
 % 
-% VEP magno
-ydata=cat(1,squeeze(MVA_VEP(:,1,:)),squeeze(HAF_VEP(:,1,:)));
-xdata=[1.625 3.25 7.5 15 30];
-x0=[0.5 4 1];
-[TTF_boot_VEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
-
-% % VEP parvo
-% ydata=cat(1,squeeze(MVA_VEP(:,2,:)),squeeze(HAF_VEP(:,2,:)));
+% % VEP magno
+% ydata=cat(1,squeeze(MVA_VEP(:,1,:)),squeeze(HAF_VEP(:,1,:)));
 % xdata=[1.625 3.25 7.5 15 30];
-% x0=[4 1 1];
-% [TTF_boot_VEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+% x0=[0.5 4 1];
+% [TTF_boot_VEP_magno]=bootstrp_ttf_fit(ydata,xdata,x0);
 
-% % VEP konio
-% ydata=cat(1,squeeze(MVA_VEP(:,3,[1:3 5])),squeeze(HAF_VEP(:,3,[1:3 5])));
-% xdata=[1.625 3.25 7.5 30];
-% x0=[5 2 1];
-% [TTF_boot_VEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
+% VEP parvo
+ydata=cat(1,squeeze(MVA_VEP(:,2,:)),squeeze(HAF_VEP(:,2,:)));
+xdata=[1.625 3.25 7.5 15 30];
+x0=[4 1 1];
+[TTF_boot_VEP_parvo]=bootstrp_ttf_fit(ydata,xdata,x0);
+
+% VEP konio
+ydata=cat(1,squeeze(MVA_VEP(:,3,[1:3 5])),squeeze(HAF_VEP(:,3,[1:3 5])));
+xdata=[1.625 3.25 7.5 30];
+x0=[5 2 1];
+[TTF_boot_VEP_konio]=bootstrp_ttf_fit(ydata,xdata,x0);
 
 
 % figure(1)
