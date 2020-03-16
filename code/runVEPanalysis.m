@@ -7,11 +7,11 @@ if ~exist(savePath,'dir')
     mkdir(savePath);
 end
 
-filenameComp=fullfile(savePath,[observerID 'allChannels_325w.mat']);
+filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=1.538;
-starttime=0.5;
+dur_in_sec=1.531;
+starttime=0.47;
 nulling(1)=input('LM nulling value:');
 nulling(2)=input('S nulling value:');
 
@@ -188,7 +188,7 @@ for x=1:3
         ax=gca;ax.XLim=[0 60];ax.YLim=[-0.002 0.04];ax.Box='off';ax.TickDir='out';
         
     end
-%     pause
+    pause
     
     % get harmonics
     harmonic={[1.625 3.25 4.875 6.5 8.125];[3.25 6.5 9.75 13 16.25];[7.5 15 22.5 30 37.5];[15 30 45 75 90];[30 90]};
@@ -216,7 +216,7 @@ for x=1:3
         ax.TickDir='out';
         ax.XLim=[0 100];
         ax.YLim=[-0.002 0.04];
-%         pause
+        pause
         hold off
         
         fooof_peak_harmonics{x,a,:}=ydata(peak_freq_harm_loc);
@@ -238,11 +238,14 @@ for x=1:3
     
     % Plot superimposed luminance, red/green, and blue/yellow in time
     % domain
-    figure(11)
+    figure(50+x)
     for z=1:length(TemporalFrequency)
         subplot(3,2,z)
+        hold on
         vep_temp=squeeze(nanmedian(processedVEPdata(x).vep_Fr(z,:,:),2));
-        plot(XX,vep_temp,['-' color])
+        [yF]=sim_sinusoid(XX,TemporalFrequency(z)*dur_in_sec,vep_temp);
+        plot(XX,vep_temp,'-k')
+        plot(XX,(yF./max(yF))*(max(vep_temp)*0.85),'-r')
         title(['frequency=' num2str(TemporalFrequency(z))]);
         xlabel('Time(s)')
         ax=gca;
@@ -250,7 +253,6 @@ for x=1:3
         ax.Box='off';
         ax.YLim=[-0.1 0.1];
         ax.XLim=[0 parsedVEPdata(x).dur_in_freq/parsedVEPdata(x).Fs];
-        hold on
     end
 
     vds(x,:,:)=parsedVEPdata(x).vds_Fr;
@@ -270,6 +272,6 @@ compiledData.ttf_M=ttf(x).ttf_M;
 compiledData.ttf_CI=ttf(x).ttf_CI;
 compiledData.nulling=nulling;
 
-save(filenameComp,'compiledData')
-clear
+% save(filenameComp,'compiledData')
+% clear
 
