@@ -7,7 +7,7 @@ filenameComp=fullfile(savePath,'allSubjects.mat');
 open(filenameComp)
 compiledData_MVA=ans.compiledData_MVA;
 compiledData_HAF=ans.compiledData_HAF;
-compiledData_ALL=ans.compiledData_HAF;
+compiledData_all=ans.compiledData_ALL;
 scoreTable_MVA=ans.scoreTable_MVA;
 scoreTable_HAF=ans.scoreTable_HAF;
 scoreTable=ans.scoreTable;
@@ -27,7 +27,7 @@ VDS_haf=calcVDS(compiledData_HAF,lb,ub);
 % Plot the sum of harmonics across subjects
 [LMS, LM, S, LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compiledData_all,lb,ub, pred60lms, pred60lm, pred60s);
 
-[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[2 1 1]);
+[ttf_fitLMS,TemporalFrequency_fitLMS]=getTTFfits(LMSm,TemporalFrequency,[2 2 0.5]);
 [ttf_fitLM,TemporalFrequency_fitLM]=getTTFfits(LMm,TemporalFrequency,[2 3 0.5]);
 [ttf_fitS,TemporalFrequency_fitS]=getTTFfits(Sm([1:3 5]),TemporalFrequency([1:3 5]),[6 2 1]);
 
@@ -367,18 +367,34 @@ function [LMS, LM, S, LMSm, LMm, Sm, LMSci, LMci, Sci]=sumFooofHarmonics(compile
 %                 S(y,x)=S(y,x)+pred60s(2);
 %             end
 
-%1st and 2nd harmonic
+% %1st and 2nd harmonic
+%             temp=cell2mat(fooof_peak_harmonics(1,x));
+%             LMS(y,x)=sum(temp(1:2));
+%             temp=cell2mat(fooof_peak_harmonics(2,x));
+%             LM(y,x)=sum(temp(1:2));
+%             temp=cell2mat(fooof_peak_harmonics(3,x));
+%             S(y,x)=sum(temp(1:2));
+%             
+%             if x==5
+%                 LMS(y,x)=LMS(y,x)+pred60lms(2);
+%                 LM(y,x)=LM(y,x)+pred60lm(2);
+%                 S(y,x)=S(y,x)+pred60s(2);
+%             end
+%         end
+%     end
+    
+    %2nd harmonic
             temp=cell2mat(fooof_peak_harmonics(1,x));
-            LMS(y,x)=sum(temp(1:2));
+            LMS(y,x)=temp(2);
             temp=cell2mat(fooof_peak_harmonics(2,x));
-            LM(y,x)=sum(temp(1:2));
+            LM(y,x)=temp(2);
             temp=cell2mat(fooof_peak_harmonics(3,x));
-            S(y,x)=sum(temp(1:2));
+            S(y,x)=temp(2);
             
             if x==5
-                LMS(y,x)=LMS(y,x)+pred60lms(2);
-                LM(y,x)=LM(y,x)+pred60lm(2);
-                S(y,x)=S(y,x)+pred60s(2);
+                LMS(y,x)=pred60lms(2);
+                LM(y,x)=pred60lm(2);
+                S(y,x)=pred60s(2);
             end
         end
     end

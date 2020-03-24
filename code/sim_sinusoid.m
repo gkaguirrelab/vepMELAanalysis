@@ -10,9 +10,9 @@ X(:,1) = sin(s * freq);
 X(:,2) = cos(s * freq);
 
 % The regression
-b = y\X;
+b=regress(y,X);
 
 % The modeled response
-yF = X*b';
+yF = X*b;
 
 end

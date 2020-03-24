@@ -10,8 +10,8 @@ end
 filenameComp=fullfile(savePath,[observerID 'allChannels.mat']);
     
 %% run all analyses for the 3 channel conditions
-dur_in_sec=1.531;
-starttime=0.47;
+dur_in_sec=1.5;
+starttime=0.5;
 nulling(1)=input('LM nulling value:');
 nulling(2)=input('S nulling value:');
 
@@ -84,7 +84,7 @@ for x=1:3
     [ttf(x)]=calcVEPttf(processedVEPdata(x).vep_Fr,'dur_in_sec',dur_in_sec,'plot_all',false,'TemporalFrequency',TemporalFrequency);
 
     %% FOOOF
-    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'plot_all',true,'dur_in_sec',dur_in_sec);
+    [fooof_results(x,:),fooof_results5(x,:),fooof_results95(x,:)]=runFOOOF(ttf(x).ttf_M,ttf(x).ttf_CI,'dur_in_sec',dur_in_sec);
 
     
     %% Plotting
@@ -245,7 +245,7 @@ for x=1:3
         vep_temp=squeeze(nanmedian(processedVEPdata(x).vep_Fr(z,:,:),2));
         [yF]=sim_sinusoid(XX,TemporalFrequency(z)*dur_in_sec,vep_temp);
         plot(XX,vep_temp,'-k')
-        plot(XX,(yF./max(yF))*(max(vep_temp)*0.85),'-r')
+        plot(XX,yF,'-r')
         title(['frequency=' num2str(TemporalFrequency(z))]);
         xlabel('Time(s)')
         ax=gca;
